@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── students collection ───────────────────────────────────────────────
+    match /students/{userId} {
+
+      // Allow a user to read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Allow a user to CREATE their own document (initial sign-up),
+      // but they must NOT include a creatorCode field.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && !('creatorCode' in request.resource.data);
+
+      // Allow a user to UPDATE their own document, but:
+      //   • they cannot set / change the creatorCode field
+      //   • they cannot delete the creatorCode field that already exists
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && !('creatorCode' in request.resource.data.diff(resource.data).affectedKeys());
+    }
+
+    // ─── creator_codes collection ──────────────────────────────────────────
+    // Managed exclusively by the admin SDK (Cloud Functions).
+    // Clients may read their own code entry but never write.
+    match /creator_codes/{code} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

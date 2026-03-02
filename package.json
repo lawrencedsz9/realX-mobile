@@ -19,6 +19,7 @@
     "@react-native-firebase/app": "^23.8.6",
     "@react-native-firebase/auth": "^23.8.6",
     "@react-native-firebase/firestore": "^23.8.6",
+    "@react-native-firebase/functions": "^23.8.6",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.32",
     "expo-asset": "~12.0.12",

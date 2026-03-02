@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { getAuth } from '@react-native-firebase/auth';
 import { doc, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
+import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
@@ -56,6 +57,12 @@ export default function DetailsOnboarding() {
 
             const db = getFirestore();
             await setDoc(doc(db, 'students', user.uid), studentData);
+
+            if (studentData.role === 'creator') {
+                const functions = getFunctions();
+                const assignCode = httpsCallable(functions, 'assignCreatorCode');
+                await assignCode();
+            }
 
             console.log('Student details saved successfully!');
             router.replace('/(tabs)');

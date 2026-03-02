@@ -48,7 +48,7 @@ export default function EmailOnboarding() {
                         await clearAuthEmail();
                         console.log('Successfully signed in automatically!');
                         if (isNewUser) {
-                            router.replace('/(onboarding)/details');
+                            router.replace({ pathname: '/(onboarding)/details', params: { role, email: storedEmail } });
                         } else {
                             router.replace('/(tabs)');
                         }
@@ -111,7 +111,7 @@ export default function EmailOnboarding() {
                     await clearAuthEmail();
                     console.log('Successfully signed in manually!');
                     if (isNewUser) {
-                        router.replace('/(onboarding)/details');
+                        router.replace({ pathname: '/(onboarding)/details', params: { role, email: storedEmail } });
                     } else {
                         router.replace('/(tabs)');
                     }
