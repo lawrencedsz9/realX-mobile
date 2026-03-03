@@ -43,13 +43,15 @@ export default function DetailsOnboarding() {
                 throw new Error('No authenticated user found');
             }
 
-            const studentData = {
+            const role = params.role || 'student';
+
+            const studentData: any = {
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
                 dob: dob ? dob.toISOString().split('T')[0] : '', // Format: YYYY-MM-DD
                 gender,
                 email: params.email || user.email,
-                role: params.role || 'student',
+                role: role,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 uid: user.uid,
@@ -58,7 +60,7 @@ export default function DetailsOnboarding() {
             const db = getFirestore();
             await setDoc(doc(db, 'students', user.uid), studentData);
 
-            if (studentData.role === 'creator') {
+            if (role === 'creator') {
                 const functions = getFunctions();
                 const assignCode = httpsCallable(functions, 'assignCreatorCode');
                 await assignCode();

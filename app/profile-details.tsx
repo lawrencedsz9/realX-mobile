@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { getAuth } from '@react-native-firebase/auth';
-import { doc, getDoc, getFirestore, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -20,7 +19,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../constants/Typography';
 
-export default function EditProfileScreen() {
+export default function ProfileDetailsScreen() {
     const router = useRouter();
     const PURPLE = '#7D57FF';
 
@@ -30,9 +29,7 @@ export default function EditProfileScreen() {
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [dob, setDob] = useState<Date | null>(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         const authInstance = getAuth();
@@ -74,39 +71,6 @@ export default function EditProfileScreen() {
         router.back();
     };
 
-    const handleSave = async () => {
-        const authInstance = getAuth();
-        const user = authInstance.currentUser;
-        if (!user) return;
-
-        setIsSaving(true);
-        try {
-            const db = getFirestore();
-            const studentDocRef = doc(db, 'students', user.uid);
-
-            await updateDoc(studentDocRef, {
-                firstName,
-                lastName,
-                phone,
-                dob: dob ? dob.toLocaleDateString('en-GB') : '',
-                updatedAt: serverTimestamp(),
-            });
-            Alert.alert('Success', 'Profile updated successfully');
-            router.back();
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            Alert.alert('Error', 'Failed to update profile');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (selectedDate) {
-            setDob(selectedDate);
-        }
-    };
 
     const formatDate = (date: Date | null) => {
         if (!date) return 'DD/MM/YYYY';
@@ -119,7 +83,7 @@ export default function EditProfileScreen() {
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Profile</Text>
+                <Text style={styles.headerTitle}>Profile Details</Text>
             </View>
 
             <KeyboardAvoidingView
@@ -135,9 +99,6 @@ export default function EditProfileScreen() {
                         <View style={styles.avatarMain}>
                             <Ionicons name="person" size={80} color="#E0E0E0" />
                         </View>
-                        <TouchableOpacity style={styles.uploadButton}>
-                            <Ionicons name="arrow-up" size={20} color="#000" />
-                        </TouchableOpacity>
                     </View>
 
                     {/* Form Fields */}
@@ -149,12 +110,12 @@ export default function EditProfileScreen() {
                                 {/* First Name Field */}
                                 <View style={styles.inputGroup}>
                                     <Text style={styles.label}>First Name</Text>
-                                    <View style={styles.inputWrapper}>
+                                    <View style={[styles.inputWrapper, styles.disabledInput]}>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, styles.disabledText]}
                                             value={firstName}
-                                            onChangeText={setFirstName}
-                                            placeholder="Enter your first name"
+                                            editable={false}
+                                            placeholder="First name"
                                         />
                                     </View>
                                 </View>
@@ -162,12 +123,12 @@ export default function EditProfileScreen() {
                                 {/* Last Name Field */}
                                 <View style={styles.inputGroup}>
                                     <Text style={styles.label}>Last Name</Text>
-                                    <View style={styles.inputWrapper}>
+                                    <View style={[styles.inputWrapper, styles.disabledInput]}>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, styles.disabledText]}
                                             value={lastName}
-                                            onChangeText={setLastName}
-                                            placeholder="Enter your last name"
+                                            editable={false}
+                                            placeholder="Last name"
                                         />
                                     </View>
                                 </View>
@@ -176,19 +137,18 @@ export default function EditProfileScreen() {
                                 <View style={styles.inputGroup}>
                                     <Text style={styles.label}>Phone</Text>
                                     <View style={styles.phoneRow}>
-                                        <TouchableOpacity style={styles.countrySelector}>
+                                        <View style={[styles.countrySelector, styles.disabledInput]}>
                                             <Image
                                                 source={{ uri: 'https://flagcdn.com/w40/qa.png' }}
                                                 style={styles.flag}
                                             />
-                                            <Ionicons name="chevron-down" size={16} color="#999" style={styles.chevron} />
                                             <Text style={styles.countryCode}>+974</Text>
-                                        </TouchableOpacity>
-                                        <View style={styles.phoneInputWrapper}>
+                                        </View>
+                                        <View style={[styles.phoneInputWrapper, styles.disabledInput]}>
                                             <TextInput
-                                                style={styles.input}
+                                                style={[styles.input, styles.disabledText]}
                                                 value={phone}
-                                                onChangeText={setPhone}
+                                                editable={false}
                                                 keyboardType="phone-pad"
                                                 placeholder="Phone number"
                                             />
@@ -204,7 +164,6 @@ export default function EditProfileScreen() {
                                             style={[styles.input, styles.disabledText]}
                                             value={email}
                                             editable={false}
-                                            onChangeText={setEmail}
                                             placeholder="Email address"
                                         />
                                     </View>
@@ -213,49 +172,18 @@ export default function EditProfileScreen() {
                                 {/* Date of Birth Field */}
                                 <View style={styles.inputGroup}>
                                     <Text style={styles.label}>Date of Birth</Text>
-                                    <TouchableOpacity
-                                        style={styles.inputWrapper}
-                                        onPress={() => setShowDatePicker(true)}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Text style={[styles.input, !dob && { color: '#999' }]}>
+                                    <View style={[styles.inputWrapper, styles.disabledInput]}>
+                                        <Text style={[styles.input, styles.disabledText, !dob && { color: '#999' }]}>
                                             {formatDate(dob)}
                                         </Text>
-                                        <Ionicons name="calendar-outline" size={24} color="#000" />
-                                    </TouchableOpacity>
+                                    </View>
                                 </View>
-
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        value={dob || new Date(2026, 0, 1)}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={onDateChange}
-                                        maximumDate={new Date()}
-                                    />
-                                )}
                             </>
                         )}
                     </View>
 
                     {/* Action Buttons */}
                     <View style={styles.actions}>
-                        <TouchableOpacity
-                            style={[
-                                styles.saveButton,
-                                { backgroundColor: PURPLE },
-                                (isLoading || isSaving) && { opacity: 0.7 }
-                            ]}
-                            onPress={handleSave}
-                            activeOpacity={0.8}
-                            disabled={isLoading || isSaving}
-                        >
-                            {isSaving ? (
-                                <ActivityIndicator color="#FFF" />
-                            ) : (
-                                <Text style={styles.saveButtonText}>Save Changes</Text>
-                            )}
-                        </TouchableOpacity>
 
                         <TouchableOpacity style={styles.deleteButton}>
                             <Text style={styles.deleteButtonText}>Delete Account</Text>

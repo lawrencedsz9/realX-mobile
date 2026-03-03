@@ -20,6 +20,8 @@ export default function ProfileScreen() {
     email?: string;
     phone?: string;
     photoURL?: string;
+    role?: string;
+    creatorCode?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -39,9 +41,6 @@ export default function ProfileScreen() {
     return () => unsubscribe();
   }, []);
 
-  const handleEditPress = () => {
-    router.push('/edit-profile');
-  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -82,7 +81,11 @@ export default function ProfileScreen() {
         </View>
 
         {/* Profile Info Card */}
-        <View style={styles.profileCard}>
+        <TouchableOpacity
+          style={styles.profileCard}
+          activeOpacity={0.7}
+          onPress={() => router.push('/profile-details')}
+        >
           <View style={styles.profileInfo}>
             <View style={styles.avatar}>
               {userData?.photoURL || getAuth().currentUser?.photoURL ? (
@@ -100,20 +103,9 @@ export default function ProfileScreen() {
               <ThemedText style={styles.userName}>
                 {userData ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}
               </ThemedText>
-              <ThemedText type="subtitle" style={styles.userPhone}>
-                {userData?.phone || userData?.email || getAuth().currentUser?.email || ''}
-              </ThemedText>
             </View>
           </View>
-          <TouchableOpacity
-            style={[styles.editButton, { borderColor: theme.subtitle + '40' }]}
-            activeOpacity={0.7}
-            onPress={handleEditPress}
-          >
-            <ThemedText style={styles.editButtonText}>Edit</ThemedText>
-            <Ionicons name="chevron-forward" size={14} color={theme.text} />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
 
 
 
@@ -134,6 +126,24 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={14} color={theme.text} />
           </TouchableOpacity>
         </View>
+
+        {/* Creator Code Section */}
+        {userData?.role === 'creator' && userData?.creatorCode && (
+          <>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>Creator Code</ThemedText>
+            </View>
+
+            <View style={[styles.savingsCard, { backgroundColor: theme.background, borderColor: theme.subtitle + '20' }]}>
+              <View style={styles.savingsInfo}>
+                <ThemedText type="subtitle" style={styles.savingsLabel}>Your Creator Code</ThemedText>
+                <ThemedText style={styles.savingsAmount}>
+                  <ThemedText style={styles.purpleAmount}>{userData.creatorCode}</ThemedText>
+                </ThemedText>
+              </View>
+            </View>
+          </>
+        )}
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
@@ -248,20 +258,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: Typography.metropolis.medium,
     marginTop: 4,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  editButtonText: {
-    fontSize: 14,
-    fontFamily: Typography.metropolis.medium,
-    marginRight: 4,
   },
 
   sectionHeader: {

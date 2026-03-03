@@ -28,6 +28,45 @@ service cloud.firestore {
     match /creator_codes/{code} {
       allow read: if request.auth != null && resource.data.uid == request.auth.uid;
       allow write: if false;
+    } 
+
+    // ─── cms collection ──────────────────────────────────────────────────
+    match /cms/{docId} {
+      // Allow public read for all CMS documents (banners, categories, etc.)
+      allow read: if true;
+      // Only admin can write to CMS
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ─── categories collection ───────────────────────────────────────────
+    match /categories/{catId} {
+      // Allow public read for categories
+      allow read: if true;
+      // Only admin can write to categories
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ─── vendors collection ──────────────────────────────────────────────
+    match /vendors/{vendorId} {
+      // Allow public read for vendors
+      allow read: if true;
+      // Only admin can write to vendors
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ─── rewards collection ──────────────────────────────────────────────
+    match /rewards/{rewardId} {
+      // Allow public read for rewards
+      allow read: if true;
+      // Only admin can write to rewards
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ─── Helper function to check for admin role ─────────────────────────
+    function isAdmin(userId) {
+      // Check if the user document has admin = true
+      return exists(/databases/$(database)/documents/students/$(userId))
+        && get(/databases/$(database)/documents/students/$(userId)).data.admin == true;
     }
 
     // Deny everything else by default
