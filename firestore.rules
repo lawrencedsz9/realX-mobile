@@ -9,17 +9,20 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == userId;
 
       // Allow a user to CREATE their own document (initial sign-up),
-      // but they must NOT include a creatorCode field.
+      // but they must NOT include a creatorCode or modify cashback (beyond the initial 0).
       allow create: if request.auth != null
         && request.auth.uid == userId
-        && !('creatorCode' in request.resource.data);
+        && !('creatorCode' in request.resource.data)
+        && (!('cashback' in request.resource.data) || request.resource.data.cashback == 0);
 
       // Allow a user to UPDATE their own document, but:
       //   • they cannot set / change the creatorCode field
       //   • they cannot delete the creatorCode field that already exists
+      //   • they cannot set / change the cashback field (only Cloud Functions can)
       allow update: if request.auth != null
         && request.auth.uid == userId
-        && !('creatorCode' in request.resource.data.diff(resource.data).affectedKeys());
+        && !('creatorCode' in request.resource.data.diff(resource.data).affectedKeys())
+        && !('cashback' in request.resource.data.diff(resource.data).affectedKeys());
     }
 
     // ─── creator_codes collection ──────────────────────────────────────────
@@ -40,9 +43,17 @@ service cloud.firestore {
 
     // ─── categories collection ───────────────────────────────────────────
     match /categories/{catId} {
-      // Allow public read for categories
-      allow read: if true;
+      // Allow authenticated users to read categories
+      allow read: if request.auth != null;
       // Only admin can write to categories
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ─── offers collection ───────────────────────────────────────────────
+    match /offers/{offerId} {
+      // Allow authenticated users to read offers
+      allow read: if request.auth != null;
+      // Only admin can write to offers
       allow write: if request.auth != null && isAdmin(request.auth.uid);
     }
 

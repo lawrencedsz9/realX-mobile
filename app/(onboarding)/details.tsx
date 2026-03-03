@@ -52,6 +52,7 @@ export default function DetailsOnboarding() {
                 gender,
                 email: params.email || user.email,
                 role: role,
+                cashback: 0,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 uid: user.uid,

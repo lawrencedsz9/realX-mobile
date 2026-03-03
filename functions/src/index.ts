@@ -1,7 +1,11 @@
 import * as admin from 'firebase-admin';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { setGlobalOptions } from 'firebase-functions';
+import * as logger from 'firebase-functions/logger';
 
 admin.initializeApp();
+
+setGlobalOptions({ maxInstances: 10 });
 
 const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
@@ -34,8 +38,9 @@ export const assignCreatorCode = onCall(async (request) => {
             });
 
             assignedCode = code; // Success! Break the loop
-        } catch (error: any) {
-            if (error.message !== 'COLLISION') throw error;
+        } catch (error) {
+            if (error instanceof Error && error.message !== 'COLLISION') throw error;
+            if (!(error instanceof Error)) throw error;
             attempts++;
         }
     }
@@ -46,3 +51,139 @@ export const assignCreatorCode = onCall(async (request) => {
 
     return { creatorCode: assignedCode };
 });
+
+export const redeemGiftCard = onCall(async (request) => {
+    const { auth, data } = request;
+    if (!auth) throw new HttpsError('unauthenticated', 'Must be logged in');
+
+    const { vendorId, vendorName, giftCardAmount, totalBill, pin } = data as {
+        vendorId: string;
+        vendorName: string;
+        giftCardAmount: number;
+        totalBill: number;
+        pin: string;
+    };
+
+    // Validate required fields
+    if (!vendorId || !vendorName) {
+        throw new HttpsError('invalid-argument', 'Vendor information is required');
+    }
+    if (typeof giftCardAmount !== 'number' || giftCardAmount <= 0) {
+        throw new HttpsError('invalid-argument', 'Invalid gift card amount');
+    }
+    if (typeof totalBill !== 'number' || totalBill <= 0) {
+        throw new HttpsError('invalid-argument', 'Invalid total bill amount');
+    }
+    if (!pin || pin.length !== 4) {
+        throw new HttpsError('invalid-argument', 'A 4-digit PIN is required');
+    }
+
+    const uid = auth.uid;
+    const db = admin.firestore();
+
+    const vendorRef = db.collection('vendors').doc(vendorId);
+    const userRef = db.collection('students').doc(uid);
+    const transactionRef = db.collection('transactions').doc();
+
+    const result = await db.runTransaction(async (transaction) => {
+        // Verify vendor PIN
+        const vendorDoc = await transaction.get(vendorRef);
+        if (!vendorDoc.exists) {
+            throw new HttpsError('not-found', 'Vendor not found');
+        }
+        const vendorData = vendorDoc.data();
+        if (!vendorData || String(vendorData.pin) !== String(pin)) {
+            throw new HttpsError('permission-denied', 'Incorrect vendor PIN');
+        }
+
+        // Verify user cashback balance
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists) {
+            throw new HttpsError('not-found', 'User not found');
+        }
+        const userData = userDoc.data();
+        const currentCashback = userData?.cashback || 0;
+
+        if (currentCashback < giftCardAmount) {
+            throw new HttpsError('failed-precondition', 'Insufficient cashback balance');
+        }
+
+        const remainingAmount = Math.max(0, totalBill - giftCardAmount);
+
+        const transactionData = {
+            totalAmount: totalBill,
+            vendorName,
+            vendorId,
+            redemptionCardAmount: giftCardAmount,
+            remainingAmount,
+            type: 'giftcard_redemption',
+            userId: uid,
+            pin,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        // Perform writes
+        transaction.set(transactionRef, transactionData);
+        transaction.update(userRef, {
+            cashback: admin.firestore.FieldValue.increment(-giftCardAmount),
+        });
+
+        return { transactionId: transactionRef.id, remainingAmount };
+    });
+
+    return result;
+});
+
+export const createVendorUser = onCall(
+    { region: 'me-central1' },
+    async (request) => {
+        const { auth, data } = request;
+
+        // 1️⃣ Auth required
+        if (!auth) {
+            throw new HttpsError('unauthenticated', 'User not authenticated');
+        }
+
+        // 2️⃣ Super admin only
+        if (!auth.token.admin) {
+            throw new HttpsError('permission-denied', 'Admin access required');
+        }
+
+        const { name, email, password } = data;
+
+        // 3️⃣ Validate input
+        if (!name || !email || !password) {
+            throw new HttpsError(
+                'invalid-argument',
+                'name, email, and password are required'
+            );
+        }
+
+        const authAdmin = admin.auth();
+        const db = admin.firestore();
+
+        // 4️⃣ Create Auth user
+        const user = await authAdmin.createUser({
+            email,
+            password,
+            displayName: name,
+            emailVerified: true, // optional since you're onboarding manually
+        });
+
+        // 6️⃣ Create vendor Firestore document
+        await db.collection('vendors').doc(user.uid).set({
+            name,
+            email,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        logger.info('Vendor created', {
+            vendorId: user.uid,
+        });
+
+        return {
+            uid: user.uid,
+            success: true,
+        };
+    }
+);

@@ -1,7 +1,8 @@
+import { collection, getDocs, getFirestore, query, where } from '@react-native-firebase/firestore';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-    Dimensions,
+    ActivityIndicator,
     FlatList,
     Modal,
     StyleSheet,
@@ -15,8 +16,6 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import RedeemGiftCard from './RedeemGiftCard';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 type Props = {
     visible: boolean;
     onClose: () => void;
@@ -29,19 +28,10 @@ type BrandItem = {
     name: string;
     logo: string | null; // null for placeholder
     backgroundColor?: string;
+    loyalty?: number[];
 };
 
-// Placeholder brand data
-const BRANDS: BrandItem[] = [
-    { id: '1', name: 'Yebou Cafe', logo: null, backgroundColor: '#1B3A5F' },
-    { id: '2', name: 'Crazy Cookies', logo: null, backgroundColor: '#A67B5B' },
-    { id: '3', name: 'Chicken Pop', logo: null, backgroundColor: '#E85A4F' },
-    { id: '4', name: 'Piccolo', logo: null, backgroundColor: '#F5A89A' },
-    { id: '5', name: 'Diary Queen', logo: null, backgroundColor: '#FF6B35' },
-    { id: '6', name: 'Mega Mart', logo: null, backgroundColor: '#FFFFFF' },
-    { id: '7', name: 'Krispy Kreme', logo: null, backgroundColor: '#FFFFFF' },
-    { id: '8', name: 'Yebou Cafe', logo: null, backgroundColor: '#1B3A5F' },
-];
+// Fetch dynamically instead of using placeholders
 
 function BrandListItem({
     brand,
@@ -89,8 +79,45 @@ export default function SpendCardDrawer({
     const insets = useSafeAreaInsets();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
+    const [brands, setBrands] = useState<BrandItem[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const filteredBrands = BRANDS.filter((brand) =>
+    useEffect(() => {
+        if (!visible) return;
+
+        const fetchBrands = async () => {
+            setLoading(true);
+            try {
+                const db = getFirestore();
+                const q = query(
+                    collection(db, 'vendors'),
+                    where('xcard', '==', true)
+                );
+                const snapshot = await getDocs(q);
+
+                const items: BrandItem[] = snapshot.docs.map((doc: any) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: data.name || 'Unknown',
+                        logo: data.profilePicture || data.logoUrl || data.imageUrl || null,
+                        backgroundColor: '#F0F0F0',
+                        loyalty: data.loyalty || [],
+                    };
+                });
+
+                setBrands(items);
+            } catch (error) {
+                console.error('Error fetching vendors for XCard:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBrands();
+    }, [visible]);
+
+    const filteredBrands = brands.filter((brand) =>
         brand.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -98,7 +125,7 @@ export default function SpendCardDrawer({
         setSelectedBrandId(brandId);
     };
 
-    const selectedBrand = BRANDS.find(b => b.id === selectedBrandId);
+    const selectedBrand = brands.find(b => b.id === selectedBrandId);
 
     return (
         <Modal
@@ -112,8 +139,9 @@ export default function SpendCardDrawer({
                     <RedeemGiftCard
                         brand={selectedBrand}
                         onBack={() => setSelectedBrandId(null)}
-                        maxLimit={26}
+                        maxLimit={balance}
                         currency={currency}
+                        onSuccess={onClose}
                     />
                 ) : (
                     <>
@@ -154,23 +182,29 @@ export default function SpendCardDrawer({
                         </View>
 
                         {/* Brand List */}
-                        <FlatList
-                            data={filteredBrands}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <BrandListItem
-                                    brand={item}
-                                    isSelected={selectedBrandId === item.id}
-                                    onSelect={() => handleBrandSelect(item.id)}
-                                />
-                            )}
-                            style={styles.brandList}
-                            contentContainerStyle={[
-                                styles.brandListContent,
-                                { paddingBottom: insets.bottom + 20 },
-                            ]}
-                            showsVerticalScrollIndicator={false}
-                        />
+                        {loading ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color={Colors.brandGreen} />
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={filteredBrands}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <BrandListItem
+                                        brand={item}
+                                        isSelected={selectedBrandId === item.id}
+                                        onSelect={() => handleBrandSelect(item.id)}
+                                    />
+                                )}
+                                style={styles.brandList}
+                                contentContainerStyle={[
+                                    styles.brandListContent,
+                                    { paddingBottom: insets.bottom + 20 },
+                                ]}
+                                showsVerticalScrollIndicator={false}
+                            />
+                        )}
                     </>
                 )}
             </View>

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { getAuth } from '@react-native-firebase/auth';
+import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -15,10 +17,28 @@ export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const [isHelpDrawerVisible, setIsHelpDrawerVisible] = useState(false);
   const [isSpendDrawerVisible, setIsSpendDrawerVisible] = useState(false);
-
-  // Placeholder balance - replace with actual data
-  const balance = 26;
+  const [balance, setBalance] = useState(0);
   const currency = 'QAR';
+
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const db = getFirestore();
+    const studentRef = doc(db, 'students', user.uid);
+
+    const unsubscribe = onSnapshot(studentRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data) {
+          setBalance(typeof data.cashback === 'number' ? data.cashback : 0);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSpendPress = () => {
     setIsSpendDrawerVisible(true);

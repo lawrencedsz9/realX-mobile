@@ -10,12 +10,14 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import GiftCardCheckout from './GiftCardCheckout';
 
 type Brand = {
     id: string;
     name: string;
     logo: string | null;
     backgroundColor?: string;
+    loyalty?: number[];
 };
 
 type RedeemGiftCardProps = {
@@ -23,17 +25,32 @@ type RedeemGiftCardProps = {
     onBack: () => void;
     maxLimit: number;
     currency: string;
+    onSuccess?: () => void;
 };
 
-const AMOUNTS = [25, 50, 75];
 
 export default function RedeemGiftCard({
     brand,
     onBack,
     maxLimit,
     currency,
+    onSuccess,
 }: RedeemGiftCardProps) {
-    const [selectedAmount, setSelectedAmount] = useState(AMOUNTS[0]);
+    const amounts = brand.loyalty && brand.loyalty.length > 0 ? brand.loyalty : [25, 50, 75];
+    const [selectedAmount, setSelectedAmount] = useState(amounts[0]);
+    const [showCheckout, setShowCheckout] = useState(false);
+
+    if (showCheckout) {
+        return (
+            <GiftCardCheckout
+                brand={brand}
+                selectedAmount={selectedAmount}
+                currency={currency}
+                onBack={() => setShowCheckout(false)}
+                onSuccess={onSuccess}
+            />
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -89,12 +106,10 @@ export default function RedeemGiftCard({
 
                 {/* Amount Selection */}
                 <View style={styles.selectionSection}>
-                    <Text style={styles.maxLimitLabel}>
-                        MAX LIMIT ({maxLimit} {currency})
-                    </Text>
+                    {/* MAX LIMIT label removed */}
 
                     <View style={styles.amountOptions}>
-                        {AMOUNTS.map((amount) => (
+                        {amounts.map((amount) => (
                             <TouchableOpacity
                                 key={amount}
                                 style={[
@@ -114,8 +129,23 @@ export default function RedeemGiftCard({
                     </View>
                 </View>
 
+                {/* Insufficient Balance Warning */}
+                {selectedAmount > maxLimit && (
+                    <View style={styles.insufficientContainer}>
+                        <Ionicons name="alert-circle" size={18} color="#E53935" />
+                        <Text style={styles.insufficientText}>
+                            Insufficient balance. You need {currency} {selectedAmount} but only have {currency} {maxLimit}.
+                        </Text>
+                    </View>
+                )}
+
                 {/* Redeem Button */}
-                <TouchableOpacity style={styles.redeemButton} activeOpacity={0.8}>
+                <TouchableOpacity
+                    style={[styles.redeemButton, selectedAmount > maxLimit && styles.redeemButtonDisabled]}
+                    activeOpacity={0.8}
+                    onPress={() => setShowCheckout(true)}
+                    disabled={selectedAmount > maxLimit}
+                >
                     <Ionicons name="flash" size={20} color="#FFFFFF" style={styles.redeemIcon} />
                     <Text style={styles.redeemButtonText}>REDEEM</Text>
                 </TouchableOpacity>
@@ -254,14 +284,6 @@ const styles = StyleSheet.create({
     selectionSection: {
         marginTop: 30,
     },
-    maxLimitLabel: {
-        fontSize: 12,
-        color: '#999999',
-        fontFamily: Typography.metropolis.medium,
-        textTransform: 'uppercase',
-        marginBottom: 12,
-        marginLeft: 4,
-    },
     amountOptions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -302,6 +324,24 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 24,
+    },
+    redeemButtonDisabled: {
+        opacity: 0.4,
+    },
+    insufficientContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFEBEE',
+        borderRadius: 12,
+        padding: 12,
+        marginTop: 16,
+        gap: 8,
+    },
+    insufficientText: {
+        flex: 1,
+        fontSize: 13,
+        fontFamily: Typography.metropolis.medium,
+        color: '#E53935',
     },
     redeemIcon: {
         marginRight: 10,

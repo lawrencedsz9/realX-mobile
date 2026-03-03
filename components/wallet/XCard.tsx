@@ -10,7 +10,7 @@ type Props = {
     currency?: string;
 };
 
-export default function XCard({ earnings = 26, currency = 'QAR' }: Props) {
+export default function XCard({ earnings = 0, currency = 'QAR' }: Props) {
     return (
         <View style={styles.container}>
             <View style={styles.card}>
@@ -31,7 +31,7 @@ export default function XCard({ earnings = 26, currency = 'QAR' }: Props) {
                 <View style={styles.cardContent}>
                     {/* Earnings section */}
                     <View style={styles.earningsSection}>
-                        <Text style={styles.earningsLabel}>Earnings:</Text>
+                        <Text style={styles.earningsLabel}>Cashback:</Text>
                         <View style={styles.earningsRow}>
                             <Text style={styles.earningsAmount}>
                                 {earnings} {currency}
