@@ -80,6 +80,7 @@ export default function PromoBanner() {
     return (
         <View style={styles.container}>
             <ScrollView
+            style={styles.scrollContent}
                 ref={scrollViewRef}
                 horizontal
                 pagingEnabled
@@ -91,42 +92,25 @@ export default function PromoBanner() {
                 scrollEventThrottle={16}
             >
                 {banners.map((banner) => (
+
                     <View key={banner.bannerId} style={styles.bannerColumn}>
-                        {/* --- TOP PILL (Mobile Image) --- */}
-                        {banner.images.mobile ? (
-                            <View style={styles.topPill}>
-                                <Image
-                                    source={{ uri: banner.images.mobile }}
-                                    style={styles.bannerImage}
-                                    contentFit="contain"
-                                    accessibilityLabel={banner.altText || 'Banner Image'}
-                                />
-                            </View>
-                        ) : (
-                            <View style={[styles.topPill, styles.placeholder]}>
-                                <ThemedText style={styles.placeholderText}>No mobile image</ThemedText>
-                            </View>
-                        )}
+                    <View style={styles.topPill}>
+                        <Image
+                        source={{ uri: banner.images.mobile }}
+                        style={styles.topImage}
+                        contentFit="cover"
+                        accessibilityLabel={banner.altText || 'Banner Image'}
+                        />
+                    </View>
 
-                        {/* --- BOTTOM PILL (Desktop Image) --- */}
-                        {banner.images.desktop ? (
-                            <View style={styles.bottomPill}>
-                                <Image
-                                    source={{ uri: banner.images.desktop }}
-                                    style={styles.bannerImage}
-                                    contentFit="contain"
-                                    accessibilityLabel={banner.altText || 'Banner Image'}
-                                />
-                            </View>
-                        ) : (
-                            <View style={[styles.bottomPill, styles.placeholder]}>
-                                <ThemedText style={styles.placeholderText}>No desktop image</ThemedText>
-                            </View>
-                        )}
-
-                        {/* --- CUTOUTS --- */}
-                        <View style={styles.leftCutout} />
-                        <View style={styles.rightCutout} />
+                    <View style={styles.bottomPill}>
+                        <Image
+                        source={{ uri: banner.images.mobile }}
+                        style={styles.bottomImage}
+                        contentFit="cover"
+                        accessibilityLabel={banner.altText || 'Banner Image'}
+                        />
+                    </View>
                     </View>
                 ))}
             </ScrollView>
@@ -157,28 +141,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     scrollContent: {
-        paddingHorizontal: 20,
-    },
-    bannerColumn: {
-        width: BANNER_WIDTH,
-        height: BANNER_HEIGHT,
-    },
-
-    // --- PILL STYLES ---
-    topPill: {
-        flex: 1.0,
-        borderRadius: 30,
-
-
-    },
-    bottomPill: {
-        flex: 1.0,
-        borderRadius: 30,
-
-    },
-    bannerImage: {
-        width: '100%',
-        height: '100%',
+        paddingHorizontal: 10,
+        gap: 10
     },
 
     // --- Placeholder styles ---
@@ -224,4 +188,32 @@ const styles = StyleSheet.create({
         backgroundColor: '#333333',
         width: 96,
     },
+
+    bannerColumn: {
+  width: BANNER_WIDTH,
+  height: BANNER_HEIGHT,
+},
+
+topPill: {
+  flex: 1,
+  borderRadius: 30,
+  overflow: 'hidden',
+},
+
+bottomPill: {
+  flex: 1,
+  borderRadius: 30,
+  overflow: 'hidden',
+},
+
+topImage: {
+  width: '100%',
+  height: '200%',
+},
+
+bottomImage: {
+  width: '100%',
+  height: '200%',
+  transform: [{ translateY: '-50%' }],
+},
 });

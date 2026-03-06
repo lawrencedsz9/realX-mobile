@@ -18,8 +18,14 @@
       "associatedDomains": [
         "applinks:reelx-backend.firebaseapp.com",
         "applinks:reelx-backend.web.app",
+        "applinks:reelx.app",
+        "applinks:reelx-backend.firebaseapp.com",
+        "applinks:reelx-backend.web.app",
         "applinks:reelx.app"
-      ]
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.reelx.app",
