@@ -1,7 +1,8 @@
 import { getAuth } from '@react-native-firebase/auth';
 import { collection, getFirestore, onSnapshot, query, where } from '@react-native-firebase/firestore';
+import { FlashList } from '@shopify/flash-list';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import RedemptionItem, { RedemptionData } from './RedemptionItem';
@@ -77,7 +78,7 @@ export default function RecentRedemptions() {
         <View style={styles.container}>
             <Text style={styles.sectionTitle}>Recent Redemptions</Text>
             {redemptions.length > 0 ? (
-                <FlatList
+                <FlashList
                     data={redemptions}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}

@@ -1,9 +1,9 @@
 import { collection, getDocs, getFirestore, query, where } from '@react-native-firebase/firestore';
+import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    FlatList,
     Modal,
     StyleSheet,
     Text,
@@ -187,7 +187,7 @@ export default function SpendCardDrawer({
                                 <ActivityIndicator size="large" color={Colors.brandGreen} />
                             </View>
                         ) : (
-                            <FlatList
+                            <FlashList
                                 data={filteredBrands}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (

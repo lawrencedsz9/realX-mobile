@@ -1,8 +1,9 @@
 import { collection, getDocs, getFirestore, orderBy, query } from '@react-native-firebase/firestore';
+import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import { ThemedText } from '../ThemedText';
@@ -111,14 +112,13 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
     }
 
     return (
-        <View style={styles.container}>
-            <FlatList
+        <View style={[styles.container, { minHeight: Math.ceil((displayCategories.length || 1) / 4) * 130 }]}>
+            <FlashList
                 data={displayCategories}
                 renderItem={renderCategory}
                 keyExtractor={(item) => item.id}
                 numColumns={4}
                 scrollEnabled={false}
-                columnWrapperStyle={styles.row}
             />
         </View>
     );
@@ -129,13 +129,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 16,
     },
-    row: {
-        justifyContent: 'center',
-        marginBottom: 16,
-    },
     categoryItem: {
         alignItems: 'center',
-        width: '23%',
+        marginBottom: 16,
     },
     imageContainer: {
         marginBottom: 8,

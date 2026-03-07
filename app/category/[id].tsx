@@ -1,7 +1,8 @@
 import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, where } from '@react-native-firebase/firestore';
+import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, ImageSourcePropType, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ImageSourcePropType, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     BrowseSection,
@@ -305,11 +306,10 @@ export default function CategoryScreen() {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
             {!loading && hasSubCategories ? (
-                <FlatList
+                <FlashList
                     data={offers}
                     keyExtractor={(item) => item.id}
                     numColumns={2}
-                    columnWrapperStyle={styles.offersGrid}
                     contentContainerStyle={styles.contentContainer}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
@@ -331,8 +331,14 @@ export default function CategoryScreen() {
                     ListFooterComponent={renderFooter}
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}
-                    renderItem={({ item }) => (
-                        <View style={styles.offerCardWrapper}>
+                    renderItem={({ item, index }) => (
+                        <View style={[
+                            styles.offerCardWrapper,
+                            {
+                                paddingLeft: index % 2 === 0 ? 20 : 8,
+                                paddingRight: index % 2 === 0 ? 8 : 20
+                            }
+                        ]}>
                             <RestaurantCard
                                 id={item.id}
                                 name={item.titleEn || item.titleAr || 'Untitled Offer'}
@@ -384,7 +390,7 @@ const styles = StyleSheet.create({
     contentContainer: {
         paddingBottom: 20,
     },
-    // New FlatList spacing style
+    // New FlashList spacing style
     flatListContent: {
         paddingBottom: 20,
     },
@@ -440,7 +446,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     offerCardWrapper: {
-        width: '47%',
         marginBottom: 16,
     },
     loadingContainer: {
