@@ -106,18 +106,3 @@ Join our community of developers creating universal apps.
 
 *   [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 *   [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-## Local Run Test
-
-The application was successfully tested locally.
-
-Environment:
-- Windows
-- Android Emulator
-
-Steps to run:
-
-1. git clone https://github.com/aazam-gh/realX-mobile
-2. npm install
-3. npx expo run:android
-
-The application launches successfully on the Android emulator.
