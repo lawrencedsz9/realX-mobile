@@ -1,5 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
+import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -9,6 +11,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    ScrollView,
     StatusBar,
     StyleSheet,
     Text,
@@ -25,6 +28,7 @@ import { Typography } from '../../constants/Typography';
 interface VendorData {
     profilePicture?: string;
     name?: string;
+    xcard?: boolean;
     [key: string]: any;
 }
 
@@ -40,13 +44,30 @@ export default function RedeemScreen() {
     const [vendor, setVendor] = useState<VendorData | null>(null);
     const [offer, setOffer] = useState<OfferData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState<'creator' | 'pin'>('creator');
     const [creatorCode, setCreatorCode] = useState('');
     const [pin, setPin] = useState('');
-    const [amount, setAmount] = useState('80');
+    const [amount, setAmount] = useState('');
+    const [focusedField, setFocusedField] = useState<'pin' | 'amount' | null>(null);
 
     const pinInputRef = useRef<TextInput>(null);
     const amountInputRef = useRef<TextInput>(null);
+
+    // Derived values for UX
+    const amountNum = parseFloat(amount) || 0;
+    let discountAmt = 0;
+    if (offer) {
+        const discValue = Number(offer.discountValue) || 0;
+        if (offer.discountType === 'percentage' || String(offer.discountValue).includes('%')) {
+            discountAmt = (amountNum * discValue) / 100;
+        } else {
+            discountAmt = discValue;
+        }
+    }
+    discountAmt = Math.min(discountAmt, amountNum);
+    const remainingAmt = amountNum - discountAmt;
+    const isFormValid = pin.length === 4 && amountNum > 0;
 
     useEffect(() => {
         let isMounted = true;
@@ -60,7 +81,12 @@ export default function RedeemScreen() {
                 const vendorRef = doc(db, 'vendors', vendorId);
                 const vendorSnap = await getDoc(vendorRef);
                 if (vendorSnap.exists() && isMounted) {
-                    setVendor(vendorSnap.data() as VendorData);
+                    const data = vendorSnap.data() as VendorData;
+                    setVendor(data);
+                    // If XCard is not enabled, skip the creator code step
+                    if (!data.xcard) {
+                        setStep('pin');
+                    }
                 }
 
                 // Fetch Offer
@@ -83,7 +109,7 @@ export default function RedeemScreen() {
         };
     }, [id, vendorId]);
 
-    const handleAction = () => {
+    const handleAction = async () => {
         if (step === 'creator') {
             setStep('pin');
             // Slight delay to allow render before focus
@@ -91,6 +117,7 @@ export default function RedeemScreen() {
                 pinInputRef.current?.focus();
             }, 300);
         } else {
+            if (!isFormValid) return;
             Keyboard.dismiss();
 
             if (pin.length !== 4) {
@@ -102,15 +129,69 @@ export default function RedeemScreen() {
                 return;
             }
 
-            // Logic for redemption will go here
-            console.log(`Redeeming with PIN: ${pin}, Amount: ${amount}, Creator: ${creatorCode}`);
+            try {
+                setIsSubmitting(true);
+                const functions = getFunctions();
+                const redeemOffer = httpsCallable(functions, 'redeemOffer');
 
-            if (creatorCode) {
-                Alert.alert('Success', 'Redemption successful');
-            } else {
-                Alert.alert('Success', 'Redemption successful');
+                const amountNum = parseFloat(amount) || 0;
+                let discountAmt = 0;
+                if (offer) {
+                    if (offer.discountType === 'percentage' || String(offer.discountValue).includes('%')) {
+                        discountAmt = (amountNum * Number(offer.discountValue)) / 100;
+                    } else {
+                        discountAmt = Number(offer.discountValue);
+                    }
+                }
+                discountAmt = Math.min(discountAmt, amountNum);
+
+                const payload: any = {
+                    vendorId,
+                    pin,
+                    billAmount: amountNum,
+                    amountSaved: discountAmt
+                };
+
+                if (creatorCode) {
+                    payload.creatorCode = creatorCode;
+                }
+
+                const response = await redeemOffer(payload);
+
+                if (response.data && (response.data as any).success) {
+                    Alert.alert('Success', 'Redemption successful', [
+                        { text: 'OK', onPress: () => router.push('/(tabs)') }
+                    ]);
+                } else {
+                    Alert.alert('Error', 'An unexpected error occurred during redemption.');
+                }
+            } catch (error: any) {
+                console.error('Error redeeming offer:', error);
+
+                let errorTitle = 'Redemption Failed';
+                let errorMessage = 'Could not process redemption. Please try again later.';
+
+                if (error?.message) {
+                    const msg = error.message.toLowerCase();
+
+                    if (msg.includes('creator code failed')) {
+                        errorTitle = 'Invalid Creator Code';
+                        errorMessage = 'The creator code you entered is invalid. Please check and try again, or leave it blank to continue without one.';
+                    } else if (msg.includes('pin is inccorect') || msg.includes('incorrect vendor pin')) {
+                        errorTitle = 'Incorrect PIN';
+                        errorMessage = 'The vendor PIN you entered is incorrect. Please ask the vendor and try again.';
+                    } else if (msg.includes('vendor not found')) {
+                        errorTitle = 'Vendor Error';
+                        errorMessage = 'We could not locate this vendor in our system.';
+                    } else if (msg.includes('invalid') || msg.includes('required')) {
+                        errorMessage = error.message; // Let standard validation errors pass through as-is
+                    }
+                }
+
+                Alert.alert(errorTitle, errorMessage);
+            } finally {
+                setIsSubmitting(false);
             }
-            // router.push('/redeem/success');
         }
     };
 
@@ -147,7 +228,7 @@ export default function RedeemScreen() {
                             <TouchableOpacity
                                 style={styles.backButton}
                                 onPress={() => {
-                                    if (step === 'pin') {
+                                    if (step === 'pin' && vendor?.xcard) {
                                         setStep('creator');
                                         Keyboard.dismiss();
                                     } else {
@@ -160,119 +241,184 @@ export default function RedeemScreen() {
                         </View>
 
                         <View style={styles.content}>
-                            {/* Offer Card */}
-                            <View style={styles.offerCardWrapper}>
-                                <View style={styles.offerCard}>
-                                    <Text style={styles.offerTitle}>
-                                        FLAT <Text style={styles.greenText}>
-                                            {offer.discountValue}{offer.discountType === 'percentage' ? '%' : ''}
-                                        </Text> OFF
-                                    </Text>
-                                </View>
+                            <ScrollView
+                                style={styles.scrollContent}
+                                contentContainerStyle={styles.scrollContentContainer}
+                                showsVerticalScrollIndicator={false}
+                                keyboardDismissMode="on-drag"
+                                keyboardShouldPersistTaps="handled"
+                            >
+                                {/* Offer Card */}
+                                <View style={styles.offerCardWrapper}>
+                                    <View style={styles.offerCard}>
+                                        <Text style={styles.offerTitle}>
+                                            FLAT <Text style={styles.greenText}>
+                                                {offer.discountValue}{offer.discountType === 'percentage' ? '%' : ''}
+                                            </Text> OFF
+                                        </Text>
+                                    </View>
 
-                                {/* Logo Overlay */}
-                                <View style={styles.logoContainer}>
-                                    <Image
-                                        source={{ uri: vendor.profilePicture }}
-                                        style={styles.logoImage}
-                                        contentFit="contain"
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Conditional Cards based on Step */}
-                            {step === 'creator' && (
-                                <View style={styles.creatorCard}>
-                                    <Text style={styles.inputLabel}>
-                                        Have a creator code? <Text style={styles.optionalText}>(Optional)</Text>
-                                    </Text>
-                                    <View style={styles.creatorInputContainer}>
-                                        <TextInput
-                                            style={styles.creatorInput}
-                                            value={creatorCode}
-                                            onChangeText={(text) => setCreatorCode(text.toUpperCase())}
-                                            placeholder="REELX1"
-                                            placeholderTextColor="#CCC"
-                                            autoCapitalize="characters"
-                                            maxLength={6}
-                                            returnKeyType="next"
-                                            onSubmitEditing={handleAction}
-                                            autoCorrect={false}
+                                    {/* Logo Overlay */}
+                                    <View style={styles.logoContainer}>
+                                        <Image
+                                            source={{ uri: vendor.profilePicture }}
+                                            style={styles.logoImage}
+                                            contentFit="contain"
                                         />
                                     </View>
                                 </View>
-                            )}
 
-                            {step === 'pin' && (
-                                <View style={styles.redemptionCard}>
-                                    <Text style={styles.inputLabel}>Enter Vendor PIN:</Text>
-                                    <View style={styles.pinContainer}>
-                                        <TouchableOpacity
-                                            activeOpacity={1}
-                                            style={styles.pinVisualContainer}
-                                            onPress={() => pinInputRef.current?.focus()}
-                                        >
-                                            {[0, 1, 2, 3].map((index) => (
-                                                <View key={index} style={[styles.pinBox, pin.length === index && styles.pinBoxActive]}>
-                                                    <Text style={[styles.pinText, pin.length > index && { color: '#000', marginTop: 0 }]}>
-                                                        {pin.length > index ? '●' : '*'}
+                                {/* Conditional Cards based on Step */}
+                                {step === 'creator' && (
+                                    <View style={styles.creatorCard}>
+                                        <Text style={styles.inputLabel}>
+                                            Have a creator code? <Text style={styles.optionalText}>(Optional)</Text>
+                                        </Text>
+                                        <View style={[
+                                            styles.creatorInputContainer,
+                                            focusedField === 'pin' && styles.inputContainerFocused // reusing focus style if needed
+                                        ]}>
+                                            <TextInput
+                                                style={styles.creatorInput}
+                                                value={creatorCode}
+                                                onChangeText={(text) => setCreatorCode(text.toUpperCase())}
+                                                placeholder="REELX1"
+                                                placeholderTextColor="#CCC"
+                                                autoCapitalize="characters"
+                                                maxLength={6}
+                                                returnKeyType="next"
+                                                onSubmitEditing={handleAction}
+                                                autoCorrect={false}
+                                                autoFocus={true}
+                                            />
+                                        </View>
+                                    </View>
+                                )}
+
+                                {step === 'pin' && (
+                                    <View style={styles.redemptionCard}>
+                                        <Text style={styles.inputLabel}>Enter Vendor PIN:</Text>
+                                        <View style={styles.pinContainer}>
+                                            <TouchableOpacity
+                                                activeOpacity={1}
+                                                style={styles.pinVisualContainer}
+                                                onPress={() => pinInputRef.current?.focus()}
+                                            >
+                                                {[0, 1, 2, 3].map((index) => (
+                                                    <View key={index} style={[
+                                                        styles.pinBox,
+                                                        pin.length === index && styles.pinBoxActive,
+                                                        focusedField === 'pin' && pin.length === index && styles.pinBoxFocused
+                                                    ]}>
+                                                        <Text style={[styles.pinText, pin.length > index && { color: '#000', marginTop: 0 }]}>
+                                                            {pin.length > index ? '●' : '*'}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </TouchableOpacity>
+
+                                            <TextInput
+                                                ref={pinInputRef}
+                                                style={styles.hiddenPinInput}
+                                                value={pin}
+                                                onFocus={() => setFocusedField('pin')}
+                                                onBlur={() => setFocusedField(null)}
+                                                onChangeText={(text) => {
+                                                    const numericText = text.replace(/[^0-9]/g, '');
+                                                    if (numericText.length <= 4) {
+                                                        setPin(numericText);
+                                                        if (numericText.length > 0) {
+                                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                                        }
+                                                    }
+                                                    // Auto-advance to amount if 4 digits entered
+                                                    if (numericText.length === 4) {
+                                                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                                                        amountInputRef.current?.focus();
+                                                    }
+                                                }}
+                                                keyboardType="number-pad"
+                                                maxLength={4}
+                                                returnKeyType="next"
+                                                onSubmitEditing={() => amountInputRef.current?.focus()}
+                                                autoFocus={step === 'pin'}
+                                            />
+                                        </View>
+
+                                        <Text style={styles.inputLabel}>Total Bill:</Text>
+                                        <View style={[
+                                            styles.amountInputContainer,
+                                            focusedField === 'amount' && styles.inputContainerFocused
+                                        ]}>
+                                            <Text style={styles.currencyPrefix}>QAR</Text>
+                                            <TextInput
+                                                ref={amountInputRef}
+                                                style={styles.amountInput}
+                                                value={amount}
+                                                onFocus={() => setFocusedField('amount')}
+                                                onBlur={() => setFocusedField(null)}
+                                                onChangeText={(text) => {
+                                                    setAmount(text);
+                                                    if (text.length > 0) {
+                                                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                                    }
+                                                }}
+                                                keyboardType="decimal-pad"
+                                                placeholder="0"
+                                                placeholderTextColor="#CCC"
+                                                returnKeyType="go"
+                                                onSubmitEditing={handleAction}
+                                            />
+                                        </View>
+
+                                        {amountNum > 0 && (
+                                            <View style={styles.breakdownContainer}>
+                                                <View style={styles.breakdownRow}>
+                                                    <Text style={styles.breakdownLabel}>Total Bill</Text>
+                                                    <Text style={styles.breakdownValue}>
+                                                        QAR {amountNum.toFixed(2)}
                                                     </Text>
                                                 </View>
-                                            ))}
-                                        </TouchableOpacity>
-
-                                        <TextInput
-                                            ref={pinInputRef}
-                                            style={styles.hiddenPinInput}
-                                            value={pin}
-                                            onChangeText={(text) => {
-                                                const numericText = text.replace(/[^0-9]/g, '');
-                                                if (numericText.length <= 4) {
-                                                    setPin(numericText);
-                                                }
-                                                // Auto-advance to amount if 4 digits entered
-                                                if (numericText.length === 4) {
-                                                    amountInputRef.current?.focus();
-                                                }
-                                            }}
-                                            keyboardType="number-pad"
-                                            maxLength={4}
-                                            returnKeyType="done"
-                                            onSubmitEditing={() => amountInputRef.current?.focus()}
-                                        />
+                                                <View style={styles.breakdownRow}>
+                                                    <Text style={styles.breakdownLabelGreen}>Offer Applied</Text>
+                                                    <Text style={styles.breakdownValueGreen}>
+                                                        − QAR {discountAmt.toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.breakdownDivider} />
+                                                <View style={styles.breakdownRow}>
+                                                    <Text style={styles.breakdownLabelBold}>Amount to Pay</Text>
+                                                    <Text style={styles.breakdownValueBold}>
+                                                        QAR {remainingAmt.toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        )}
                                     </View>
-
-                                    <Text style={styles.inputLabel}>Total Paid:</Text>
-                                    <View style={styles.amountInputContainer}>
-                                        <Text style={styles.currencyPrefix}>QAR</Text>
-                                        <TextInput
-                                            ref={amountInputRef}
-                                            style={styles.amountInput}
-                                            value={amount}
-                                            onChangeText={setAmount}
-                                            keyboardType="decimal-pad"
-                                            placeholder="0"
-                                            placeholderTextColor="#CCC"
-                                            returnKeyType="done"
-                                            onSubmitEditing={handleAction}
-                                        />
-                                    </View>
-                                </View>
-                            )}
-
-                            {/* Spacer to push button to bottom */}
-                            <View style={{ flex: 1, minHeight: 20 }} />
+                                )}
+                            </ScrollView>
 
                             {/* Action Button */}
                             <TouchableOpacity
-                                style={styles.redeemButton}
+                                style={[
+                                    styles.redeemButton,
+                                    (!isFormValid && step === 'pin') && styles.redeemButtonDisabled
+                                ]}
                                 activeOpacity={0.9}
                                 onPress={handleAction}
+                                disabled={isSubmitting || (!isFormValid && step === 'pin')}
                             >
-                                <Ionicons name="flash" size={20} color="#FFF" />
-                                <Text style={styles.redeemButtonText}>
-                                    {step === 'creator' ? 'CONTINUE' : 'REDEEM'}
-                                </Text>
+                                {isSubmitting ? (
+                                    <ActivityIndicator color="#FFF" />
+                                ) : (
+                                    <>
+                                        <Ionicons name="flash" size={20} color="#FFF" />
+                                        <Text style={styles.redeemButtonText}>
+                                            {step === 'creator' ? 'CONTINUE' :
+                                                amountNum > 0 ? `REDEEM QAR ${remainingAmt.toFixed(0)}` : 'REDEEM'}
+                                        </Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -336,8 +482,15 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: 40,
-        paddingBottom: 30,
+        paddingTop: 10,
+        paddingBottom: 20,
+    },
+    scrollContent: {
+        flex: 1,
+    },
+    scrollContentContainer: {
+        paddingTop: 30,
+        paddingBottom: 20,
     },
     offerCardWrapper: {
         position: 'relative',
@@ -473,11 +626,75 @@ const styles = StyleSheet.create({
         fontFamily: Typography.metropolis.semiBold,
         marginRight: 10,
     },
+    inputContainerFocused: {
+        borderColor: Colors.brandGreen,
+        borderWidth: 1.5,
+        shadowColor: Colors.brandGreen,
+        shadowOpacity: 0.1,
+    },
+    pinBoxFocused: {
+        shadowColor: Colors.brandGreen,
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
     amountInput: {
         flex: 1,
         fontSize: 18,
         color: '#000',
         fontFamily: Typography.metropolis.semiBold,
+    },
+    redeemButtonDisabled: {
+        backgroundColor: '#CCC',
+        shadowColor: '#CCC',
+        shadowOpacity: 0.1,
+    },
+    breakdownContainer: {
+        marginTop: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 20,
+    },
+    breakdownRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    breakdownLabel: {
+        fontSize: 14,
+        color: '#666',
+        fontFamily: Typography.metropolis.medium,
+    },
+    breakdownValue: {
+        fontSize: 14,
+        color: '#666',
+        fontFamily: Typography.metropolis.semiBold,
+    },
+    breakdownLabelGreen: {
+        fontSize: 14,
+        color: Colors.brandGreen,
+        fontFamily: Typography.metropolis.medium,
+    },
+    breakdownValueGreen: {
+        fontSize: 14,
+        color: Colors.brandGreen,
+        fontFamily: Typography.metropolis.semiBold,
+    },
+    breakdownDivider: {
+        height: 1,
+        backgroundColor: '#F0F0F0',
+        marginVertical: 4,
+    },
+    breakdownLabelBold: {
+        fontSize: 16,
+        color: '#000',
+        fontFamily: Typography.metropolis.semiBold,
+    },
+    breakdownValueBold: {
+        fontSize: 18,
+        color: '#000',
+        fontFamily: Typography.integral.bold,
     },
     redeemButton: {
         backgroundColor: Colors.brandGreen,

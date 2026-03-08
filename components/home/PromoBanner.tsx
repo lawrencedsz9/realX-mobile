@@ -60,7 +60,7 @@ export default function PromoBanner() {
                 animated: true,
             });
             setActiveIndex(nextIndex);
-        }, 4000);
+        }, 3000);
 
         return () => clearTimeout(timer);
     }, [activeIndex, banners.length, isDragging]);

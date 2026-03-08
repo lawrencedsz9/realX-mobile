@@ -21,7 +21,7 @@ export default function ProfileScreen() {
     photoURL?: string;
     role?: string;
     creatorCode?: string;
-    cashback?: number;
+    savings?: number;
   } | null>(null);
 
   useEffect(() => {
@@ -116,9 +116,9 @@ export default function ProfileScreen() {
 
         <View style={[styles.savingsCard, { backgroundColor: theme.background, borderColor: theme.subtitle + '20' }]}>
           <View style={styles.savingsInfo}>
-            <ThemedText type="subtitle" style={styles.savingsLabel}>Your cashback balance</ThemedText>
+            <ThemedText type="subtitle" style={styles.savingsLabel}>You've saved so far!</ThemedText>
             <ThemedText style={styles.savingsAmount}>
-              <ThemedText style={styles.greenAmount}>{userData?.cashback ?? 0}</ThemedText> QAR
+              <ThemedText style={styles.greenAmount}>{userData?.savings ?? 0}</ThemedText> QAR
             </ThemedText>
           </View>
         </View>
