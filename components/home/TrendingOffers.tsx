@@ -1,7 +1,6 @@
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { ThemedText } from '../ThemedText';
 
 type OfferItem = {
     id: string;
@@ -25,10 +24,10 @@ export default function TrendingOffers({ offers = defaultOffers, onOfferPress }:
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <ThemedText style={styles.headerTitle}>
-                    <ThemedText style={styles.trendingText}>TRENDING </ThemedText>
-                    <ThemedText style={styles.offersText}>OFFERS</ThemedText>
-                </ThemedText>
+                <Text style={styles.headerTitle}>
+                    <Text style={styles.trendingText}>TRENDING </Text>
+                    <Text style={styles.offersText}>OFFERS</Text>
+                </Text>
             </View>
             <ScrollView
                 horizontal
@@ -44,15 +43,15 @@ export default function TrendingOffers({ offers = defaultOffers, onOfferPress }:
                     >
                         {/* Placeholder for offer image */}
                         <View style={styles.imagePlaceholder}>
-                            <ThemedText style={styles.placeholderEmoji}>🏷️</ThemedText>
+                            <Text style={styles.placeholderEmoji}>🏷️</Text>
                         </View>
                         <View style={styles.offerContent}>
-                            <ThemedText style={styles.offerTitle} numberOfLines={1}>
+                            <Text style={styles.offerTitle} numberOfLines={1}>
                                 {offer.title}
-                            </ThemedText>
-                            <ThemedText type="subtitle" style={styles.offerSubtitle} numberOfLines={1}>
+                            </Text>
+                            <Text style={styles.offerSubtitle} numberOfLines={1}>
                                 {offer.subtitle}
-                            </ThemedText>
+                            </Text>
                         </View>
                     </TouchableOpacity>
                 ))}

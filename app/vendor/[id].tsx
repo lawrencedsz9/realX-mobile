@@ -5,19 +5,15 @@ import { GlassView } from 'expo-glass-effect';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { useTheme } from '../../context/ThemeContext';
 
 export default function VendorScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const { theme, colorScheme } = useTheme();
     const insets = useSafeAreaInsets();
-    const isDark = colorScheme === 'dark';
     const [vendor, setVendor] = useState<any>(null);
     const [offers, setOffers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -68,15 +64,15 @@ export default function VendorScreen() {
 
     if (!vendor) {
         return (
-            <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
-                <ThemedText style={styles.errorText}>Vendor not found</ThemedText>
+            <View style={[styles.errorContainer, { backgroundColor: Colors.light.background }]}>
+                <Text style={styles.errorText}>Vendor not found</Text>
             </View>
         );
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
+        <View style={[styles.container, { backgroundColor: Colors.light.background }]}>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 {/* Header Image Section */}
@@ -120,7 +116,7 @@ export default function VendorScreen() {
                 </View>
 
                 {/* Vendor Details */}
-                <View style={[styles.detailsContainer, { backgroundColor: theme.background }]}>
+                <View style={[styles.detailsContainer, { backgroundColor: Colors.light.background }]}>
                     <View style={styles.vendorHeaderRow}>
                         {vendor.integralLogo ? (
                             <Image
@@ -129,14 +125,14 @@ export default function VendorScreen() {
                                 contentFit="contain"
                             />
                         ) : (
-                            <ThemedText style={styles.vendorName}>{vendor.name}</ThemedText>
+                            <Text style={styles.vendorName}>{vendor.name}</Text>
                         )}
                     </View>
 
                     <View style={styles.metaRow}>
                         <View style={styles.ratingContainer}>
                             <Ionicons name="star" size={16} color="#FFD700" />
-                            <ThemedText style={styles.ratingText}>5.0</ThemedText>
+                            <Text style={styles.ratingText}>5.0</Text>
                         </View>
 
                     </View>
@@ -146,33 +142,33 @@ export default function VendorScreen() {
                         {offers.map((offer) => (
                             <View key={offer.id} style={styles.offerCard}>
                                 {/* Top Info Pill */}
-                                <View style={[styles.offerInfoContainer, { backgroundColor: isDark ? '#1A1D1F' : '#F5F5F5' }]}>
+                                <View style={[styles.offerInfoContainer, { backgroundColor: '#F5F5F5' }]}>
                                     <View style={styles.offerContent}>
-                                        <ThemedText style={styles.offerTitle}>
+                                        <Text style={styles.offerTitle}>
                                             {offer.discountType === 'percentage' ? (
                                                 <>
-                                                    FLAT <ThemedText style={styles.greenText}>{offer.discountValue}%</ThemedText> OFF
+                                                    FLAT <Text style={styles.greenText}>{offer.discountValue}%</Text> OFF
                                                 </>
                                             ) : offer.discountType === 'buy_one_get_one' || offer.titleEn?.toLowerCase().includes('buy') ? (
-                                                <ThemedText style={styles.offerTitle}>
-                                                    BUY <ThemedText style={styles.greenText}>1</ThemedText> GET <ThemedText style={styles.greenText}>1</ThemedText>
-                                                </ThemedText>
+                                                <Text style={styles.offerTitle}>
+                                                    BUY <Text style={styles.greenText}>1</Text> GET <Text style={styles.greenText}>1</Text>
+                                                </Text>
                                             ) : (
                                                 <>{offer.titleEn || offer.titleAr}</>
                                             )}
-                                        </ThemedText>
-                                        <ThemedText style={styles.offerSubtitle}>In-store</ThemedText>
+                                        </Text>
+                                        <Text style={styles.offerSubtitle}>In-store</Text>
                                     </View>
                                 </View>
 
                                 {/* Bottom Button Pills */}
                                 <View style={styles.offerActionsRow}>
                                     <TouchableOpacity
-                                        style={[styles.pillButton, { backgroundColor: isDark ? '#25292e' : '#FFF' }]}
+                                        style={[styles.pillButton, { backgroundColor: '#FFF' }]}
                                         onPress={() => setSelectedOfferForTC(offer)}
                                     >
-                                        <Ionicons name="alert-circle-outline" size={22} color={theme.subtitle} />
-                                        <ThemedText style={styles.pillButtonTextSmall}>View T&C</ThemedText>
+                                        <Ionicons name="alert-circle-outline" size={22} color={Colors.light.subtitle} />
+                                        <Text style={styles.pillButtonTextSmall}>View T&C</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
@@ -180,7 +176,7 @@ export default function VendorScreen() {
                                         onPress={() => router.push(`/redeem/${offer.id}?vendorId=${id}`)}
                                     >
                                         <Ionicons name="flash" size={18} color="#FFF" />
-                                        <ThemedText style={[styles.pillButtonTextSmall, { color: '#FFF' }]}>REDEEM</ThemedText>
+                                        <Text style={[styles.pillButtonTextSmall, { color: '#FFF' }]}>REDEEM</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -205,7 +201,7 @@ export default function VendorScreen() {
                         style={[
                             styles.drawerContainer,
                             {
-                                backgroundColor: isDark ? '#1A1D1F' : '#FFFFFF',
+                                backgroundColor: '#FFFFFF',
                                 paddingBottom: insets.bottom + 20
                             }
                         ]}
@@ -213,17 +209,17 @@ export default function VendorScreen() {
                     >
                         {/* Drawer Handle */}
                         <View style={styles.handleContainer}>
-                            <View style={[styles.handle, { backgroundColor: isDark ? '#333' : '#E0E0E0' }]} />
+                            <View style={[styles.handle, { backgroundColor: '#E0E0E0' }]} />
                         </View>
 
                         <View style={styles.modalContent}>
                             <View style={styles.modalHeader}>
-                                <ThemedText style={styles.modalTitleText}>TERMS & CONDITIONS</ThemedText>
+                                <Text style={styles.modalTitleText}>TERMS & CONDITIONS</Text>
                                 <TouchableOpacity
                                     onPress={() => setSelectedOfferForTC(null)}
                                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                 >
-                                    <Ionicons name="close-circle" size={28} color={isDark ? '#FFF' : '#000'} />
+                                    <Ionicons name="close-circle" size={28} color={'#000'} />
                                 </TouchableOpacity>
                             </View>
 
@@ -232,19 +228,19 @@ export default function VendorScreen() {
                                 style={styles.modalBody}
                                 contentContainerStyle={styles.modalBodyContent}
                             >
-                                <ThemedText style={styles.descriptionText}>
+                                <Text style={styles.descriptionText}>
                                     {selectedOfferForTC?.descriptionEn || selectedOfferForTC?.descriptionAr || 'No specific terms provided for this offer.'}
-                                </ThemedText>
+                                </Text>
 
                                 {/* Common Terms could go here */}
                                 <View style={styles.commonTerms}>
                                     <View style={styles.termRow}>
                                         <Ionicons name="checkmark-circle" size={18} color={Colors.brandGreen} />
-                                        <ThemedText style={styles.termText}>Valid for in-store purchases only</ThemedText>
+                                        <Text style={styles.termText}>Valid for in-store purchases only</Text>
                                     </View>
                                     <View style={styles.termRow}>
                                         <Ionicons name="checkmark-circle" size={18} color={Colors.brandGreen} />
-                                        <ThemedText style={styles.termText}>Cannot be combined with other offers</ThemedText>
+                                        <Text style={styles.termText}>Cannot be combined with other offers</Text>
                                     </View>
                                 </View>
                             </ScrollView>

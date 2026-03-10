@@ -1,32 +1,25 @@
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { useTheme } from '../../context/ThemeContext';
-import { ThemedText } from '../ThemedText';
 
 type Props = {
     userName: string;
 };
 
 export default function GreetingHeader({ userName }: Props) {
-    const { colorScheme, toggleTheme, theme: activeColors } = useTheme();
-    const isDark = colorScheme === 'dark';
-
-
     return (
         <View style={styles.container}>
             <View style={styles.textContainer}>
-                <ThemedText style={styles.greeting}>
-                    Hey <ThemedText style={styles.userName}>{userName}</ThemedText>,
-                </ThemedText>
-                <ThemedText style={styles.subtitle}>Ready to save?</ThemedText>
+                <Text style={styles.greeting}>
+                    Hey <Text style={styles.userName}>{userName}</Text>,
+                </Text>
+                <Text style={styles.subtitle}>Ready to save?</Text>
             </View>
             <TouchableOpacity
                 style={styles.avatarContainer}
-                onPress={toggleTheme}
                 activeOpacity={0.8}
             >
-                <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#333' : '#F0F0F0' }]}>
+                <View style={[styles.avatarPlaceholder, { backgroundColor: '#F0F0F0' }]}>
                     <Image
                         source={require('../../assets/images/user.png')}
                         style={styles.avatarImage}

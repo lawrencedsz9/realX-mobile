@@ -1,6 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View , Text} from 'react-native';
 import { Typography } from '../constants/Typography';
-import { ThemedText } from './ThemedText';
 
 type Props = {
   label: string;
@@ -10,7 +9,7 @@ export default function Button({ label }: Props) {
   return (
     <View style={styles.buttonContainer}>
       <Pressable style={styles.button} onPress={() => alert('You pressed a button.')}>
-        <ThemedText style={styles.buttonLabel}>{label}</ThemedText>
+        <Text style={styles.buttonLabel}>{label}</Text>
       </Pressable>
     </View>
   );

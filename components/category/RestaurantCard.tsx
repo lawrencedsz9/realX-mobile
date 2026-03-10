@@ -1,8 +1,7 @@
 import { Image } from 'expo-image';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { ThemedText } from '../ThemedText';
 
 type Props = {
     id: string;
@@ -45,7 +44,7 @@ export default function RestaurantCard({
                     />
                 ) : (
                     <View style={styles.imagePlaceholder}>
-                        <ThemedText style={styles.placeholderEmoji}>🍽️</ThemedText>
+                        <Text style={styles.placeholderEmoji}>🍽️</Text>
                     </View>
                 )}
 
@@ -59,7 +58,7 @@ export default function RestaurantCard({
                                 contentFit="cover"
                             />
                         ) : (
-                            <ThemedText style={styles.logoEmoji}>🏪</ThemedText>
+                            <Text style={styles.logoEmoji}>🏪</Text>
                         )}
                     </View>
                 </View>
@@ -69,8 +68,8 @@ export default function RestaurantCard({
                     {/* Top Rated Badge (Left) */}
                     {isTopRated ? (
                         <View style={styles.topRatedBadge}>
-                            <ThemedText style={styles.trendingIcon}>⭐</ThemedText>
-                            <ThemedText style={[styles.badgeText, styles.topRatedText]}>TOP RATED</ThemedText>
+                            <Text style={styles.trendingIcon}>⭐</Text>
+                            <Text style={[styles.badgeText, styles.topRatedText]}>TOP RATED</Text>
                         </View>
                     ) : (
                         <View />
@@ -79,8 +78,8 @@ export default function RestaurantCard({
                     {/* Trending Badge (Right) */}
                     {isTrending && (
                         <View style={styles.trendingBadge}>
-                            <ThemedText style={styles.trendingIcon}>⚡</ThemedText>
-                            <ThemedText style={styles.badgeText}>TRENDING</ThemedText>
+                            <Text style={styles.trendingIcon}>⚡</Text>
+                            <Text style={styles.badgeText}>TRENDING</Text>
                         </View>
                     )}
                 </View>
@@ -88,11 +87,11 @@ export default function RestaurantCard({
 
             {/* Content */}
             <View style={styles.content}>
-                <ThemedText style={styles.name} numberOfLines={1}>{name}</ThemedText>
+                <Text style={styles.name} numberOfLines={1}>{name}</Text>
 
                 {/* Discount Tag */}
                 <View style={styles.discountWrapper}>
-                    <ThemedText style={styles.discountText}>{discountText}</ThemedText>
+                    <Text style={styles.discountText}>{discountText}</Text>
                 </View>
             </View>
         </TouchableOpacity>

@@ -1,16 +1,13 @@
+import { Colors } from '../../constants/Colors';
 import { getAuth } from '@react-native-firebase/auth';
 import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { ScrollView, StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BrandGrid, CategoryGrid, GreetingHeader, PromoBanner, SearchBar, TrendingOffers } from '../../components/home';
-import { useTheme } from '../../context/ThemeContext';
 
 export default function HomeScreen() {
   const [userName, setUserName] = useState<string>('');
-  const { theme, colorScheme } = useTheme();
-  const isDark = colorScheme === 'dark';
-
   useEffect(() => {
     const authInstance = getAuth();
     const user = authInstance.currentUser;
@@ -30,13 +27,13 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.light.background }]} edges={['top']}>
       <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
-        backgroundColor={theme.background}
+        barStyle="dark-content"
+        backgroundColor={Colors.light.background}
       />
       <ScrollView
-        style={[styles.container, { backgroundColor: theme.background }]}
+        style={[styles.container, { backgroundColor: Colors.light.background }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >

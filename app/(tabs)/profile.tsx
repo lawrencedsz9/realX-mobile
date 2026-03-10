@@ -4,16 +4,13 @@ import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore'
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { useTheme } from '../../context/ThemeContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
   const [userData, setUserData] = useState<{
     firstName?: string;
     lastName?: string;
@@ -68,16 +65,16 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText style={styles.headerText}>
-            Manage your <ThemedText style={styles.greenText}>profile</ThemedText>
-          </ThemedText>
+          <Text style={styles.headerText}>
+            Manage your <Text style={styles.greenText}>profile</Text>
+          </Text>
         </View>
 
         {/* Profile Info Card */}
@@ -100,9 +97,9 @@ export default function ProfileScreen() {
               )}
             </View>
             <View style={styles.nameContainer}>
-              <ThemedText style={styles.userName}>
+              <Text style={styles.userName}>
                 {userData ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}
-              </ThemedText>
+              </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -111,15 +108,15 @@ export default function ProfileScreen() {
 
         {/* Savings Tracker Section */}
         <View style={styles.sectionHeader}>
-          <ThemedText style={styles.sectionTitle}>Savings Tracker</ThemedText>
+          <Text style={styles.sectionTitle}>Savings Tracker</Text>
         </View>
 
-        <View style={[styles.savingsCard, { backgroundColor: theme.background, borderColor: theme.subtitle + '20' }]}>
+        <View style={[styles.savingsCard, { backgroundColor: Colors.light.background, borderColor: Colors.light.subtitle + '20' }]}>
           <View style={styles.savingsInfo}>
-            <ThemedText type="subtitle" style={styles.savingsLabel}>You've saved so far!</ThemedText>
-            <ThemedText style={styles.savingsAmount}>
-              <ThemedText style={styles.greenAmount}>{userData?.savings ?? 0}</ThemedText> QAR
-            </ThemedText>
+            <Text style={styles.savingsLabel}>You've saved so far!</Text>
+            <Text style={styles.savingsAmount}>
+              <Text style={styles.greenAmount}>{userData?.savings ?? 0}</Text> QAR
+            </Text>
           </View>
         </View>
 
@@ -127,15 +124,15 @@ export default function ProfileScreen() {
         {userData?.role === 'creator' && userData?.creatorCode && (
           <>
             <View style={styles.sectionHeader}>
-              <ThemedText style={styles.sectionTitle}>Creator Code</ThemedText>
+              <Text style={styles.sectionTitle}>Creator Code</Text>
             </View>
 
-            <View style={[styles.savingsCard, { backgroundColor: theme.background, borderColor: theme.subtitle + '20' }]}>
+            <View style={[styles.savingsCard, { backgroundColor: Colors.light.background, borderColor: Colors.light.subtitle + '20' }]}>
               <View style={styles.savingsInfo}>
-                <ThemedText type="subtitle" style={styles.savingsLabel}>Your Creator Code</ThemedText>
-                <ThemedText style={styles.savingsAmount}>
-                  <ThemedText style={styles.greenAmount}>{userData.creatorCode}</ThemedText>
-                </ThemedText>
+                <Text style={styles.savingsLabel}>Your Creator Code</Text>
+                <Text style={styles.savingsAmount}>
+                  <Text style={styles.greenAmount}>{userData.creatorCode}</Text>
+                </Text>
               </View>
             </View>
           </>
@@ -183,18 +180,17 @@ function MenuItem({
   onPress?: () => void;
   color?: string;
 }) {
-  const { theme } = useTheme();
-  const iconColor = color || theme.text;
+  const iconColor = color || Colors.light.text;
 
   return (
     <TouchableOpacity
-      style={[styles.menuItem, { backgroundColor: theme.background === '#FFFFFF' ? '#F5F5F5' : '#1A1D1F' }]}
+      style={[styles.menuItem, { backgroundColor: Colors.light.background === '#FFFFFF' ? '#F5F5F5' : '#1A1D1F' }]}
       activeOpacity={0.7}
       onPress={onPress}
     >
       <View style={styles.menuItemLeft}>
         <Ionicons name={icon} size={24} color={iconColor} />
-        <ThemedText style={[styles.menuItemLabel, { color: iconColor }]}>{label}</ThemedText>
+        <Text style={[styles.menuItemLabel, { color: iconColor }]}>{label}</Text>
       </View>
     </TouchableOpacity>
   );

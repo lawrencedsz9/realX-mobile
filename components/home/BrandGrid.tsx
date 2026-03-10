@@ -1,8 +1,7 @@
 import { Image } from 'expo-image';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { ThemedText } from '../ThemedText';
 
 type BrandItem = {
     id: string;
@@ -25,10 +24,10 @@ export default function BrandGrid() {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <ThemedText style={styles.headerTitle}>
-                    <ThemedText style={styles.shopByText}>SHOP BY </ThemedText>
-                    <ThemedText style={styles.brandText}>BRAND</ThemedText>
-                </ThemedText>
+                <Text style={styles.headerTitle}>
+                    <Text style={styles.shopByText}>SHOP BY </Text>
+                    <Text style={styles.brandText}>BRAND</Text>
+                </Text>
             </View>
             <ScrollView
                 horizontal

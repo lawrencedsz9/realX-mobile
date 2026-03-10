@@ -3,10 +3,9 @@ import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View , Text} from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { ThemedText } from '../ThemedText';
 
 type CategoryItem = {
     id: string;
@@ -91,10 +90,10 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
                             contentFit="contain"
                         />
                     ) : (
-                        <ThemedText style={{ fontSize: 40 }}>{item.icon}</ThemedText>
+                        <Text style={{ fontSize: 40 }}>{item.icon}</Text>
                     )}
                 </View>
-                <ThemedText style={styles.categoryName} numberOfLines={1}>{item.name}</ThemedText>
+                <Text style={styles.categoryName} numberOfLines={1}>{item.name}</Text>
             </TouchableOpacity>
         );
     };

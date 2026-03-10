@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 import * as Linking from 'expo-linking';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider } from '../context/ThemeContext';
+
 import { clearAuthEmail, getAuthEmail } from '../utils/auth';
 
 SplashScreen.preventAutoHideAsync();
@@ -120,7 +120,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
+
       <SafeAreaProvider>
         <Stack>
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
@@ -134,6 +134,5 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" options={{ title: "Oops! Not Found" }} />
         </Stack>
       </SafeAreaProvider>
-    </ThemeProvider>
   );
 }
