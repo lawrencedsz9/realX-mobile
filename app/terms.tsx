@@ -66,6 +66,9 @@ export default function TermsScreen() {
                     <Text style={styles.paragraph}>
                         Parents/guardians are encouraged to discuss the use of the platform with their child and monitor offer usage. Parents should understand that RealX is a software verification platform and does not guarantee the fulfillment or quality of any merchant offer.
                     </Text>
+                    <Text style={styles.paragraph}>
+                        There is zero tolerance for objectionable content or abusive users
+                    </Text>
                 </View>
 
                 <View style={styles.section}>
@@ -75,13 +78,6 @@ export default function TermsScreen() {
                     </Text>
                     <Text style={styles.paragraph}>
                         RealX provides anonymized or aggregated analytics to merchants to help them understand how their offers are used. No personally identifiable information of minors is shared with merchants without parental consent. By using the platform, you consent to the collection, processing, and sharing of data as described in our Privacy Policy.
-                    </Text>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Third-Party Services and Social Logins</Text>
-                    <Text style={styles.paragraph}>
-                        Some features of RealX may include third-party integrations or social logins (e.g., Google, Apple, or other authentication providers). These third parties may provide us with information from your social profile, such as your name, email, and profile picture, which we use only for account setup and authentication. RealX does not control third-party platforms and is not responsible for their content, privacy practices, or reliability. You are encouraged to review their privacy policies and terms before using any third-party services.
                     </Text>
                 </View>
 
