@@ -150,13 +150,9 @@ export default function ProfileDetailsScreen() {
 
                         setIsLoading(true);
                         try {
-                            // Delete from Firestore
-                            const db = getFirestore();
-                            // Note: We might want to use a Cloud Function for this to ensure consistency
-                            // but for now we delete the student doc
-                            // await deleteDoc(doc(db, 'students', user.uid)); 
-
                             // Delete Auth account
+                            // The Firebase Delete User Data extension will automatically
+                            // handle deleting the user's Firestore data.
                             await deleteUser(user);
                             router.replace('/(onboarding)');
                         } catch (error: any) {
