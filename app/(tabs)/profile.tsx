@@ -72,51 +72,59 @@ export default function ProfileScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerText}>
-            Manage your <Text style={styles.greenText}>profile</Text>
-          </Text>
+          <Text style={styles.headerText}>PROFILE</Text>
         </View>
 
-        {/* Profile Info Card */}
-        <TouchableOpacity
-          style={styles.profileCard}
-          activeOpacity={0.7}
-          onPress={() => router.push('/profile-details')}
-        >
-          <View style={styles.profileInfo}>
-            <View style={styles.avatar}>
+        {/* Profile Card */}
+        <View style={styles.profileContainer}>
+          <View style={styles.profileTopSection}>
+            <View style={styles.avatarContainer}>
               {userData?.photoURL || getAuth().currentUser?.photoURL ? (
                 <Image
                   source={{ uri: userData?.photoURL || getAuth().currentUser?.photoURL || undefined }}
                   style={styles.avatar}
                 />
               ) : (
-                <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }]}>
-                  <Ionicons name="person" size={32} color="#CCC" />
+                <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#E0E0E0' }]}>
+                  <Ionicons name="person" size={32} color="#999" />
                 </View>
               )}
             </View>
-            <View style={styles.nameContainer}>
-              <Text style={styles.userName}>
-                {userData ? `${userData.firstName} ${userData.lastName}` : 'Loading...'}
-              </Text>
+            <View style={[styles.badgeContainer, { backgroundColor: Colors.brandGreen }]}>
+              <Text style={styles.badgeText}>ROOKIE</Text>
             </View>
           </View>
-        </TouchableOpacity>
-
-
+          
+          <View style={styles.profileBottomSection}>
+            <View>
+              <Text style={styles.userName} numberOfLines={1}>
+                {userData ? `${userData.firstName || ''} ${userData.lastName || ''}`.trim() : 'Loading...'}
+              </Text>
+              <Text style={styles.userEmail} numberOfLines={1}>
+                {userData?.email || getAuth().currentUser?.email || 'Loading...'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              activeOpacity={0.7}
+              onPress={() => router.push('/profile-details')}
+            >
+              <Ionicons name="pencil-outline" size={16} color="#444" />
+              <Text style={styles.editProfileText}>Details</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Savings Tracker Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Savings Tracker</Text>
+          <Text style={styles.sectionTitle}>SAVINGS TRACKER 🔥</Text>
         </View>
 
-        <View style={[styles.savingsCard, { backgroundColor: Colors.light.background, borderColor: Colors.light.subtitle + '20' }]}>
-          <View style={styles.savingsInfo}>
-            <Text style={styles.savingsLabel}>You've saved so far!</Text>
-            <Text style={styles.savingsAmount}>
-              <Text style={styles.greenAmount}>{userData?.savings ?? 0}</Text> QAR
-            </Text>
+        <View style={styles.savingsCard}>
+          <Text style={styles.savingsLabel}>All time you've saved</Text>
+          <View style={styles.savingsAmountRow}>
+            <Text style={styles.greenAmount}>{userData?.savings ?? 0}</Text>
+            <Text style={styles.blackAmount}>QAR</Text>
           </View>
         </View>
 
@@ -124,15 +132,13 @@ export default function ProfileScreen() {
         {userData?.role === 'creator' && userData?.creatorCode && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Creator Code</Text>
+              <Text style={styles.sectionTitle}>CREATOR CODE</Text>
             </View>
 
-            <View style={[styles.savingsCard, { backgroundColor: Colors.light.background, borderColor: Colors.light.subtitle + '20' }]}>
-              <View style={styles.savingsInfo}>
-                <Text style={styles.savingsLabel}>Your Creator Code</Text>
-                <Text style={styles.savingsAmount}>
-                  <Text style={styles.greenAmount}>{userData.creatorCode}</Text>
-                </Text>
+            <View style={styles.savingsCard}>
+              <Text style={styles.savingsLabel}>Your Creator Code</Text>
+              <View style={styles.savingsAmountRow}>
+                <Text style={styles.greenAmount}>{userData.creatorCode}</Text>
               </View>
             </View>
           </>
@@ -149,7 +155,7 @@ export default function ProfileScreen() {
           />
           <MenuItem
             icon="document-text-outline"
-            label="Terms and Conditions"
+            label="Terms & Conditions"
             onPress={() => router.push('/terms')}
           />
           <MenuItem
@@ -207,88 +213,133 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
-    marginBottom: 32,
-  },
-  headerText: {
-    fontSize: 32,
-    fontFamily: Typography.metropolis.semiBold,
-    lineHeight: 40,
-  },
-  greenText: {
-    color: Colors.brandGreen,
-  },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    marginBottom: 20,
-    backgroundColor: '#FFF',
-  },
-  profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F5F5F5',
-  },
-  nameContainer: {
-    marginLeft: 16,
-  },
-  userName: {
-    fontSize: 18,
-    fontFamily: Typography.metropolis.semiBold,
-  },
-
-  sectionHeader: {
     marginBottom: 16,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontFamily: Typography.metropolis.semiBold,
+  headerText: {
+    fontSize: 28,
+    fontFamily: Typography.integral.bold,
+    letterSpacing: 1,
+    color: '#000',
   },
-  savingsCard: {
+  profileContainer: {
+    marginBottom: 16,
+  },
+  profileTopSection: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 12,
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+    backgroundColor: '#E0E0E0',
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
+  },
+  badgeContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  badgeText: {
+    fontFamily: Typography.integral.bold,
+    color: '#000',
+    fontSize: 14,
+    letterSpacing: 0.5,
+  },
+  profileBottomSection: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  userName: {
+    fontFamily: Typography.metropolis.semiBold,
+    fontSize: 20,
+    color: '#000',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontFamily: Typography.metropolis.medium,
+    fontSize: 14,
+    color: '#888',
+  },
+  editProfileButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 24,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    marginBottom: 20,
     backgroundColor: '#FFF',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  savingsInfo: {
-    flex: 1,
+  editProfileText: {
+    fontFamily: Typography.metropolis.semiBold,
+    fontSize: 12,
+    color: '#444',
+    marginLeft: 6,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+
+  },
+  sectionTitle: {
+    fontFamily: Typography.integral.bold,
+    fontSize: 18,
+    color: '#000000',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  savingsCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    padding: 24,
+    marginBottom: 16,
   },
   savingsLabel: {
-    fontSize: 14,
     fontFamily: Typography.metropolis.medium,
-    marginBottom: 8,
+    fontSize: 16,
+    color: '#000',
   },
-  savingsAmount: {
-    fontSize: 32,
-    fontFamily: Typography.metropolis.semiBold,
+  savingsAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
   },
   greenAmount: {
+    fontFamily: Typography.integral.bold,
+    fontSize: 40,
     color: Colors.brandGreen,
   },
+  blackAmount: {
+    fontFamily: Typography.integral.bold,
+    fontSize: 40,
+    color: '#000',
+    marginLeft: 8,
+  },
   menuContainer: {
-    gap: 12,
+    gap: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
-    paddingVertical: 20,
+    padding: 20,
     borderRadius: 24,
-    backgroundColor: '#F5F5F5',
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -296,7 +347,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   menuItemLabel: {
-    fontSize: 18,
-    fontFamily: Typography.metropolis.semiBold,
+    fontFamily: Typography.metropolis.medium,
+    fontSize: 16,
   },
 });
+

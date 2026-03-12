@@ -322,12 +322,12 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     loginText: {
-        color: '#FFFFFF',
         fontFamily: Typography.metropolis.medium,
         fontSize: 16,
     },
     loginBold: {
         fontFamily: Typography.metropolis.semiBold,
+        color: '#18B852',
     },
 });
 
