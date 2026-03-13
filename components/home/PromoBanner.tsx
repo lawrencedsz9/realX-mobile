@@ -90,6 +90,7 @@ export default function PromoBanner() {
                                 source={{ uri: banner.images.mobile }}
                                 style={styles.topImage}
                                 contentFit="cover"
+                                cachePolicy="memory-disk"
                                 accessibilityLabel={banner.altText || 'Banner Image'}
                             />
                         </View>
@@ -99,6 +100,7 @@ export default function PromoBanner() {
                                 source={{ uri: banner.images.mobile }}
                                 style={styles.bottomImage}
                                 contentFit="cover"
+                                cachePolicy="memory-disk"
                                 accessibilityLabel={banner.altText || 'Banner Image'}
                             />
                         </View>
