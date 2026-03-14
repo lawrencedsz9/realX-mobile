@@ -51,6 +51,21 @@ export default function PromoBanner() {
         fetchBanners();
     }, []);
 
+    useEffect(() => {
+        if (banners.length <= 1) return;
+
+        const interval = setInterval(() => {
+            const nextIndex = (activeIndex + 1) % banners.length;
+            scrollViewRef.current?.scrollTo({
+                x: nextIndex * (BANNER_WIDTH + 10),
+                animated: true,
+            });
+            setActiveIndex(nextIndex);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [banners.length, activeIndex]);
+
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
         const index = Math.round(contentOffsetX / (BANNER_WIDTH + 10));
