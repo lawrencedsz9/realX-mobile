@@ -157,7 +157,12 @@ export default function ProfileDetailsScreen() {
                             await deleteUser(user);
                             
                             // Explicitly sign out to clear any local session data
-                            await authInstance.signOut();
+                            // This may throw if the user is already deleted, which is expected
+                            try {
+                                await authInstance.signOut();
+                            } catch (_) {
+                                // User already deleted, sign out is a no-op
+                            }
                             
                             Alert.alert('Account Deleted', 'Your account and data have been successfully removed.');
                             router.replace('/(onboarding)');

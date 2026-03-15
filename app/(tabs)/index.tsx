@@ -34,7 +34,7 @@ export default function HomeScreen() {
     const studentDocRef = doc(db, 'students', user.uid);
 
     const unsubscribe = onSnapshot(studentDocRef, (docSnap) => {
-      if (docSnap.exists()) {
+      if (docSnap && docSnap.exists()) {
         const data = docSnap.data();
         setUserName(data?.firstName || '');
       }

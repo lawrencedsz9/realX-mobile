@@ -39,7 +39,7 @@ export default function ProfileScreen() {
     const studentDocRef = doc(db, 'students', user.uid);
 
     const unsubscribe = onSnapshot(studentDocRef, (docSnap) => {
-      if (docSnap.exists()) {
+      if (docSnap && docSnap.exists()) {
         setUserData(docSnap.data() as any);
       }
     });
