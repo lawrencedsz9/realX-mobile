@@ -20,7 +20,7 @@ interface FilterTabsProps {
 }
 
 const defaultFilters: FilterOption[] = [
-    { id: 'top-rated', label: 'Top Rated', icon: 'flash' },
+    { id: 'all', label: 'All', icon: 'apps-outline' },
     { id: 'trending', label: 'Trending', icon: 'flame' },
 ];
 

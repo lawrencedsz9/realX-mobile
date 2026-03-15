@@ -36,55 +36,37 @@ export default function RestaurantCard({
         >
             {/* Image placeholder or actual image */}
             <View style={styles.imageContainer}>
-                {imageUri ? (
-                    <Image
-                        source={{ uri: imageUri }}
-                        style={styles.image}
-                        contentFit="cover"
-                        transition={200}
-                    />
-                ) : (
-                    <View style={styles.imagePlaceholder}>
-                        <ThemedText style={styles.placeholderEmoji}>🍽️</ThemedText>
-                    </View>
-                )}
+                  <View style={styles.topPill}>
+    <Image
+      source={{ uri: imageUri }}
+      style={styles.topImage}
+      contentFit="cover"
+    />
+  </View>
 
-                {/* Logo in bottom corner */}
-                <View style={styles.logoContainer}>
-                    <View style={styles.logoWrapper}>
-                        {logoUri ? (
-                            <Image
-                                source={{ uri: logoUri }}
-                                style={styles.logoImage}
-                                contentFit="cover"
-                            />
-                        ) : (
-                            <ThemedText style={styles.logoEmoji}>🏪</ThemedText>
-                        )}
-                    </View>
-                </View>
-
-                {/* Badges Container */}
-                <View style={styles.badgesContainer}>
-                    {/* Top Rated Badge (Left) */}
-                    {isTopRated ? (
-                        <View style={styles.topRatedBadge}>
-                            <ThemedText style={styles.trendingIcon}>⭐</ThemedText>
-                            <ThemedText style={[styles.badgeText, styles.topRatedText]}>TOP RATED</ThemedText>
-                        </View>
-                    ) : (
-                        <View />
-                    )}
-
-                    {/* Trending Badge (Right) */}
-                    {isTrending && (
-                        <View style={styles.trendingBadge}>
-                            <ThemedText style={styles.trendingIcon}>⚡</ThemedText>
-                            <ThemedText style={styles.badgeText}>TRENDING</ThemedText>
-                        </View>
-                    )}
-                </View>
+  <View style={styles.bottomPill}>
+    <Image
+      source={{ uri: imageUri }}
+      style={styles.bottomImage}
+      contentFit="cover"
+    />
+  </View>
+    {/* Logo */}
+  <View style={styles.logoContainer}>
+    <View style={styles.logoWrapper}>
+      {logoUri ? (
+        <Image
+          source={{ uri: logoUri }}
+          style={styles.logoImage}
+          contentFit="cover"
+        />
+      ) : (
+        <ThemedText style={styles.logoEmoji}>🏪</ThemedText>
+      )}
+    </View>
+  </View>
             </View>
+
 
             {/* Content */}
             <View style={styles.content}>
@@ -115,7 +97,7 @@ const styles = StyleSheet.create({
     imageContainer: {
         width: '100%',
         height: 120, // Keep height or make it variable? 120 is fine for a card.
-        position: 'relative',
+
     },
     image: {
         width: '100%',
@@ -234,4 +216,27 @@ const styles = StyleSheet.create({
         fontFamily: Typography.metropolis.semiBold,
         color: Colors.brandGreen,
     },
+
+    topPill: {
+  flex: 1,
+  borderRadius: 20,
+  overflow: 'hidden',
+},
+
+bottomPill: {
+  flex: 1,
+  borderRadius: 20,
+  overflow: 'hidden',
+},
+
+topImage: {
+  width: '100%',
+  height: '200%',
+},
+
+bottomImage: {
+  width: '100%',
+  height: '200%',
+  transform: [{ translateY: '-50%' }],
+},
 });

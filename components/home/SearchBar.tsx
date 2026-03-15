@@ -8,9 +8,10 @@ type Props = {
     placeholder?: string;
     value?: string;
     onChangeText?: (text: string) => void;
+    onSubmit?: () => void;
 };
 
-export default function SearchBar({ placeholder = 'Search for anything...', value, onChangeText }: Props) {
+export default function SearchBar({ placeholder = 'Search for anything...', value, onChangeText, onSubmit }: Props) {
     const { theme } = useTheme();
 
     return (
@@ -23,6 +24,8 @@ export default function SearchBar({ placeholder = 'Search for anything...', valu
                     placeholderTextColor={theme.subtitle}
                     value={value}
                     onChangeText={onChangeText}
+                    returnKeyType="search"
+                    onSubmitEditing={onSubmit}
                 />
             </View>
         </View>

@@ -10,6 +10,7 @@ type Restaurant = {
     discountText?: string;
     isTrending?: boolean;
     imageUri?: string;
+    logoUri?: string;
 };
 
 type Props = {
@@ -77,6 +78,7 @@ export default function BrowseSection({
                         discountText={restaurant.discountText}
                         isTrending={restaurant.isTrending}
                         imageUri={restaurant.imageUri}
+                        logoUri={restaurant.logoUri}
                         onPress={() => onRestaurantPress?.(restaurant)}
                         style={{ width: 170 }}
                     />

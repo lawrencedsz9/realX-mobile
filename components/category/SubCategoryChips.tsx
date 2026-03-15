@@ -1,133 +1,170 @@
 import { Image } from 'expo-image';
-import { memo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { memo, useCallback } from 'react';
+import { ColorSchemeName, ScrollView, StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useTheme } from '../../context/ThemeContext';
 
-type SubCategory = {
+export type SubCategory = {
     id: string;
     name: string;
-    icon: string | any;
+    icon: string | number | { uri: string };
 };
 
 type Props = {
     subCategories?: SubCategory[];
     selectedId?: string;
     onSelect?: (subCategory: SubCategory) => void;
+    containerStyle?: ViewStyle;
 };
 
-const defaultSubCategories: SubCategory[] = [
-    { id: 'all', name: 'All', icon: '🍽️' },
-    { id: 'burgers', name: 'Burgers', icon: '🍔' },
-    { id: 'pizza', name: 'Pizza', icon: '🍕' },
-    { id: 'fried-chicken', name: 'Fried Chicken', icon: '🍗' },
-    { id: 'turkish', name: 'Turkish', icon: '🥙' },
-    { id: 'asian', name: 'Asian', icon: '🍜' },
-    { id: 'desserts', name: 'Desserts', icon: '🍰' },
-];
+const ICON_CONTAINER_SIZE = 60;
+const ICON_SIZE = 36;
 
+/**
+ * SubCategoryChip component for individual chips
+ */
+const SubCategoryChip = memo(({
+    item,
+    isSelected,
+    onPress,
+    theme,
+    colorScheme
+}: {
+    item: SubCategory;
+    isSelected: boolean;
+    onPress: (item: SubCategory) => void;
+    theme: typeof Colors.light;
+    colorScheme: ColorSchemeName;
+}) => {
+    const renderIcon = () => {
+        const { icon } = item;
+
+        // Handle Image sources (require/number or object with uri)
+        if (typeof icon === 'number' || (typeof icon === 'object' && icon !== null)) {
+            return <Image source={icon} style={styles.imageIcon} contentFit="contain" />;
+        }
+
+        // Handle string icons (emoji or remote URL)
+        if (typeof icon === 'string') {
+            const isRemote = icon.startsWith('http') || icon.includes('/');
+            if (isRemote) {
+                return <Image source={{ uri: icon }} style={styles.imageIcon} contentFit="contain" />;
+            }
+            return <Text style={styles.emojiIcon}>{icon}</Text>;
+        }
+
+        return null;
+    };
+
+    return (
+        <TouchableOpacity
+            style={styles.chip}
+            onPress={() => onPress(item)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isSelected }}
+            accessibilityLabel={`Select ${item.name} category`}
+        >
+            <View style={[
+                styles.iconContainer,
+                { backgroundColor: isSelected ? Colors.brandGreenLight : colorScheme === 'dark' ? '#333333' : '#F5F5F5' },
+                isSelected && styles.iconContainerSelected,
+            ]}>
+                {renderIcon()}
+            </View>
+            <Text style={[
+                styles.chipText,
+                { color: isSelected ? Colors.brandGreen : theme.text },
+                isSelected && styles.chipTextSelected,
+            ]}>
+                {item.name}
+            </Text>
+        </TouchableOpacity>
+    );
+});
+
+/**
+ * Horizontal scrollable chips for sub-categories
+ */
 function SubCategoryChips({
-    subCategories = defaultSubCategories,
+    subCategories = [],
     selectedId = 'all',
     onSelect,
+    containerStyle,
 }: Props) {
+    const { theme, colorScheme } = useTheme();
+
+    const handleSelect = useCallback((item: SubCategory) => {
+        onSelect?.(item);
+    }, [onSelect]);
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerStyle]}>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
+                decelerationRate="fast"
             >
-                {subCategories.map((subCategory) => {
-                    const isSelected = selectedId === subCategory.id;
-
-                    const renderIcon = () => {
-                        if (typeof subCategory.icon === 'number' || (typeof subCategory.icon === 'object' && subCategory.icon !== null)) {
-                            return <Image source={subCategory.icon} style={styles.imageIcon} contentFit="contain" />;
-                        }
-                        if (typeof subCategory.icon === 'string' && (subCategory.icon.startsWith('http') || subCategory.icon.includes('/'))) {
-                            return <Image source={{ uri: subCategory.icon }} style={styles.imageIcon} contentFit="contain" />;
-                        }
-                        return <Text style={styles.icon}>{subCategory.icon}</Text>;
-                    };
-
-                    return (
-                        <TouchableOpacity
-                            key={subCategory.id}
-                            style={[
-                                styles.chip,
-                                isSelected && styles.chipSelected,
-                            ]}
-                            onPress={() => onSelect?.(subCategory)}
-                            activeOpacity={0.7}
-                        >
-                            <View style={[
-                                styles.iconContainer,
-                                isSelected && styles.iconContainerSelected,
-                            ]}>
-                                {renderIcon()}
-                            </View>
-                            <Text style={[
-                                styles.chipText,
-                                isSelected && styles.chipTextSelected,
-                            ]}>
-                                {subCategory.name}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
+                {subCategories.map((subCategory) => (
+                    <SubCategoryChip
+                        key={subCategory.id}
+                        item={subCategory}
+                        isSelected={selectedId === subCategory.id}
+                        onPress={handleSelect}
+                        theme={theme}
+                        colorScheme={colorScheme}
+                    />
+                ))}
             </ScrollView>
         </View>
     );
 }
 
-export default memo(SubCategoryChips);
-
 const styles = StyleSheet.create({
     container: {
         paddingVertical: 16,
+        height: 125, // Fixed height to prevent layout jumps
     },
     scrollContent: {
         paddingHorizontal: 20,
-        gap: 16,
+        gap: 16, // Using gap for consistent spacing between chips
     },
     chip: {
         alignItems: 'center',
-        gap: 8,
-    },
-    chipSelected: {
-        // Add any selected state styling if needed
     },
     iconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#F5F5F5',
+        width: ICON_CONTAINER_SIZE,
+        height: ICON_CONTAINER_SIZE,
+        borderRadius: ICON_CONTAINER_SIZE / 2,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
         borderColor: 'transparent',
-        overflow: 'hidden', // Ensure image stays within circle
+        overflow: 'hidden',
+        marginBottom: 8,
     },
     iconContainerSelected: {
         borderColor: Colors.brandGreen,
-        backgroundColor: '#E8FAF0',
     },
-    icon: {
+    emojiIcon: {
         fontSize: 28,
     },
     imageIcon: {
-        width: '70%',
-        height: '70%',
+        width: ICON_SIZE,
+        height: ICON_SIZE,
     },
     chipText: {
         fontSize: 12,
         fontFamily: Typography.metropolis.medium,
-        color: Colors.light.text,
         textAlign: 'center',
+        lineHeight: 18,
     },
     chipTextSelected: {
         fontFamily: Typography.metropolis.semiBold,
-        color: Colors.brandGreen,
     },
 });
+
+export default memo(SubCategoryChips);
+

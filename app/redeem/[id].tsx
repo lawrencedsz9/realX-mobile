@@ -52,22 +52,33 @@ export default function RedeemScreen() {
         let isMounted = true;
 
         const fetchData = async () => {
-            if (!id || !vendorId) return;
+            if (!id) return;
             try {
                 const db = getFirestore();
 
-                // Fetch Vendor
-                const vendorRef = doc(db, 'vendors', vendorId);
-                const vendorSnap = await getDoc(vendorRef);
-                if (vendorSnap.exists() && isMounted) {
-                    setVendor(vendorSnap.data() as VendorData);
-                }
-
-                // Fetch Offer
+                // Fetch Offer first to get vendorId if not provided
                 const offerRef = doc(db, 'offers', id);
                 const offerSnap = await getDoc(offerRef);
+                
+                let currentVendorId = vendorId;
+
                 if (offerSnap.exists() && isMounted) {
-                    setOffer(offerSnap.data() as OfferData);
+                    const offerData = offerSnap.data() as OfferData;
+                    setOffer(offerData);
+                    
+                    // If vendorId was not provided, use the one from the offer document
+                    if (!currentVendorId && offerData.vendorId) {
+                        currentVendorId = offerData.vendorId;
+                    }
+                }
+
+                if (currentVendorId) {
+                    // Fetch Vendor
+                    const vendorRef = doc(db, 'vendors', currentVendorId);
+                    const vendorSnap = await getDoc(vendorRef);
+                    if (vendorSnap.exists() && isMounted) {
+                        setVendor(vendorSnap.data() as VendorData);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);

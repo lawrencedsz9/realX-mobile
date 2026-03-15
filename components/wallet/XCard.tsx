@@ -1,33 +1,29 @@
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { Typography } from '../../constants/Typography';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = screenWidth - 40;
-const CARD_HEIGHT = 200;
+const CARD_ASPECT_RATIO = 335 / 190; // Standard card aspect ratio roughly
+const CARD_HEIGHT = CARD_WIDTH / CARD_ASPECT_RATIO;
+
+const xcardImage = require('../../assets/images/xcard.png');
 
 type Props = {
     earnings?: number;
     currency?: string;
+    creatorCode?: string;
 };
 
-export default function XCard({ earnings = 0, currency = 'QAR' }: Props) {
+export default function XCard({ earnings = 0, currency = 'QAR', creatorCode }: Props) {
     return (
         <View style={styles.container}>
-            <View style={styles.card}>
-                {/* Background pattern - diagonal "REALX" text */}
-                <View style={styles.patternContainer}>
-                    {[...Array(8)].map((_, rowIndex) => (
-                        <View key={rowIndex} style={styles.patternRow}>
-                            {[...Array(5)].map((_, colIndex) => (
-                                <Text key={colIndex} style={styles.patternText}>
-                                    REALX
-                                </Text>
-                            ))}
-                        </View>
-                    ))}
-                </View>
-
-                {/* Card content */}
+            <ImageBackground
+                source={xcardImage}
+                style={styles.card}
+                imageStyle={styles.cardImage}
+                resizeMode="cover"
+            >
+                {/* Card content overlaid on the image */}
                 <View style={styles.cardContent}>
                     {/* Earnings section */}
                     <View style={styles.earningsSection}>
@@ -36,17 +32,18 @@ export default function XCard({ earnings = 0, currency = 'QAR' }: Props) {
                             <Text style={styles.earningsAmount}>
                                 {earnings} {currency}
                             </Text>
-                            <Text style={styles.coinEmoji}>💰</Text>
                         </View>
                     </View>
 
-                    {/* realX branding */}
-                    <View style={styles.brandingContainer}>
-                        <Text style={styles.brandReal}>real</Text>
-                        <Text style={styles.brandX}>X</Text>
-                    </View>
+                    {/* Creator Code Section (Bottom Right) */}
+                    {creatorCode && (
+                        <View style={styles.creatorCodeContainer}>
+                            <Text style={styles.creatorCodeLabel}>CREATOR CODE</Text>
+                            <Text style={styles.creatorCodeText}>{creatorCode}</Text>
+                        </View>
+                    )}
                 </View>
-            </View>
+            </ImageBackground>
         </View>
     );
 }
@@ -60,31 +57,14 @@ const styles = StyleSheet.create({
         width: CARD_WIDTH,
         height: CARD_HEIGHT,
         borderRadius: 20,
-        backgroundColor: '#0A3D2E',
         overflow: 'hidden',
-        position: 'relative',
     },
-    patternContainer: {
-        ...StyleSheet.absoluteFillObject,
-        opacity: 0.15,
-        transform: [{ rotate: '-15deg' }],
-        top: -20,
-        left: -30,
-    },
-    patternRow: {
-        flexDirection: 'row',
-        marginBottom: 12,
-    },
-    patternText: {
-        fontSize: 14,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#FFFFFF',
-        marginRight: 20,
-        letterSpacing: 2,
+    cardImage: {
+        borderRadius: 20,
     },
     cardContent: {
         flex: 1,
-        padding: 20,
+        padding: 24,
         justifyContent: 'space-between',
     },
     earningsSection: {
@@ -101,26 +81,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     earningsAmount: {
-        fontSize: 28,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#FFFFFF',
-    },
-    coinEmoji: {
-        fontSize: 20,
-        marginLeft: 8,
-    },
-    brandingContainer: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-    },
-    brandReal: {
         fontSize: 32,
         fontFamily: Typography.metropolis.semiBold,
         color: '#FFFFFF',
     },
-    brandX: {
-        fontSize: 36,
+    creatorCodeContainer: {
+        alignSelf: 'flex-end',
+        alignItems: 'flex-end',
+    },
+    creatorCodeLabel: {
+        fontSize: 10,
+        fontFamily: Typography.metropolis.medium,
+        color: 'rgba(255, 255, 255, 0.6)',
+        letterSpacing: 1,
+    },
+    creatorCodeText: {
+        fontSize: 18,
         fontFamily: Typography.integral.bold,
-        color: '#18B852',
+        color: '#FFFFFF',
+    },
+    coinEmoji: {
+        fontSize: 24,
+        marginLeft: 8,
     },
 });

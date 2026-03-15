@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, 
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ImageSourcePropType, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ImageSourcePropType, Keyboard, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     BrowseSection,
@@ -36,6 +36,7 @@ const categoryConfig: Record<string, {
         cashbackText?: string;
         discountText?: string;
         isTrending?: boolean;
+        logoUri?: string;
     }[];
 }> = {};
 
@@ -64,6 +65,9 @@ interface HeaderContentProps {
     handleSubCategorySelect: (sub: any) => void;
     config: any;
     handleRestaurantPress: (r: any) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    handleSearch: () => void;
 }
 
 const HeaderContent = memo(({
@@ -79,6 +83,9 @@ const HeaderContent = memo(({
     handleSubCategorySelect,
     config,
     handleRestaurantPress,
+    searchQuery,
+    setSearchQuery,
+    handleSearch,
 }: HeaderContentProps) => (
     <>
         <CategoryHeader
@@ -87,7 +94,12 @@ const HeaderContent = memo(({
             onBackPress={handleBackPress}
         />
 
-        <SearchBar placeholder={`Search for ${headerTitle.toLowerCase()}...`} />
+        <SearchBar
+            placeholder={`Search for ${headerTitle.toLowerCase()}...`}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmit={handleSearch}
+        />
 
         {loading ? (
             <View style={styles.comingSoonContainer}>
@@ -132,8 +144,9 @@ export default function CategoryScreen() {
 
     const [categoryData, setCategoryData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedFilter, setSelectedFilter] = useState('');
+    const [selectedFilter, setSelectedFilter] = useState('all');
     const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [offers, setOffers] = useState<any[]>([]);
     const [loadingOffers, setLoadingOffers] = useState(false);
@@ -197,8 +210,6 @@ export default function CategoryScreen() {
             // Top-rated / Trending logic
             if (selectedFilter === 'trending') {
                 baseConstraints.push(where('isTrending', '==', true));
-            } else if (selectedFilter === 'top-rated') {
-                baseConstraints.push(where('isTopRated', '==', true));
             }
 
             // Construct query with pagination
@@ -258,7 +269,11 @@ export default function CategoryScreen() {
     }, [router]);
 
     const handleFilterChange = useCallback((filterId: string) => {
-        setSelectedFilter(prev => prev === filterId ? '' : filterId);
+        setSelectedFilter(filterId);
+    }, []);
+
+    const handleSearch = useCallback(() => {
+        Keyboard.dismiss();
     }, []);
 
     const handleSubCategorySelect = useCallback((subCategory: { id: string; name: string; icon: any }) => {
@@ -293,6 +308,22 @@ export default function CategoryScreen() {
     const headerTitle = categoryData?.nameEnglish || config.title;
     const headerIcon = categoryData?.imageUrl || config.icon;
 
+    const filteredOffers = useMemo(() => {
+        if (!searchQuery.trim()) return offers;
+        const lowerQuery = searchQuery.toLowerCase();
+        return offers.filter((offer: any) => {
+            const titleEn = offer.titleEn?.toLowerCase() || '';
+            const titleAr = offer.titleAr?.toLowerCase() || '';
+            const descEn = offer.descriptionEn?.toLowerCase() || '';
+            const descAr = offer.descriptionAr?.toLowerCase() || '';
+            
+            return titleEn.includes(lowerQuery) || 
+                   titleAr.includes(lowerQuery) || 
+                   descEn.includes(lowerQuery) || 
+                   descAr.includes(lowerQuery);
+        });
+    }, [offers, searchQuery]);
+
     const renderFooter = () => {
         if (!loadingOffers) return <View style={{ height: 20 }} />;
         return (
@@ -307,7 +338,7 @@ export default function CategoryScreen() {
             <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
             {!loading && hasSubCategories ? (
                 <FlashList
-                    data={offers}
+                    data={filteredOffers}
                     keyExtractor={(item) => item.id}
                     numColumns={2}
                     contentContainerStyle={styles.contentContainer}
@@ -326,6 +357,9 @@ export default function CategoryScreen() {
                             handleSubCategorySelect={handleSubCategorySelect}
                             config={config}
                             handleRestaurantPress={handleRestaurantPress}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            handleSearch={handleSearch}
                         />
                     }
                     ListFooterComponent={renderFooter}
@@ -347,6 +381,7 @@ export default function CategoryScreen() {
                                 isTrending={item.isTrending}
                                 isTopRated={item.isTopRated}
                                 imageUri={item.bannerImage}
+                                logoUri={item.vendorProfilePicture}
                                 onPress={() => handlePromoPress({ id: item.id, title: item.titleEn, vendorId: item.vendorId })}
                             />
                         </View>
@@ -371,6 +406,9 @@ export default function CategoryScreen() {
                         handleSubCategorySelect={handleSubCategorySelect}
                         config={config}
                         handleRestaurantPress={handleRestaurantPress}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        handleSearch={handleSearch}
                     />
                 </ScrollView>
             )}

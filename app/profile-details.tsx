@@ -20,10 +20,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
-
+import { ThemedText } from '../components/ThemedText';
+import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileDetailsScreen() {
     const router = useRouter();
+    const { theme } = useTheme();
     const BRAND_GREEN = Colors.brandGreen;
 
     // Form states
@@ -60,13 +62,16 @@ export default function ProfileDetailsScreen() {
                     setGender(data?.gender || null);
                     setPhotoURL(data?.photoURL || user.photoURL || null);
                     if (data?.dob) {
-                        // Support both YYYY-MM-DD and DD/MM/YYYY
-                        if (data.dob.includes('-')) {
-                            const [year, month, day] = data.dob.split('-').map(Number);
-                            setDob(new Date(year, month - 1, day));
-                        } else {
-                            const [day, month, year] = data.dob.split('/').map(Number);
-                            setDob(new Date(year, month - 1, day));
+                        try {
+                            if (data.dob.includes('-')) {
+                                const [year, month, day] = data.dob.split('-').map(Number);
+                                setDob(new Date(year, month - 1, day));
+                            } else if (data.dob.includes('/')) {
+                                const [day, month, year] = data.dob.split('/').map(Number);
+                                setDob(new Date(year, month - 1, day));
+                            }
+                        } catch (e) {
+                            console.error('Date parsing error:', e);
                         }
                     }
                 }
@@ -84,7 +89,6 @@ export default function ProfileDetailsScreen() {
     const handleBack = () => {
         router.back();
     };
-
 
     const formatDate = (date: Date | null) => {
         if (!date) return 'DD/MM/YYYY';
@@ -119,7 +123,6 @@ export default function ProfileDetailsScreen() {
 
             await updateDoc(studentDocRef, updatedData);
 
-            // Also update Auth profile display name
             await updateProfile(user, {
                 displayName: `${firstName.trim()} ${lastName.trim()}`
             });
@@ -137,11 +140,11 @@ export default function ProfileDetailsScreen() {
     const handleDeleteAccount = () => {
         Alert.alert(
             'Delete Account',
-            'Are you sure you want to delete your account? This action cannot be undone.',
+            'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: 'Delete Permanently',
                     style: 'destructive',
                     onPress: async () => {
                         const authInstance = getAuth();
@@ -150,21 +153,29 @@ export default function ProfileDetailsScreen() {
 
                         setIsLoading(true);
                         try {
-                            // Delete from Firestore
-                            const db = getFirestore();
-                            // Note: We might want to use a Cloud Function for this to ensure consistency
-                            // but for now we delete the student doc
-                            // await deleteDoc(doc(db, 'students', user.uid)); 
-
-                            // Delete Auth account
+                            // The "Delete User Data" extension is triggered by the Auth user deletion
                             await deleteUser(user);
+                            
+                            // Explicitly sign out to clear any local session data
+                            // This may throw if the user is already deleted, which is expected
+                            try {
+                                await authInstance.signOut();
+                            } catch (_) {
+                                // User already deleted, sign out is a no-op
+                            }
+                            
+                            Alert.alert('Account Deleted', 'Your account and data have been successfully removed.');
                             router.replace('/(onboarding)');
                         } catch (error: any) {
                             console.error('Error deleting account:', error);
                             if (error.code === 'auth/requires-recent-login') {
-                                Alert.alert('Error', 'Please log out and log back in to perform this action.');
+                                Alert.alert(
+                                    'Security Re-authentication Required',
+                                    'For security reasons, deleting your account requires a recent login. Please log out and log back in, then try again.',
+                                    [{ text: 'OK' }]
+                                );
                             } else {
-                                Alert.alert('Error', 'Failed to delete account');
+                                Alert.alert('Error', 'Failed to delete account. Please try again later.');
                             }
                         } finally {
                             setIsLoading(false);
@@ -183,16 +194,16 @@ export default function ProfileDetailsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Profile Details</Text>
+                <ThemedText style={styles.headerTitle}>PROFILE DETAILS</ThemedText>
                 <TouchableOpacity onPress={handleToggleEdit} style={styles.editButton}>
-                    <Text style={[styles.editButtonText, isEditing && { color: BRAND_GREEN }]}>
-                        {isEditing ? 'Save' : 'Edit'}
-                    </Text>
+                    <ThemedText style={[styles.editButtonText, isEditing && { color: BRAND_GREEN }]}>
+                        {isEditing ? 'SAVE' : 'EDIT'}
+                    </ThemedText>
                 </TouchableOpacity>
             </View>
 
@@ -206,9 +217,9 @@ export default function ProfileDetailsScreen() {
                 >
                     {/* Profile Image Section */}
                     <View style={styles.avatarContainer}>
-                        <View style={styles.avatarMain}>
+                        <View style={[styles.avatarMain, { backgroundColor: '#F5F5F7' }]}>
                             {photoURL ? (
-                                <Image source={{ uri: photoURL }} style={styles.avatarMain} />
+                                <Image source={{ uri: photoURL }} style={styles.avatarImage} />
                             ) : (
                                 <Ionicons name="person" size={80} color="#E0E0E0" />
                             )}
@@ -223,56 +234,59 @@ export default function ProfileDetailsScreen() {
                             <>
                                 {/* First Name Field */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>First Name</Text>
+                                    <ThemedText style={styles.label}>FIRST NAME</ThemedText>
                                     <View style={[styles.inputWrapper, !isEditing && styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, !isEditing && styles.disabledText]}
+                                            style={[styles.input, !isEditing && styles.disabledText, { color: theme.text }]}
                                             value={firstName}
                                             onChangeText={setFirstName}
                                             editable={isEditing}
                                             placeholder="First name"
+                                            placeholderTextColor="#999"
                                         />
                                     </View>
                                 </View>
 
                                 {/* Last Name Field */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Last Name</Text>
+                                    <ThemedText style={styles.label}>LAST NAME</ThemedText>
                                     <View style={[styles.inputWrapper, !isEditing && styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, !isEditing && styles.disabledText]}
+                                            style={[styles.input, !isEditing && styles.disabledText, { color: theme.text }]}
                                             value={lastName}
                                             onChangeText={setLastName}
                                             editable={isEditing}
                                             placeholder="Last name"
+                                            placeholderTextColor="#999"
                                         />
                                     </View>
                                 </View>
 
                                 {/* Email Field */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Email</Text>
+                                    <ThemedText style={styles.label}>EMAIL ADDRESS</ThemedText>
                                     <View style={[styles.inputWrapper, styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, styles.disabledText]}
+                                            style={[styles.input, styles.disabledText, { color: theme.text }]}
                                             value={email}
                                             editable={false}
                                             placeholder="Email address"
+                                            placeholderTextColor="#999"
                                         />
                                     </View>
                                 </View>
 
                                 {/* Date of Birth Field */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Date of Birth</Text>
+                                    <ThemedText style={styles.label}>DATE OF BIRTH</ThemedText>
                                     <TouchableOpacity
                                         style={[styles.inputWrapper, !isEditing && styles.disabledInput]}
                                         onPress={() => isEditing && setShowDatePicker(true)}
                                         disabled={!isEditing}
                                     >
-                                        <Text style={[styles.input, !isEditing && styles.disabledText, !dob && { color: '#999' }]}>
+                                        <ThemedText style={[styles.input, !isEditing && styles.disabledText, !dob && { color: '#999' }]}>
                                             {formatDate(dob)}
-                                        </Text>
+                                        </ThemedText>
                                     </TouchableOpacity>
                                 </View>
 
@@ -286,43 +300,32 @@ export default function ProfileDetailsScreen() {
                                     />
                                 )}
 
-                                {/* Gender Field */}
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Gender</Text>
-                                    <View style={styles.genderOptions}>
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.genderButton,
-                                                gender === 'Male' && styles.genderButtonSelected,
-                                                !isEditing && styles.disabledGenderButton
-                                            ]}
-                                            onPress={() => isEditing && setGender('Male')}
-                                            disabled={!isEditing}
-                                        >
-                                            <Text style={[styles.genderText, gender === 'Male' && styles.genderTextSelected]}>Male</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.genderButton,
-                                                gender === 'Female' && styles.genderButtonSelected,
-                                                !isEditing && styles.disabledGenderButton
-                                            ]}
-                                            onPress={() => isEditing && setGender('Female')}
-                                            disabled={!isEditing}
-                                        >
-                                            <Text style={[styles.genderText, gender === 'Female' && styles.genderTextSelected]}>Female</Text>
-                                        </TouchableOpacity>
+                                {/* Gender Field - Only show the user's gender */}
+                                {gender && (
+                                    <View style={styles.inputGroup}>
+                                        <ThemedText style={styles.label}>GENDER</ThemedText>
+                                        <View style={styles.genderContainer}>
+                                            <View style={styles.genderBadge}>
+                                                <ThemedText style={styles.genderBadgeText}>{gender.toUpperCase()}</ThemedText>
+                                            </View>
+                                        </View>
                                     </View>
-                                </View>
+                                )}
                             </>
                         )}
                     </View>
 
                     {/* Action Buttons */}
                     <View style={styles.actions}>
-
-                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-                            <Text style={styles.deleteButtonText}>Delete Account</Text>
+                        <TouchableOpacity 
+                            style={styles.deleteAccountPill} 
+                            onPress={handleDeleteAccount}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.deleteContent}>
+                                <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                                <ThemedText style={styles.deleteAccountText}>DELETE ACCOUNT</ThemedText>
+                            </View>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -334,79 +337,58 @@ export default function ProfileDetailsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        gap: 20,
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        gap: 16,
     },
     backButton: {
         width: 44,
         height: 44,
         borderRadius: 22,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
+        backgroundColor: '#F5F5F7',
         justifyContent: 'center',
         alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 24,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#000',
+        fontSize: 20,
+        fontFamily: Typography.integral.bold,
         flex: 1,
         textAlign: 'center',
+        letterSpacing: 0.5,
     },
     editButton: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 4,
     },
     editButtonText: {
-        fontSize: 18,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#000',
+        fontSize: 14,
+        fontFamily: Typography.integral.bold,
     },
     scrollContent: {
         paddingHorizontal: 24,
-        paddingTop: 30,
+        paddingTop: 20,
         paddingBottom: 40,
     },
     avatarContainer: {
         alignItems: 'center',
-        marginBottom: 40,
-        position: 'relative',
-        alignSelf: 'center',
+        marginBottom: 32,
     },
     avatarMain: {
-        width: 140,
-        height: 140,
-        borderRadius: 70,
-        backgroundColor: '#F9F9F9',
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
+        borderWidth: 4,
+        borderColor: '#F5F5F7',
     },
-    uploadButton: {
-        position: 'absolute',
-        bottom: 0,
-        right: 5,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#FFF',
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        // Shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 4,
+    avatarImage: {
+        width: '100%',
+        height: '100%',
     },
     form: {
         gap: 24,
@@ -415,84 +397,65 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     label: {
-        fontSize: 18,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#000',
+        fontSize: 12,
+        fontFamily: Typography.integral.bold,
+        color: '#8E8E93',
+        paddingLeft: 4,
     },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F9F9F9',
+        backgroundColor: '#F5F5F7',
         borderRadius: 24,
         paddingHorizontal: 20,
-        height: 56,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
+        height: 60,
     },
     input: {
         flex: 1,
         fontSize: 16,
-        fontFamily: Typography.metropolis.medium,
-        color: '#000',
+        fontFamily: Typography.metropolis.semiBold,
     },
     disabledInput: {
-        backgroundColor: '#F3F3F3',
+        opacity: 0.8,
     },
     disabledText: {
-        color: '#999',
+        color: '#8E8E93',
     },
-    genderOptions: {
+    genderContainer: {
         flexDirection: 'row',
-        gap: 12,
     },
-    genderButton: {
-        flex: 1,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#F9F9F9',
+    genderBadge: {
+        backgroundColor: '#F5F5F7',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
-        justifyContent: 'center',
-        alignItems: 'center',
+        borderColor: '#E0E0E0',
     },
-    genderButtonSelected: {
-        backgroundColor: 'rgba(24, 184, 82, 0.1)',
-        borderColor: '#18B852',
-    },
-    disabledGenderButton: {
-        backgroundColor: '#F3F3F3',
-    },
-    genderText: {
-        fontSize: 16,
-        fontFamily: Typography.metropolis.medium,
+    genderBadgeText: {
+        fontSize: 14,
+        fontFamily: Typography.integral.bold,
         color: '#000',
     },
-    genderTextSelected: {
-        color: '#18B852',
-        fontFamily: Typography.metropolis.semiBold,
-    },
-
     actions: {
-        marginTop: 40,
-        gap: 20,
+        marginTop: 48,
     },
-    saveButton: {
-        height: 64,
-        borderRadius: 32,
-        justifyContent: 'center',
+    deleteAccountPill: {
+        backgroundColor: '#FFF1F0',
+        borderRadius: 30,
+        paddingVertical: 20,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#FFD5D2',
     },
-    saveButtonText: {
-        fontSize: 18,
-        fontFamily: Typography.metropolis.semiBold,
-        color: '#FFF',
+    deleteContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
-    deleteButton: {
-        alignItems: 'flex-start',
-    },
-    deleteButtonText: {
-        fontSize: 16,
-        fontFamily: Typography.metropolis.medium,
+    deleteAccountText: {
+        fontSize: 14,
+        fontFamily: Typography.integral.bold,
         color: '#FF3B30',
     },
 });

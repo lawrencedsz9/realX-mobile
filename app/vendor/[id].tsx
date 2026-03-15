@@ -33,21 +33,40 @@ export default function VendorScreen() {
                 const vendorRef = doc(db, 'vendors', id);
                 const vendorSnap = await getDoc(vendorRef);
 
+                let vendorData = null;
+                let actualVendorId = id;
+
                 if (vendorSnap.exists()) {
-                    setVendor(vendorSnap.data());
+                    vendorData = vendorSnap.data();
+                } else {
+                    // Fallback: Try searching by name if ID lookup fails
+                    // This is useful since the banner's offerId might be the vendor name
+                    const vendorsRef = collection(db, 'vendors');
+                    const nameQuery = query(vendorsRef, where('name', '==', id));
+                    const nameSnap = await getDocs(nameQuery);
+                    
+                    if (!nameSnap.empty) {
+                        const foundDoc = nameSnap.docs[0];
+                        vendorData = foundDoc.data();
+                        actualVendorId = foundDoc.id;
+                    }
                 }
 
-                // Fetch Offers
-                const offersRef = collection(db, 'offers');
-                const q = query(offersRef, where('vendorId', '==', id), where('status', '==', 'active'));
-                const querySnapshot = await getDocs(q);
+                if (vendorData) {
+                    setVendor(vendorData);
 
-                const fetchedOffers = querySnapshot.docs.map((doc: any) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                    // Fetch Offers using the actual document ID
+                    const offersRef = collection(db, 'offers');
+                    const q = query(offersRef, where('vendorId', '==', actualVendorId), where('status', '==', 'active'));
+                    const querySnapshot = await getDocs(q);
 
-                setOffers(fetchedOffers);
+                    const fetchedOffers = querySnapshot.docs.map((doc: any) => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    setOffers(fetchedOffers);
+                }
             } catch (error) {
                 console.error("Error fetching vendor data:", error);
             } finally {

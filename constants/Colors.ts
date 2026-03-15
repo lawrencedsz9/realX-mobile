@@ -29,6 +29,7 @@ export const Colors = {
     },
     // Specific onboarding colors if they need to be fixed regardless of theme
     brandGreen: '#18B852',
+    brandGreenLight: '#E8FAF0',
     onboarding: {
         background: '#FFFFFF',
         title: '#000000',
