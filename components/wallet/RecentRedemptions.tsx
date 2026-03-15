@@ -2,7 +2,8 @@ import { getAuth } from '@react-native-firebase/auth';
 import { collection, getFirestore, onSnapshot, query, where } from '@react-native-firebase/firestore';
 import { FlashList } from '@shopify/flash-list';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import RedemptionItem, { RedemptionData } from './RedemptionItem';
@@ -11,6 +12,8 @@ const LOGO_COLORS = ['#3D5A80', '#C41E3A', '#8B4513', '#2A9D8F', '#E76F51', '#E9
 
 export default function RecentRedemptions() {
     const [redemptions, setRedemptions] = useState<RedemptionData[]>([]);
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
 
     useEffect(() => {
         const auth = getAuth();
@@ -30,9 +33,9 @@ export default function RecentRedemptions() {
                 .sort((a: any, b: any) => {
                     const timeA = a.createdAt?.seconds || 0;
                     const timeB = b.createdAt?.seconds || 0;
-                    return timeB - timeA; // Descending
+                    return timeB - timeA;
                 })
-                .slice(0, 3); // Get the latest 3
+                .slice(0, 3);
 
             const formattedData: RedemptionData[] = docs.map((data: any) => {
                 let dateStr = new Date().toLocaleDateString('en-GB');
@@ -44,7 +47,7 @@ export default function RecentRedemptions() {
                     dateStr = `${day}/${month}/${year}`;
                 }
 
-                const vendorName = data.vendorName || 'Unknown Vendor';
+                const vendorName = data.vendorName || t('unknown_vendor');
                 const charCode = vendorName.charCodeAt(0) || 0;
                 const color = LOGO_COLORS[charCode % LOGO_COLORS.length];
                 const savedAmount = (data.totalAmount || 0) - (data.remainingAmount || 0);
@@ -53,7 +56,7 @@ export default function RecentRedemptions() {
                     id: data.id,
                     merchantName: vendorName,
                     date: dateStr,
-                    offerType: 'Gift Card',
+                    offerType: t('gift_card'),
                     savedAmount: savedAmount > 0 ? savedAmount : 0,
                     currency: 'QR',
                     logoBackgroundColor: color,
@@ -66,7 +69,7 @@ export default function RecentRedemptions() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [t]);
 
     const renderItem = ({ item }: { item: RedemptionData }) => (
         <RedemptionItem item={item} />
@@ -76,7 +79,9 @@ export default function RecentRedemptions() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>Recent Redemptions</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                {t('recent_redemptions')}
+            </Text>
             {redemptions.length > 0 ? (
                 <FlashList
                     data={redemptions}
@@ -87,7 +92,9 @@ export default function RecentRedemptions() {
                     contentContainerStyle={styles.listContent}
                 />
             ) : (
-                <Text style={styles.emptyText}>No recent redemptions found.</Text>
+                <Text style={[styles.emptyText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {t('no_recent_redemptions')}
+                </Text>
             )}
         </View>
     );
