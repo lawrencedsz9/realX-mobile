@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { collection, getDocs, getFirestore, query, where, limit, startAfter, orderBy } from '@react-native-firebase/firestore';
+import { collection, getDocs, getFirestore, query, where, limit, startAfter } from '@react-native-firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -31,8 +31,20 @@ export default function SearchScreen() {
     const [lastDoc, setLastDoc] = useState<any>(null);
     const [isListEnd, setIsListEnd] = useState(false);
 
-    // Fetch offers with pagination and optional search
+    // Fetch offers with pagination — only when user has typed a query
     const fetchOffers = useCallback(async (isNew = false, currentQuery = searchQuery) => {
+        const trimmedQuery = currentQuery.trim().toLowerCase();
+
+        // Don't query Firestore if no search text — saves reads
+        if (!trimmedQuery) {
+            setOffers([]);
+            setLastDoc(null);
+            setIsListEnd(true);
+            setLoading(false);
+            setLoadingMore(false);
+            return;
+        }
+
         if (loading || (loadingMore && !isNew) || (isListEnd && !isNew)) return;
 
         if (isNew) {
@@ -48,29 +60,20 @@ export default function SearchScreen() {
             const offersRef = collection(db, 'offers');
             const PAGE_SIZE = 20;
 
-            // Base query: only active offers
-            let constraints: any[] = [where('status', '==', 'active')];
-
-            // If there's a search query, we unfortunately can't do full-text search easily in Firestore 
-            // without a dedicated search index (like Algolia).
-            // As a scalable compromise, we'll fetch the latest active offers and filter them,
-            // or perform a prefix search if we want server-side filtering.
-            // For now, we'll implement pagination on active offers to keep it "practical".
-            
-            // To make search more effective while staying cost-efficient:
-            // 1. We always fetch by recency (or a default order).
-            // 2. The UI will show results from what's currently loaded.
-            // 3. We use limit to avoid fetching everything.
+            const constraints: any[] = [
+                where('status', '==', 'active'),
+                where('searchTokens', 'array-contains', trimmedQuery),
+            ];
 
             let q;
             if (isNew) {
-                q = query(offersRef, ...constraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
+                q = query(offersRef, ...constraints, limit(PAGE_SIZE) as any);
             } else {
-                q = query(offersRef, ...constraints, orderBy('createdAt', 'desc') as any, startAfter(lastDoc) as any, limit(PAGE_SIZE) as any);
+                q = query(offersRef, ...constraints, startAfter(lastDoc) as any, limit(PAGE_SIZE) as any);
             }
 
             const snapshot = await getDocs(q);
-            
+
             const fetched = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data(),
@@ -105,24 +108,8 @@ export default function SearchScreen() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // Client-side filtering on the currently loaded subset
-    const filteredOffers = useMemo(() => {
-        const trimmed = searchQuery.trim().toLowerCase();
-        if (!trimmed) return offers;
-
-        return offers.filter((offer) => {
-            const fields = [
-                offer.titleEn,
-                offer.titleAr,
-                offer.vendorName,
-                offer.mainCategory,
-                ...(Array.isArray(offer.categories) ? offer.categories : []),
-            ];
-            return fields.some(
-                (field) => typeof field === 'string' && field.toLowerCase().includes(trimmed)
-            );
-        });
-    }, [searchQuery, offers]);
+    // No client-side filtering needed — Firestore array-contains handles exact token matching
+    const filteredOffers = offers;
 
     const handleOfferPress = useCallback(
         (offer: any) => {
