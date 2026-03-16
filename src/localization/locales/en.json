@@ -30,5 +30,9 @@
   "logout_failed": "Failed to log out. Please try again.",
   "select_language": "Select Language",
   "restart_required": "Restart required",
-  "restart_message": "Please reload the app so layout direction updates correctly."
+  "restart_message": "Please reload the app so layout direction updates correctly.",
+  "recent_redemptions": "Recent Redemptions",
+  "no_recent_redemptions": "No recent redemptions",
+  "unknown_vendor": "Unknown Vendor",
+  "gift_card": "Gift Card"
 }
