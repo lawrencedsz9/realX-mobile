@@ -1,8 +1,7 @@
 import { Image } from 'expo-image';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { ThemedText } from '../ThemedText';
 
 type Props = {
     id: string;
@@ -63,7 +62,7 @@ export default function RestaurantCard({
           contentFit="cover"
         />
       ) : (
-        <ThemedText style={styles.logoEmoji}>🏪</ThemedText>
+        <Text style={[{ color: '#000', fontFamily: Typography.metropolis.medium }, styles.logoEmoji]}>🏪</Text>
       )}
     </View>
   </View>
@@ -83,11 +82,11 @@ export default function RestaurantCard({
 
             {/* Content */}
             <View style={styles.content}>
-                <ThemedText style={styles.name} numberOfLines={1}>{name}</ThemedText>
+                <Text style={[{ color: '#000', fontFamily: Typography.metropolis.medium }, styles.name]} numberOfLines={1}>{name}</Text>
 
                 {/* Discount Tag */}
                 <View style={styles.discountWrapper}>
-                    <ThemedText style={styles.discountText}>{discountText}</ThemedText>
+                    <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.metropolis.medium }, styles.discountText]}>{discountText}</Text>
                 </View>
             </View>
         </TouchableOpacity>

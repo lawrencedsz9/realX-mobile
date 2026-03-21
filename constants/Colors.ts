@@ -17,16 +17,6 @@ export const Colors = {
         primary: primaryRed,
         buttonText: '#FFFFFF',
     },
-    dark: {
-        text: '#FFFFFF',
-        background: darkBackground,
-        tint: gold,
-        subtitle: '#9BA1A6',
-        tabIconDefault: '#9BA1A6',
-        tabIconSelected: gold,
-        primary: primaryRed,
-        buttonText: '#FFFFFF',
-    },
     // Specific onboarding colors if they need to be fixed regardless of theme
     brandGreen: '#18B852',
     brandGreenLight: '#E8FAF0',

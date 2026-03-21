@@ -3,7 +3,6 @@ import { memo, useCallback } from 'react';
 import { ColorSchemeName, ScrollView, StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { useTheme } from '../../context/ThemeContext';
 
 export type SubCategory = {
     id: string;
@@ -28,14 +27,10 @@ const SubCategoryChip = memo(({
     item,
     isSelected,
     onPress,
-    theme,
-    colorScheme
 }: {
     item: SubCategory;
     isSelected: boolean;
     onPress: (item: SubCategory) => void;
-    theme: typeof Colors.light;
-    colorScheme: ColorSchemeName;
 }) => {
     const renderIcon = () => {
         const { icon } = item;
@@ -68,14 +63,14 @@ const SubCategoryChip = memo(({
         >
             <View style={[
                 styles.iconContainer,
-                { backgroundColor: isSelected ? Colors.brandGreenLight : colorScheme === 'dark' ? '#333333' : '#F5F5F5' },
+                { backgroundColor: isSelected ? Colors.brandGreenLight : '#F5F5F5' },
                 isSelected && styles.iconContainerSelected,
             ]}>
                 {renderIcon()}
             </View>
             <Text style={[
                 styles.chipText,
-                { color: isSelected ? Colors.brandGreen : theme.text },
+                { color: isSelected ? Colors.brandGreen : Colors.light.text },
                 isSelected && styles.chipTextSelected,
             ]}>
                 {item.name}
@@ -93,7 +88,6 @@ function SubCategoryChips({
     onSelect,
     containerStyle,
 }: Props) {
-    const { theme, colorScheme } = useTheme();
 
     const handleSelect = useCallback((item: SubCategory) => {
         onSelect?.(item);
@@ -113,8 +107,6 @@ function SubCategoryChips({
                         item={subCategory}
                         isSelected={selectedId === subCategory.id}
                         onPress={handleSelect}
-                        theme={theme}
-                        colorScheme={colorScheme}
                     />
                 ))}
             </ScrollView>

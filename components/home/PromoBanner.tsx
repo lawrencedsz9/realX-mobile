@@ -2,8 +2,7 @@ import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { ThemedText } from '../ThemedText';
+import { ActivityIndicator, Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 const BANNER_WIDTH = screenWidth - 48;
@@ -89,7 +88,7 @@ export default function PromoBanner() {
     if (banners.length === 0) {
         return (
             <View style={[styles.container, styles.loaderContainer]}>
-                <ThemedText type="subtitle">No banners available</ThemedText>
+                <Text style={{ color: '#8E8E93', fontFamily: 'System' }}>No banners available</Text>
             </View>
         );
     }

@@ -20,12 +20,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
-import { ThemedText } from '../components/ThemedText';
-import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileDetailsScreen() {
     const router = useRouter();
-    const { theme } = useTheme();
     const BRAND_GREEN = Colors.brandGreen;
 
     // Form states
@@ -194,16 +191,16 @@ export default function ProfileDetailsScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={theme.text} />
+                    <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
                 </TouchableOpacity>
-                <ThemedText style={styles.headerTitle}>PROFILE DETAILS</ThemedText>
+                <Text style={styles.headerTitle}>PROFILE DETAILS</Text>
                 <TouchableOpacity onPress={handleToggleEdit} style={styles.editButton}>
-                    <ThemedText style={[styles.editButtonText, isEditing && { color: BRAND_GREEN }]}>
+                    <Text style={[styles.editButtonText, isEditing && { color: BRAND_GREEN }]}>
                         {isEditing ? 'SAVE' : 'EDIT'}
-                    </ThemedText>
+                    </Text>
                 </TouchableOpacity>
             </View>
 
@@ -234,10 +231,10 @@ export default function ProfileDetailsScreen() {
                             <>
                                 {/* First Name Field */}
                                 <View style={styles.inputGroup}>
-                                    <ThemedText style={styles.label}>FIRST NAME</ThemedText>
+                                    <Text style={styles.label}>FIRST NAME</Text>
                                     <View style={[styles.inputWrapper, !isEditing && styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, !isEditing && styles.disabledText, { color: theme.text }]}
+                                            style={[styles.input, !isEditing && styles.disabledText, { color: Colors.light.text }]}
                                             value={firstName}
                                             onChangeText={setFirstName}
                                             editable={isEditing}
@@ -249,10 +246,10 @@ export default function ProfileDetailsScreen() {
 
                                 {/* Last Name Field */}
                                 <View style={styles.inputGroup}>
-                                    <ThemedText style={styles.label}>LAST NAME</ThemedText>
+                                    <Text style={styles.label}>LAST NAME</Text>
                                     <View style={[styles.inputWrapper, !isEditing && styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, !isEditing && styles.disabledText, { color: theme.text }]}
+                                            style={[styles.input, !isEditing && styles.disabledText, { color: Colors.light.text }]}
                                             value={lastName}
                                             onChangeText={setLastName}
                                             editable={isEditing}
@@ -264,10 +261,10 @@ export default function ProfileDetailsScreen() {
 
                                 {/* Email Field */}
                                 <View style={styles.inputGroup}>
-                                    <ThemedText style={styles.label}>EMAIL ADDRESS</ThemedText>
+                                    <Text style={styles.label}>EMAIL ADDRESS</Text>
                                     <View style={[styles.inputWrapper, styles.disabledInput]}>
                                         <TextInput
-                                            style={[styles.input, styles.disabledText, { color: theme.text }]}
+                                            style={[styles.input, styles.disabledText, { color: Colors.light.text }]}
                                             value={email}
                                             editable={false}
                                             placeholder="Email address"
@@ -278,15 +275,15 @@ export default function ProfileDetailsScreen() {
 
                                 {/* Date of Birth Field */}
                                 <View style={styles.inputGroup}>
-                                    <ThemedText style={styles.label}>DATE OF BIRTH</ThemedText>
+                                    <Text style={styles.label}>DATE OF BIRTH</Text>
                                     <TouchableOpacity
                                         style={[styles.inputWrapper, !isEditing && styles.disabledInput]}
                                         onPress={() => isEditing && setShowDatePicker(true)}
                                         disabled={!isEditing}
                                     >
-                                        <ThemedText style={[styles.input, !isEditing && styles.disabledText, !dob && { color: '#999' }]}>
+                                        <Text style={[styles.input, !isEditing && styles.disabledText, !dob && { color: '#999' }]}>
                                             {formatDate(dob)}
-                                        </ThemedText>
+                                        </Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -303,10 +300,10 @@ export default function ProfileDetailsScreen() {
                                 {/* Gender Field - Only show the user's gender */}
                                 {gender && (
                                     <View style={styles.inputGroup}>
-                                        <ThemedText style={styles.label}>GENDER</ThemedText>
+                                        <Text style={styles.label}>GENDER</Text>
                                         <View style={styles.genderContainer}>
                                             <View style={styles.genderBadge}>
-                                                <ThemedText style={styles.genderBadgeText}>{gender.toUpperCase()}</ThemedText>
+                                                <Text style={styles.genderBadgeText}>{gender.toUpperCase()}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -324,7 +321,7 @@ export default function ProfileDetailsScreen() {
                         >
                             <View style={styles.deleteContent}>
                                 <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-                                <ThemedText style={styles.deleteAccountText}>DELETE ACCOUNT</ThemedText>
+                                <Text style={styles.deleteAccountText}>DELETE ACCOUNT</Text>
                             </View>
                         </TouchableOpacity>
                     </View>

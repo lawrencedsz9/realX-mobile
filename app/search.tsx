@@ -7,22 +7,20 @@ import {
     FlatList,
     StatusBar,
     StyleSheet,
+    Text,
     TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { SafeAreaView} from 'react-native-safe-area-context';
 import { RestaurantCard } from '../components/category';
-import { ThemedText } from '../components/ThemedText';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
-import { useTheme } from '../context/ThemeContext';
 
 export default function SearchScreen() {
     const { q } = useLocalSearchParams<{ q: string }>();
     const router = useRouter();
-    const { theme, colorScheme } = useTheme();
-    const isDark = colorScheme === 'dark';
+    const isDark = false;
 
     const [searchQuery, setSearchQuery] = useState(q || '');
     const [offers, setOffers] = useState<any[]>([]);
@@ -164,21 +162,21 @@ export default function SearchScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]} edges={['top']}>
-            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.light.background }]} edges={['top']}>
+            <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={[styles.backButton, { backgroundColor: isDark ? '#25292e' : '#FFF' }]} onPress={() => router.back()} activeOpacity={0.8}>
-                    <Ionicons name="arrow-back" size={22} color={isDark ? '#FFF' : '#000'} />
+                <TouchableOpacity style={[styles.backButton, { backgroundColor: '#FFF' }]} onPress={() => router.back()} activeOpacity={0.8}>
+                    <Ionicons name="arrow-back" size={22} color="#000" />
                 </TouchableOpacity>
 
-                <View style={[styles.searchContainer, { backgroundColor: isDark ? '#25292e' : '#F5F5F5', borderColor: isDark ? '#333' : '#E0E0E0' }]}>
+                <View style={[styles.searchContainer, { backgroundColor: '#F5F5F5', borderColor: '#E0E0E0' }]}>
                     <Ionicons name="search" size={18} color={Colors.brandGreen} style={styles.searchIcon} />
                     <TextInput
-                        style={[styles.searchInput, { color: theme.text }]}
+                        style={[styles.searchInput, { color: Colors.light.text }]}
                         placeholder="Search for offers..."
-                        placeholderTextColor={theme.subtitle}
+                        placeholderTextColor={Colors.light.tabIconDefault}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         returnKeyType="search"
@@ -186,7 +184,7 @@ export default function SearchScreen() {
                     />
                     {searchQuery.length > 0 && (
                         <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                            <Ionicons name="close-circle" size={18} color={isDark ? '#666' : '#AAA'} />
+                            <Ionicons name="close-circle" size={18} color="#AAA" />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -199,15 +197,15 @@ export default function SearchScreen() {
                 </View>
             ) : filteredOffers.length === 0 ? (
                 <View style={styles.centeredContainer}>
-                    <ThemedText style={styles.emptyEmoji}>🔍</ThemedText>
-                    <ThemedText style={styles.emptyTitle}>
+                    <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.emptyEmoji]}>🔍</Text>
+                    <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.emptyTitle]}>
                         {searchQuery.trim() ? 'No offers found' : 'Search for offers'}
-                    </ThemedText>
-                    <ThemedText type="subtitle" style={styles.emptySubtitle}>
+                    </Text>
+                    <Text style={[{ color: Colors.light.tabIconDefault, fontFamily: Typography.metropolis.medium }, styles.emptySubtitle]}>
                         {searchQuery.trim()
                             ? `We couldn't find any offers matching "${searchQuery.trim()}"`
                             : 'Type a keyword to find deals and discounts'}
-                    </ThemedText>
+                    </Text>
                 </View>
             ) : (
                 <FlatList
@@ -221,9 +219,9 @@ export default function SearchScreen() {
                     onEndReachedThreshold={0.5}
                     ListFooterComponent={renderFooter}
                     ListHeaderComponent={
-                        <ThemedText style={styles.resultCount}>
+                        <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.resultCount]}>
                             {filteredOffers.length} {filteredOffers.length === 1 ? 'result' : 'results'}
-                        </ThemedText>
+                        </Text>
                     }
                 />
             )}

@@ -15,15 +15,14 @@ import {
   TrendingOffers
 } from '../../components/home';
 
-import { useTheme } from '../../context/ThemeContext';
+import { Colors } from '../../constants/Colors';
 
 export default function HomeScreen() {
   const [userName, setUserName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
-  const { theme, colorScheme } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const isDark = colorScheme === 'dark';
+  const isDark = false;
 
   useEffect(() => {
     const authInstance = getAuth();
@@ -50,13 +49,13 @@ export default function HomeScreen() {
   }, [searchQuery, router]);
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.light.background }]} edges={['top']}>
       <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={theme.background}
+        barStyle="dark-content"
+        backgroundColor={Colors.light.background}
       />
       <ScrollView
-        style={[styles.container, { backgroundColor: theme.background }]}
+        style={[styles.container, { backgroundColor: Colors.light.background }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >

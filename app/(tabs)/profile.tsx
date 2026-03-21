@@ -4,20 +4,17 @@ import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore'
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
-import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
-import { useTheme } from '../../context/ThemeContext';
 import i18n, { setStoredLanguage } from '../../src/localization/i18n';
 import { applyRTL } from '../../src/localization/rtl';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
   const { t } = useTranslation();
 
   const [userData, setUserData] = useState<{
@@ -100,15 +97,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <ThemedText style={styles.headerText}>
+          <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.headerText]}>
             PROFILE
-          </ThemedText>
+          </Text>
         </View>
 
         <TouchableOpacity
@@ -130,7 +127,7 @@ export default function ProfileScreen() {
               )}
             </View>
             <View style={styles.badge}>
-              <ThemedText style={styles.badgeText}>ROOKIE</ThemedText>
+              <Text style={[{ color: '#FFFFFF', fontFamily: Typography.metropolis.medium }, styles.badgeText]}>ROOKIE</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -142,31 +139,31 @@ export default function ProfileScreen() {
         >
           <View style={styles.profileBottomRow}>
             <View style={styles.userInfo}>
-              <ThemedText style={styles.userName}>
+              <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.userName]}>
                 {userData ? `${userData.firstName} ${userData.lastName}` : 'Darren Watkins'}
-              </ThemedText>
+              </Text>
             </View>
             <TouchableOpacity 
               style={styles.editButton}
               onPress={() => router.push('/profile-details')}
             >
               <Ionicons name="create-outline" size={16} color="#8E8E93" />
-              <ThemedText style={styles.editButtonText}>EDIT PROFILE</ThemedText>
+              <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.editButtonText]}>EDIT PROFILE</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
         <View style={styles.sectionHeader}>
-          <ThemedText style={styles.sectionTitle}>SAVINGS TRACKER 🔥</ThemedText>
+          <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.sectionTitle]}>SAVINGS TRACKER 🔥</Text>
         </View>
 
         <View style={styles.savingsCard}>
-          <ThemedText style={styles.savingsLabel}>All time you've saved</ThemedText>
+          <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.savingsLabel]}>All time you've saved</Text>
           <View style={styles.savingsAmountContainer}>
-            <ThemedText style={styles.savingsAmountGreen}>
+            <Text style={[{ color: '#1AD04F', fontFamily: Typography.metropolis.medium }, styles.savingsAmountGreen]}>
               {(userData?.savings ?? 23.12).toFixed(2)}
-            </ThemedText>
-            <ThemedText style={styles.savingsCurrency}> QAR</ThemedText>
+            </Text>
+            <Text style={[{ color: Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.savingsCurrency]}> QAR</Text>
           </View>
         </View>
 
@@ -211,7 +208,6 @@ function MenuItem({
   onPress?: () => void;
   color?: string;
 }) {
-  const { theme } = useTheme();
   
   return (
     <TouchableOpacity
@@ -221,7 +217,7 @@ function MenuItem({
     >
       <View style={styles.menuItemLeft}>
         <Ionicons name={icon} size={24} color="#000" />
-        <ThemedText style={styles.menuItemLabel}>{label}</ThemedText>
+        <Text style={[{ color: color || Colors.light.text, fontFamily: Typography.metropolis.medium }, styles.menuItemLabel]}>{label}</Text>
       </View>
     </TouchableOpacity>
   );
