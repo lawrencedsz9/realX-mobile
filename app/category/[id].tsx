@@ -12,6 +12,7 @@ import {
     RestaurantCard,
     SubCategoryChips
 } from '../../components/category';
+import { useTranslation } from 'react-i18next';
 import { SearchBar } from '../../components/home';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -96,6 +97,7 @@ interface HeaderContentProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     handleSearch: () => void;
+    t: any;
 }
 
 const HeaderContent = memo(({
@@ -114,6 +116,7 @@ const HeaderContent = memo(({
     searchQuery,
     setSearchQuery,
     handleSearch,
+    t,
 }: HeaderContentProps) => (
     <>
         <CategoryHeader
@@ -124,7 +127,7 @@ const HeaderContent = memo(({
 
         {hasSubCategories && (
             <SearchBar
-                placeholder={`Search for ${headerTitle.toLowerCase()}...`}
+                placeholder={t('search_placeholder_category', { category: headerTitle.toLowerCase() })}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onSubmit={handleSearch}
@@ -178,11 +181,11 @@ const HeaderContent = memo(({
                     style={styles.comingSoonImage} 
                     resizeMode="contain"
                 />
-                <Text style={styles.comingSoonTitle}>
-                    Coming <Text style={styles.comingSoonTitleGreen}>Soon</Text> 🚀
+                 <Text style={styles.comingSoonTitle}>
+                    {t('coming_soon_title')} <Text style={styles.comingSoonTitleGreen}>{t('coming_soon_accent')}</Text> 🚀
                 </Text>
                 <Text style={styles.comingSoonSubtitle}>
-                    We're preparing student{'\n'}discounts for this category.
+                    {t('coming_soon_subtitle')}
                 </Text>
             </View>
         )}
@@ -192,6 +195,8 @@ const HeaderContent = memo(({
 export default function CategoryScreen() {
     const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
     const router = useRouter();
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === 'ar';
 
     const [categoryData, setCategoryData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -241,7 +246,7 @@ export default function CategoryScreen() {
         try {
             const db = getFirestore();
             const offersRef = collection(db, 'offers');
-            const categoryName = categoryData?.nameEnglish || config.title;
+            const categoryName = (isArabic ? (categoryData?.nameArabic || categoryData?.nameAr) : null) || categoryData?.nameEnglish || config.title;
             const PAGE_SIZE = 10;
 
             let q;
@@ -346,17 +351,17 @@ export default function CategoryScreen() {
     const subCategories = useMemo(() => {
         const fetchedSubCategories = categoryData?.subcategories?.map((sub: any) => ({
             id: sub.nameEnglish,
-            name: sub.nameEnglish,
+            name: isArabic ? (sub.nameArabic || sub.nameAr || sub.nameEnglish) : sub.nameEnglish,
             icon: sub.imageUrl
         })) || config.subCategories;
 
         return [
-            { id: 'all', name: 'All', icon: require('../../assets/images/all.png') },
+            { id: 'all', name: t('all'), icon: require('../../assets/images/all.png') },
             ...fetchedSubCategories
         ];
-    }, [categoryData, config.subCategories]);
+    }, [categoryData, config.subCategories, isArabic, t]);
 
-    const headerTitle = categoryData?.nameEnglish || config.title;
+    const headerTitle = (isArabic ? (categoryData?.nameArabic || categoryData?.nameAr) : null) || categoryData?.nameEnglish || config.title;
     const headerIcon = categoryData?.imageUrl || config.icon;
 
     const filteredOffers = useMemo(() => {
@@ -411,6 +416,7 @@ export default function CategoryScreen() {
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
                             handleSearch={handleSearch}
+                            t={t}
                         />
                     }
                     ListFooterComponent={renderFooter}
@@ -461,6 +467,7 @@ export default function CategoryScreen() {
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         handleSearch={handleSearch}
+                        t={t}
                     />
                 </ScrollView>
             )}

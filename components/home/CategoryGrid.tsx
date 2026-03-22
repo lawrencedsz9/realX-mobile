@@ -3,6 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -21,8 +22,11 @@ type Props = {
 
 export default function CategoryGrid({ categories: propCategories, onCategoryPress }: Props) {
     const router = useRouter();
+    const { t, i18n } = useTranslation();
     const [fetchedCategories, setFetchedCategories] = useState<CategoryItem[]>([]);
     const [loading, setLoading] = useState(!propCategories);
+
+    const isArabic = i18n.language === 'ar';
 
     useEffect(() => {
         if (propCategories) return;
@@ -36,17 +40,20 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
                 );
 
                 const snapshot = await getDocs(q);
-                const items: CategoryItem[] = snapshot.docs.map((doc: { id: string; data: () => any }) => ({
-                    id: doc.id,
-                    name: doc.data().nameEnglish,
-                    image: doc.data().imageUrl,
-                }));
+                const items: CategoryItem[] = snapshot.docs.map((doc: any) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: isArabic ? (data.nameArabic || data.nameAr || data.nameEnglish) : data.nameEnglish,
+                        image: data.imageUrl,
+                    };
+                });
 
                 // Add "See More" at the end to match original layout if it fits
                 if (items.length > 0) {
                     items.push({
                         id: 'coming-soon',
-                        name: 'Coming Soon!',
+                        name: t('coming_soon'),
                         image: require('../../assets/images/see-more.png')
                     });
                 }
