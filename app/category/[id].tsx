@@ -122,12 +122,14 @@ const HeaderContent = memo(({
             onBackPress={handleBackPress}
         />
 
-        <SearchBar
-            placeholder={`Search for ${headerTitle.toLowerCase()}...`}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmit={handleSearch}
-        />
+        {hasSubCategories && (
+            <SearchBar
+                placeholder={`Search for ${headerTitle.toLowerCase()}...`}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmit={handleSearch}
+            />
+        )}
 
         {loading ? (
             <View style={styles.comingSoonContainer}>

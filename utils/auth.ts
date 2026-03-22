@@ -7,8 +7,8 @@ const AUTH_EMAIL_KEY = 'auth_email_for_sign_in';
  * Note: The 'url' domain must be whitelisted in Firebase Console -> Authentication -> Settings -> Authorized domains.
  */
 export const actionCodeSettings = {
-    // This URL will be used as a fallback and should be whitelisted in Firebase Console.
-    url: 'https://reelx-backend.firebaseapp.com',
+    // This URL must match your Firebase Hosting domain where the .well-known file is served.
+    url: 'https://reelx-backend.web.app/finishSignIn', // UPDATED
     handleCodeInApp: true,
     iOS: {
         bundleId: 'com.reelx.app',
@@ -18,8 +18,6 @@ export const actionCodeSettings = {
         installApp: true,
         minimumVersion: '1',
     },
-    // Optional: if using Dynamic Links (deprecated but still supported in some configs)
-    // dynamicLinkDomain: 'reelx.page.link',
 };
 
 export const saveAuthEmail = async (email: string) => {

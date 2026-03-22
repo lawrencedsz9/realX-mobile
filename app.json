@@ -15,9 +15,7 @@
       "bundleIdentifier": "com.reelx.app",
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
-        "applinks:reelx-backend.firebaseapp.com",
-        "applinks:reelx-backend.web.app",
-        "applinks:reelx.app"
+        "applinks:reelx-backend.web.app"
       ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
