@@ -166,7 +166,7 @@ export default function SpendCardDrawer({
                         <View style={styles.balanceCard}>
                             <Text style={styles.balanceLabel}>Available Balance:</Text>
                             <PhonkText style={styles.balanceValue}>
-                                {balance} {currency}
+                                {balance.toFixed(2)} {currency}
                             </PhonkText>
                         </View>
 

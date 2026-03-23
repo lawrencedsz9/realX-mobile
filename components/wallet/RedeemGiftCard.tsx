@@ -100,7 +100,7 @@ export default function RedeemGiftCard({
 
                     <View style={styles.selectedAmountContainer}>
                         <PhonkText style={styles.selectedAmountText}>
-                            {currency} {selectedAmount}
+                            {currency} {selectedAmount.toFixed(2)}
                         </PhonkText>
                     </View>
                 </View>
@@ -123,7 +123,7 @@ export default function RedeemGiftCard({
                                     styles.amountOptionText,
                                     selectedAmount === amount && styles.amountOptionTextSelected,
                                 ]}>
-                                    {currency} {amount}
+                                    {currency} {amount.toFixed(2)}
                                 </PhonkText>
                             </TouchableOpacity>
                         ))}
@@ -135,7 +135,7 @@ export default function RedeemGiftCard({
                     <View style={styles.insufficientContainer}>
                         <Ionicons name="alert-circle" size={18} color="#E53935" />
                         <Text style={styles.insufficientText}>
-                            Insufficient balance. You need {currency} {selectedAmount} but only have {currency} {maxLimit}.
+                            Insufficient balance. You need {currency} {selectedAmount.toFixed(2)} but only have {currency} {maxLimit.toFixed(2)}.
                         </Text>
                     </View>
                 )}

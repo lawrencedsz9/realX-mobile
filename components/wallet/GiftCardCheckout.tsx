@@ -132,7 +132,7 @@ export default function GiftCardCheckout({
                         </TouchableOpacity>
 
                         <PhonkText style={styles.offerTitle}>
-                            {selectedAmount}
+                            {selectedAmount.toFixed(2)}
                             <Text style={styles.greenText}>{currency}</Text>
                         </PhonkText>
                         <PhonkText style={styles.offerSubtitleLabel}>Gift Card</PhonkText>
@@ -212,7 +212,7 @@ export default function GiftCardCheckout({
                             </View>
                             <View style={styles.breakdownDivider} />
                             <View style={styles.breakdownRow}>
-                                <Text style={styles.breakdownLabelBold}>Remaining Amount</Text>
+                                <Text style={styles.breakdownLabelBold}>Amount to Pay</Text>
                                 <PhonkText style={styles.breakdownValueBold}>
                                     {currency} {remainingAmount.toFixed(2)}
                                 </PhonkText>

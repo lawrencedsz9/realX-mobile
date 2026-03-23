@@ -57,10 +57,10 @@ export default function RedemptionItem({ item }: Props) {
             {/* Saved Amount */}
             <View style={[styles.savedContainer, isRTL && { alignItems: 'flex-start' }]}>
                 <Text style={styles.savedLabel}>
-                    {item.savedAmount} {item.currency}
+                    {item.savedAmount.toFixed(2)} {item.currency}
                 </Text>
                 <Text style={styles.totalBillText}>
-                    of {item.totalBill} {item.currency}
+                    of {item.totalBill.toFixed(2)} {item.currency}
                 </Text>
             </View>
         </View>

@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     },
     offerCard: {
         marginBottom: 8,
-        gap: 4,
+
     },
     offerInfoContainer: {
         borderRadius: 30,
@@ -436,6 +436,10 @@ const styles = StyleSheet.create({
     offerActionsRow: {
         flexDirection: 'row',
         gap: 12,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 30,
+        paddingHorizontal: 8,
+        paddingVertical: 8,
     },
     pillButton: {
         flex: 1,
@@ -446,18 +450,9 @@ const styles = StyleSheet.create({
         height: 56,
         borderRadius: 30,
         gap: 8,
-        // Shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 5,
-        elevation: 2,
     },
     redeemPill: {
         backgroundColor: Colors.brandGreen,
-        shadowColor: Colors.brandGreen,
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
     },
     pillButtonTextSmall: {
         fontSize: 14,

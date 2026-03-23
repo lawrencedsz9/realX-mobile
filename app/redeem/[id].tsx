@@ -372,7 +372,7 @@ export default function RedeemScreen() {
                                             </View>
                                             <View style={styles.breakdownDivider} />
                                             <View style={styles.breakdownRow}>
-                                                <Text style={styles.breakdownLabelBold}>Amount after Discount</Text>
+                                                <Text style={styles.breakdownLabelBold}>Amount to Pay</Text>
                                                 <PhonkText style={styles.breakdownValueBold}>
                                                     QAR {finalAmount.toFixed(2)}
                                                 </PhonkText>

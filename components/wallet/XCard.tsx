@@ -31,7 +31,7 @@ export default function XCard({ earnings = 0, currency = 'QAR', creatorCode }: P
                         <Text style={styles.earningsLabel}>Cashback:</Text>
                         <View style={styles.earningsRow}>
                             <Text style={styles.earningsAmount}>
-                                {earnings} {currency}
+                                {earnings.toFixed(2)} {currency}
                             </Text>
                         </View>
                     </View>
