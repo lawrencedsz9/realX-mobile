@@ -194,7 +194,7 @@ export default function ProfileDetailsScreen() {
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
                 </TouchableOpacity>
-                <PhonkText style={styles.headerTitle}>PROFILE DETAILS</PhonkText>
+                <PhonkText style={styles.headerTitle}>DETAILS</PhonkText>
                 <TouchableOpacity onPress={handleToggleEdit} style={styles.editButton}>
                     <PhonkText style={[styles.editButtonText, isEditing && { color: BRAND_GREEN }]}>
                         {isEditing ? 'SAVE' : 'EDIT'}
@@ -343,7 +343,11 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     editButton: {
-        paddingHorizontal: 4,
+        backgroundColor: '#F5F5F7',
+        borderRadius: 24,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        
     },
     editButtonText: {
         fontSize: 14,

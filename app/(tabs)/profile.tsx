@@ -149,7 +149,7 @@ export default function ProfileScreen() {
               onPress={() => router.push('/profile-details')}
             >
               <Ionicons name="create-outline" size={16} color="#8E8E93" />
-              <PhonkText style={[{ color: Colors.light.text }, styles.editButtonText]}>EDIT PROFILE</PhonkText>
+              <PhonkText style={[{ color: Colors.light.text }, styles.editButtonText]}>PROFILE</PhonkText>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
