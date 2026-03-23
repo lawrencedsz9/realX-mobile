@@ -87,6 +87,7 @@ interface HeaderContentProps {
     handleBackPress: () => void;
     loading: boolean;
     hasSubCategories: boolean;
+    isCategoryActive: boolean;
     selectedFilter: string;
     handleFilterChange: (id: string) => void;
     subCategories: any[];
@@ -106,6 +107,7 @@ const HeaderContent = memo(({
     handleBackPress,
     loading,
     hasSubCategories,
+    isCategoryActive,
     selectedFilter,
     handleFilterChange,
     subCategories,
@@ -125,7 +127,7 @@ const HeaderContent = memo(({
             onBackPress={handleBackPress}
         />
 
-        {hasSubCategories && (
+        {isCategoryActive && (
             <SearchBar
                 placeholder={t('search_placeholder_category', { category: headerTitle.toLowerCase() })}
                 value={searchQuery}
@@ -138,18 +140,20 @@ const HeaderContent = memo(({
             <View style={styles.comingSoonContainer}>
                 <Text>Loading...</Text>
             </View>
-        ) : hasSubCategories ? (
+        ) : isCategoryActive ? (
             <>
                 <FilterTabs
                     selectedFilter={selectedFilter}
                     onFilterChange={handleFilterChange}
                 />
 
-                <SubCategoryChips
-                    subCategories={subCategories}
-                    selectedId={selectedSubCategory}
-                    onSelect={handleSubCategorySelect}
-                />
+                {hasSubCategories && (
+                    <SubCategoryChips
+                        subCategories={subCategories}
+                        selectedId={selectedSubCategory}
+                        onSelect={handleSubCategorySelect}
+                    />
+                )}
                 <BrowseSection
                     mainCategory={headerTitle}
                     emoji={config.browseEmoji}
@@ -217,6 +221,7 @@ export default function CategoryScreen() {
 
     // Derived state for subcategories existence
     const hasSubCategories = (categoryData?.subcategories && categoryData.subcategories.length > 0) || (config.subCategories && config.subCategories.length > 0);
+    const isCategoryActive = categoryData ? categoryData.isActive !== false : true;
 
     useEffect(() => {
         const fetchCategory = async () => {
@@ -240,7 +245,7 @@ export default function CategoryScreen() {
     }, [id]);
 
     const fetchOffers = async (isNew = false) => {
-        if (loadingOffers || (isListEnd && !isNew) || !hasSubCategories) return;
+        if (loadingOffers || (isListEnd && !isNew) || !isCategoryActive) return;
 
         setLoadingOffers(true);
         try {
@@ -306,13 +311,13 @@ export default function CategoryScreen() {
 
     // Initial fetch or filter change
     useEffect(() => {
-        if (!loading && hasSubCategories) {
+        if (!loading && isCategoryActive) {
             // Reset pagination state
             setLastDoc(null);
             setIsListEnd(false);
             fetchOffers(true);
         }
-    }, [selectedSubCategory, selectedFilter, loading, hasSubCategories, config.title]);
+    }, [selectedSubCategory, selectedFilter, loading, isCategoryActive, config.title]);
 
     const handleLoadMore = () => {
         if (!loadingOffers && !isListEnd) {
@@ -392,7 +397,7 @@ export default function CategoryScreen() {
     return (
         <SafeAreaView style={styles.safeArea} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
-            {!loading && hasSubCategories ? (
+            {!loading && isCategoryActive ? (
                 <FlashList
                     data={filteredOffers}
                     keyExtractor={(item) => item.id}
@@ -406,6 +411,7 @@ export default function CategoryScreen() {
                             handleBackPress={handleBackPress}
                             loading={loading}
                             hasSubCategories={hasSubCategories}
+                            isCategoryActive={isCategoryActive}
                             selectedFilter={selectedFilter}
                             handleFilterChange={handleFilterChange}
                             subCategories={subCategories}
@@ -456,6 +462,7 @@ export default function CategoryScreen() {
                         handleBackPress={handleBackPress}
                         loading={loading}
                         hasSubCategories={hasSubCategories}
+                        isCategoryActive={isCategoryActive}
                         selectedFilter={selectedFilter}
                         handleFilterChange={handleFilterChange}
                         subCategories={subCategories}
