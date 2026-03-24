@@ -1,0 +1,139 @@
+[debug] [2026-03-24T12:08:32.623Z] ----------------------------------------------------------------------
+[debug] [2026-03-24T12:08:32.625Z] Command:       /Users/alcadeus/.nvm/versions/node/v24.12.0/bin/node /Users/alcadeus/.nvm/versions/node/v24.12.0/bin/firebase deploy --only functions:redeemOffer --force
+[debug] [2026-03-24T12:08:32.625Z] CLI Version:   15.11.0
+[debug] [2026-03-24T12:08:32.625Z] Platform:      darwin
+[debug] [2026-03-24T12:08:32.625Z] Node Version:  v24.12.0
+[debug] [2026-03-24T12:08:32.625Z] Time:          Tue Mar 24 2026 15:08:32 GMT+0300 (Arabian Standard Time)
+[debug] [2026-03-24T12:08:32.625Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-24T12:08:33.220Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-24T12:08:33.221Z] > authorizing via signed-in user (aazamthakur@gmail.com)
+[debug] [2026-03-24T12:08:33.221Z] [iam] checking project reelx-backend for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-03-24T12:08:33.221Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:33.221Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:33.221Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend:testIamPermissions [none]
+[debug] [2026-03-24T12:08:33.221Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend:testIamPermissions  x-goog-user-project=reelx-backend
+[debug] [2026-03-24T12:08:33.221Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-24T12:08:34.517Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend:testIamPermissions 200
+[debug] [2026-03-24T12:08:34.518Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-24T12:08:34.518Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:34.518Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:34.518Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/reelx-backend/serviceAccounts/reelx-backend@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-03-24T12:08:34.518Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/reelx-backend/serviceAccounts/reelx-backend@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-03-24T12:08:35.867Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/reelx-backend/serviceAccounts/reelx-backend@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-03-24T12:08:35.867Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/reelx-backend/serviceAccounts/reelx-backend@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'reelx-backend'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] Running command: npm --prefix "$RESOURCE_DIR" run build
+[info] ✔  functions: Finished running predeploy script. 
+[debug] [2026-03-24T12:08:39.622Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:39.622Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:39.623Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend [none]
+[debug] [2026-03-24T12:08:40.967Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend 200
+[debug] [2026-03-24T12:08:40.967Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/reelx-backend {"projectNumber":"516028101860","projectId":"reelx-backend","lifecycleState":"ACTIVE","name":"realx","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-01-07T17:21:42.419564Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-03-24T12:08:40.969Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:40.969Z] Checked if tokens are valid: true, expires at: 1774355863382
+[debug] [2026-03-24T12:08:40.969Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/reelx-backend/adminSdkConfig [none]
+[debug] [2026-03-24T12:08:47.900Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/reelx-backend/adminSdkConfig 200
+[debug] [2026-03-24T12:08:47.900Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/reelx-backend/adminSdkConfig {"projectId":"reelx-backend","storageBucket":"reelx-backend.firebasestorage.app"}
+[debug] [2026-03-24T12:08:47.901Z] Validating nodejs source
+[warn] ⚠  functions: Couldn't find firebase-functions package in your source code. Have you run 'npm install'? 
+[debug] [2026-03-24T12:08:47.902Z] getFunctionsSDKVersion encountered error: Cannot find module 'firebase-functions'
+Require stack:
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/frameworks/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/deploy.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/cli.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/firebase.js {"code":"MODULE_NOT_FOUND","requireStack":["/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/frameworks/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/deploy.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/index.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/cli.js","/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/firebase.js"]}
+[debug] [2026-03-24T12:08:47.902Z] checkFunctionsSDKVersion encountered error: Invalid Version:  {}
+[debug] [2026-03-24T12:08:47.902Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-03-24T12:08:47.902Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-03-24T12:08:47.903Z] Could not parse firebase-functions version '' into semver.
+[debug] [2026-03-24T12:08:47.903Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-03-24T12:08:48.211Z] Error: Cannot find module 'firebase-functions'
+Require stack:
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/frameworks/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/deploy.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/commands/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/index.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/cli.js
+- /Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/firebase.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at require.resolve (node:internal/modules/helpers:163:19)
+    at Delegate.findFunctionsBinary (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:101:33)
+    at Delegate.spawnFunctionsProcess (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:131:30)
+    at Delegate.serveAdmin (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:152:35)
+    at Delegate.discoverBuild (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:192:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async loadCodebases (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:334:33)
+    at async prepare (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:69:24)
+    at async chain (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/deploy/index.js:45:9)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-03-24T12:08:48.479Z] Error: EPERM: operation not permitted, open '/Users/alcadeus/.config/configstore/firebase-tools.json.1690408833'
+    at Object.openSync (node:fs:560:18)
+    at writeFile.writeFileSync [as sync] (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/node_modules/write-file-atomic/index.js:205:13)
+    at set all (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/node_modules/configstore/index.js:61:20)
+    at Configstore.set (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/node_modules/configstore/index.js:91:12)
+    at process.<anonymous> (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/bin/cli.js:62:39)
+    at process.emit (node:events:520:35)
+    at process.exit (node:internal/process/per_thread:236:15)
+    at Timeout._onTimeout (/Users/alcadeus/.nvm/versions/node/v24.12.0/lib/node_modules/firebase-tools/lib/errorOut.js:20:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.

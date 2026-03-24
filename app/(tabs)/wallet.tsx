@@ -29,15 +29,21 @@ export default function WalletScreen() {
     const db = getFirestore();
     const studentRef = doc(db, 'students', user.uid);
 
-    const unsubscribe = onSnapshot(studentRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data) {
-          setBalance(typeof data.x === 'number' ? data.cashback : 0);
-          setCreatorCode(data.creatorCode);
+    const unsubscribe = onSnapshot(
+      studentRef,
+      (docSnap) => {
+        if (docSnap && docSnap.exists()) {
+          const data = docSnap.data();
+          if (data) {
+            setBalance(typeof data.cashback === 'number' ? data.cashback : 0);
+            setCreatorCode(data.creatorCode);
+          }
         }
+      },
+      (error) => {
+        console.warn('Wallet snapshot error:', error);
       }
-    });
+    );
 
     return () => unsubscribe();
   }, []);

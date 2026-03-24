@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 56,
         backgroundColor: '#F8F9FA',
-        borderRadius: 28,
+        borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     amountOptionText: {
-        fontSize: 15,
+        fontSize: 14,
         color: '#666666',
     },
     amountOptionTextSelected: {

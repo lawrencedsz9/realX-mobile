@@ -194,6 +194,13 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
             creatorCodeOwnerUid = codeDoc.data()?.uid || null;
         }
 
+        // Pre-read creator profile (needed later for cashback writes)
+        let creatorProfileDoc: admin.firestore.DocumentSnapshot | null = null;
+        if (creatorCodeOwnerUid) {
+            const creatorRef = db.collection('students').doc(creatorCodeOwnerUid);
+            creatorProfileDoc = await transaction.get(creatorRef);
+        }
+
         // 2. Verify vendor PIN
         const vendorDoc = await transaction.get(vendorRef);
         if (!vendorDoc.exists) {
@@ -267,8 +274,7 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
         // Update creator code owner's cashback
         if (creatorCodeOwnerUid && creatorCashbackAmount > 0) {
             const creatorRef = db.collection('students').doc(creatorCodeOwnerUid);
-            const creatorDoc = await transaction.get(creatorRef);
-            if (creatorDoc.exists) {
+            if (creatorProfileDoc?.exists) {
                 transaction.update(creatorRef, {
                     cashback: admin.firestore.FieldValue.increment(creatorCashbackAmount),
                 });
