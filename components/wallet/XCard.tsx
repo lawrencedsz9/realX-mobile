@@ -15,7 +15,7 @@ type Props = {
     creatorCode?: string;
 };
 
-export default function XCard({ earnings = 0, currency = 'QAR', creatorCode }: Props) {
+export default function AZxXCard({ earnings = 0, currency = 'QAR', creatorCode }: Props) {
     return (
         <View style={styles.container}>
             <ImageBackground
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     earningsAmount: {
-        fontSize: 32,
+        fontSize: 28,
         fontFamily: Typography.poppins.semiBold,
         color: '#FFFFFF',
     },

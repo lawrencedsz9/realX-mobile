@@ -316,14 +316,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     textTransform: 'uppercase',
   },
   savingsCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 32,
     padding: 16,
-    marginBottom: 8,
+    marginTop:8,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: '#F0F0F2',
   },

@@ -33,7 +33,7 @@ export default function WalletScreen() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data) {
-          setBalance(typeof data.cashback === 'number' ? data.cashback : 0);
+          setBalance(typeof data.x === 'number' ? data.cashback : 0);
           setCreatorCode(data.creatorCode);
         }
       }

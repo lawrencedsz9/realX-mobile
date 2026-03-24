@@ -267,9 +267,17 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
         // Update creator code owner's cashback
         if (creatorCodeOwnerUid && creatorCashbackAmount > 0) {
             const creatorRef = db.collection('students').doc(creatorCodeOwnerUid);
-            transaction.update(creatorRef, {
-                cashback: admin.firestore.FieldValue.increment(creatorCashbackAmount),
-            });
+            const creatorDoc = await transaction.get(creatorRef);
+            if (creatorDoc.exists) {
+                transaction.update(creatorRef, {
+                    cashback: admin.firestore.FieldValue.increment(creatorCashbackAmount),
+                });
+            } else {
+                logger.warn('Creator profile missing for cashback', {
+                    creatorCodeOwnerUid,
+                    creatorCode: creatorCode ? creatorCode.trim() : null,
+                });
+            }
         }
 
         return {
