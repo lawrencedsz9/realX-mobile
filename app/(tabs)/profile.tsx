@@ -158,7 +158,7 @@ export default function ProfileScreen() {
           <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.savingsLabel]}>All time you've saved</Text>
           <View style={styles.savingsAmountContainer}>
             <PhonkText style={[{ color: '#1AD04F' }, styles.savingsAmountGreen]}>
-              {(userData?.savings ?? 23.12).toFixed(2)}
+              {(userData?.savings ?? 0).toFixed(2)}
             </PhonkText>
             <PhonkText style={[{ color: Colors.light.text }, styles.savingsCurrency]}> QAR</PhonkText>
           </View>

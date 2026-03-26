@@ -292,6 +292,7 @@ export default function ProfileDetailsScreen() {
                                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                         onChange={onDateChange}
                                         maximumDate={new Date()}
+                                        textColor="black"
                                     />
                                 )}
                             </>

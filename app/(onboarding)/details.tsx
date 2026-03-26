@@ -180,7 +180,7 @@ export default function DetailsOnboarding() {
                                     disabled={isLoading}
                                     activeOpacity={0.7}
                                 >
-                                    <Text style={[styles.input, !dob && { color: '#999999' }]}>
+                                    <Text style={[styles.input, !dob && { color: '#00000' }]}>
                                         {formatDate(dob)}
                                     </Text>
                                 </TouchableOpacity>
@@ -203,6 +203,7 @@ export default function DetailsOnboarding() {
                                             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                             onChange={onDateChange}
                                             maximumDate={new Date()}
+                                            textColor="black"
                                         />
                                     </View>
                                 )}
