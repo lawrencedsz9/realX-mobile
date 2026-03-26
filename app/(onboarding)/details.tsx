@@ -23,12 +23,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
-
-
-
-
+import { useResponsive } from '../../hooks/useResponsive';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
 
 export default function DetailsOnboarding() {
+    const { isTablet, horizontalPadding } = useResponsive();
     const router = useRouter();
     const params = useLocalSearchParams<{ email?: string; role?: string }>();
     const [firstName, setFirstName] = useState('');
@@ -108,36 +107,39 @@ export default function DetailsOnboarding() {
             <StatusBar style="light" />
 
             {/* Header / Background Section */}
-            <View style={styles.headerBackground}>
+            <View style={[styles.headerBackground, isTablet && { height: 350 }]}>
                 <SafeAreaView edges={['top']} style={styles.headerContent}>
-                    <View style={styles.topButtons}>
-                        <TouchableOpacity
-                            onPress={handleBack}
-                            style={[styles.iconButton, { opacity: 0 }]}
-                            disabled={true}
-                        >
-                            <Ionicons name="arrow-back" size={24} color="black" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => router.replace('/')}
-                            style={[styles.iconButton, { opacity: 0 }]}
-                            disabled={true}
-                        >
-                            <Ionicons name="close" size={24} color="black" />
-                        </TouchableOpacity>
-                    </View>
+                    <ResponsiveContainer>
+                        <View style={styles.topButtons}>
+                            <TouchableOpacity
+                                onPress={handleBack}
+                                style={[styles.iconButton, { opacity: 0 }]}
+                                disabled={true}
+                            >
+                                <Ionicons name="arrow-back" size={24} color="black" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => router.replace('/')}
+                                style={[styles.iconButton, { opacity: 0 }]}
+                                disabled={true}
+                            >
+                                <Ionicons name="close" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </ResponsiveContainer>
                 </SafeAreaView>
             </View>
 
             {/* Main Content Card */}
             <View style={[styles.cardContainer, { backgroundColor: '#FFFFFF' }]}>
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <View style={styles.card}>
+                <ResponsiveContainer>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ flexGrow: 1 }}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={[styles.card, { paddingHorizontal: horizontalPadding }]}>
                             <View style={styles.textContainer}>
                                 <PhonkText style={styles.titleLine}>
                                     <Text style={styles.blackText}>ENTER YOUR</Text>
@@ -231,21 +233,22 @@ export default function DetailsOnboarding() {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                        keyboardVerticalOffset={20}
-                        style={styles.footer}
-                    >
-                        <TouchableOpacity
-                            style={[styles.button, !isFormValid && styles.buttonDisabled]}
-                            onPress={handleContinue}
-                            disabled={!isFormValid}
-                            activeOpacity={0.8}
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                            keyboardVerticalOffset={20}
+                            style={[styles.footer, { paddingHorizontal: horizontalPadding }]}
                         >
-                            <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Continue'}</Text>
-                        </TouchableOpacity>
-                    </KeyboardAvoidingView>
-                </ScrollView>
+                            <TouchableOpacity
+                                style={[styles.button, !isFormValid && styles.buttonDisabled]}
+                                onPress={handleContinue}
+                                disabled={!isFormValid}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Continue'}</Text>
+                            </TouchableOpacity>
+                        </KeyboardAvoidingView>
+                    </ScrollView>
+                </ResponsiveContainer>
             </View>
         </View>
     );

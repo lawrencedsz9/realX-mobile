@@ -108,7 +108,7 @@ interface TransactionOptions {
   giftCardAmount?: number;
   offerId?: string | null;
   discountValue?: number;
-  discountType?: 'percentage' | 'flat' | null;
+  discountType?: 'percentage' | 'amount' | null;
   creatorCode?: string | null;
 }
 

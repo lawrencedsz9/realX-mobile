@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { SearchBar } from '../../components/home';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useResponsive } from '../../hooks/useResponsive';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
 
 const BACKGROUND_ICONS = [
     { name: 'laptop-outline' as const, top: '2%', left: '75%', size: 28, color: '#8E8E93', rotation: '15deg' },
@@ -198,6 +200,7 @@ const HeaderContent = memo(({
 ));
 
 export default function CategoryScreen() {
+    const { isTablet, isDesktop, horizontalPadding } = useResponsive();
     const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
     const router = useRouter();
     const { t, i18n } = useTranslation();
@@ -402,14 +405,75 @@ export default function CategoryScreen() {
     return (
         <SafeAreaView style={styles.safeArea} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
-            {!loading && isCategoryActive ? (
-                <FlashList
-                    data={filteredOffers}
-                    keyExtractor={(item) => item.id}
-                    numColumns={2}
-                    contentContainerStyle={styles.contentContainer}
-                    showsVerticalScrollIndicator={false}
-                    ListHeaderComponent={
+            <ResponsiveContainer>
+                {!loading && isCategoryActive ? (
+                    <FlashList
+                        data={filteredOffers}
+                        keyExtractor={(item) => item.id}
+                        numColumns={isDesktop ? 4 : isTablet ? 3 : 2}
+                        contentContainerStyle={styles.contentContainer}
+                        showsVerticalScrollIndicator={false}
+                        ListHeaderComponent={
+                            <HeaderContent
+                                headerTitle={headerTitle}
+                                headerIcon={headerIcon}
+                                handleBackPress={handleBackPress}
+                                loading={loading}
+                                hasSubCategories={hasSubCategories}
+                                isCategoryActive={isCategoryActive}
+                                selectedFilter={selectedFilter}
+                                handleFilterChange={handleFilterChange}
+                                subCategories={subCategories}
+                                selectedSubCategory={selectedSubCategory}
+                                handleSubCategorySelect={handleSubCategorySelect}
+                                config={config}
+                                handleRestaurantPress={handleRestaurantPress}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                handleSearch={handleSearch}
+                                t={t}
+                                showComingSoon={showComingSoon}
+                                loadingOffers={loadingOffers}
+                            />
+                        }
+                        ListFooterComponent={renderFooter}
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.5}
+                        renderItem={({ item, index }) => {
+                            const columns = isDesktop ? 4 : isTablet ? 3 : 2;
+                            const isFirstInRow = index % columns === 0;
+                            const isLastInRow = (index + 1) % columns === 0;
+
+                            return (
+                                <View style={[
+                                    {
+                                        paddingLeft: isFirstInRow ? horizontalPadding : 8,
+                                        paddingRight: isLastInRow ? horizontalPadding : 8,
+                                        paddingBottom: 16,
+                                    }
+                                ]}>
+                                    <RestaurantCard
+                                        id={item.id}
+                                        name={item.titleEn || item.titleAr || 'Untitled Offer'}
+                                        cashbackText={item.descriptionEn || item.descriptionAr || 'Special Offer'}
+                                        discountText={`${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF`}
+                                        isTrending={item.isTrending}
+                                        isTopRated={item.isTopRated}
+                                        imageUri={item.bannerImage}
+                                        logoUri={item.vendorProfilePicture}
+                                        xcardEnabled={item.xcardEnabled}
+                                        onPress={() => handlePromoPress({ id: item.id, title: item.titleEn, vendorId: item.vendorId })}
+                                    />
+                                </View>
+                            );
+                        }}
+                    />
+                ) : (
+                    <ScrollView
+                        style={styles.container}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.contentContainer}
+                    >
                         <HeaderContent
                             headerTitle={headerTitle}
                             headerIcon={headerIcon}
@@ -431,61 +495,9 @@ export default function CategoryScreen() {
                             showComingSoon={showComingSoon}
                             loadingOffers={loadingOffers}
                         />
-                    }
-                    ListFooterComponent={renderFooter}
-                    onEndReached={handleLoadMore}
-                    onEndReachedThreshold={0.5}
-                    renderItem={({ item, index }) => (
-                        <View style={[
-                            {
-                                paddingLeft: index % 2 === 0 ? 20 : 8,
-                                paddingRight: index % 2 === 0 ? 8 : 20
-                            }
-                        ]}>
-                            <RestaurantCard
-                                id={item.id}
-                                name={item.titleEn || item.titleAr || 'Untitled Offer'}
-                                cashbackText={item.descriptionEn || item.descriptionAr || 'Special Offer'}
-                                discountText={`${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF`}
-                                isTrending={item.isTrending}
-                                isTopRated={item.isTopRated}
-                                imageUri={item.bannerImage}
-                                logoUri={item.vendorProfilePicture}
-                                xcardEnabled={item.xcardEnabled}
-                                onPress={() => handlePromoPress({ id: item.id, title: item.titleEn, vendorId: item.vendorId })}
-                            />
-                        </View>
-                    )}
-                />
-            ) : (
-                <ScrollView
-                    style={styles.container}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.contentContainer}
-                >
-                    <HeaderContent
-                        headerTitle={headerTitle}
-                        headerIcon={headerIcon}
-                        handleBackPress={handleBackPress}
-                        loading={loading}
-                        hasSubCategories={hasSubCategories}
-                        isCategoryActive={isCategoryActive}
-                        selectedFilter={selectedFilter}
-                        handleFilterChange={handleFilterChange}
-                        subCategories={subCategories}
-                        selectedSubCategory={selectedSubCategory}
-                        handleSubCategorySelect={handleSubCategorySelect}
-                        config={config}
-                        handleRestaurantPress={handleRestaurantPress}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        handleSearch={handleSearch}
-                        t={t}
-                        showComingSoon={showComingSoon}
-                        loadingOffers={loadingOffers}
-                    />
-                </ScrollView>
-            )}
+                    </ScrollView>
+                )}
+            </ResponsiveContainer>
         </SafeAreaView>
     );
 }

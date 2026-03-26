@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type OfferItem = {
     id: string;
@@ -22,9 +23,10 @@ const defaultOffers: OfferItem[] = [
 ];
 
 export default function TrendingOffers({ offers = defaultOffers, onOfferPress }: Props) {
+    const { horizontalPadding } = useResponsive();
     return (
         <View style={styles.container}>
-            <View style={styles.headerContainer}>
+            <View style={[styles.headerContainer, { paddingHorizontal: horizontalPadding }]}>
                 <View style={styles.headerTitle}>
                     <PhonkText style={styles.trendingText}>TRENDING </PhonkText>
                     <PhonkText style={styles.offersText}>OFFERS</PhonkText>
@@ -33,7 +35,7 @@ export default function TrendingOffers({ offers = defaultOffers, onOfferPress }:
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
             >
                 {offers.map((offer) => (
                     <TouchableOpacity
@@ -66,7 +68,6 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
     },
     headerContainer: {
-        paddingHorizontal: 20,
         marginBottom: 16,
     },
     headerTitle: {
@@ -85,7 +86,6 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
     },
     scrollContent: {
-        paddingHorizontal: 20,
         gap: 12,
     },
     offerCard: {

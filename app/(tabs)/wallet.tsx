@@ -12,9 +12,12 @@ import {
   XCard,
   XCardHeader,
 } from '../../components/wallet';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
+  const { isTablet, horizontalPadding } = useResponsive();
   const [isHelpDrawerVisible, setIsHelpDrawerVisible] = useState(false);
   const [isSpendDrawerVisible, setIsSpendDrawerVisible] = useState(false);
   const [balance, setBalance] = useState(0);
@@ -68,14 +71,16 @@ export default function WalletScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
         showsVerticalScrollIndicator={false}
       >
-        <XCardHeader />
-        <XCard earnings={balance} currency={currency} creatorCode={creatorCode} />
-        <SpendButton onPress={handleSpendPress} />
-        <HelpLink onPress={handleHelpPress} />
-        <RecentRedemptions />
+        <ResponsiveContainer>
+          <XCardHeader />
+          <XCard earnings={balance} currency={currency} creatorCode={creatorCode} />
+          <SpendButton onPress={handleSpendPress} />
+          <HelpLink onPress={handleHelpPress} />
+          <RecentRedemptions />
+        </ResponsiveContainer>
       </ScrollView>
 
       <HowItWorksDrawer

@@ -3,8 +3,11 @@ import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../constants/Typography';
+import { useResponsive } from '../hooks/useResponsive';
+import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 export default function PrivacyScreen() {
+    const { horizontalPadding } = useResponsive();
     const router = useRouter();
 
     const handleBack = () => {
@@ -13,61 +16,65 @@ export default function PrivacyScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Privacy Policy</Text>
-            </View>
-
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >
-                <Text style={styles.lastUpdated}>Last updated: October 2023</Text>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>1. Data Collection</Text>
-                    <Text style={styles.paragraph}>
-                        We collect information that you provide directly to us when you create an account, update your profile, or use our services. This may include your name, email address, phone number, and date of birth.
-                    </Text>
+            <ResponsiveContainer>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#000" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Privacy Policy</Text>
                 </View>
+            </ResponsiveContainer>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>2. How We Use Your Data</Text>
-                    <Text style={styles.paragraph}>
-                        We use the information we collect to provide, maintain, and improve our services, to process your transactions, and to communicate with you about ReelX updates and promotions.
-                    </Text>
-                </View>
+            <ResponsiveContainer>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
+                >
+                    <Text style={styles.lastUpdated}>Last updated: October 2023</Text>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>3. Data Sharing</Text>
-                    <Text style={styles.paragraph}>
-                        We do not share your personal information with third parties except as described in this policy, such as with your consent or to comply with legal obligations.
-                    </Text>
-                </View>
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>1. Data Collection</Text>
+                        <Text style={styles.paragraph}>
+                            We collect information that you provide directly to us when you create an account, update your profile, or use our services. This may include your name, email address, phone number, and date of birth.
+                        </Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>4. Data Security</Text>
-                    <Text style={styles.paragraph}>
-                        We take reasonable measures to help protect information about you from loss, theft, misuse, and unauthorized access, disclosure, alteration, and destruction.
-                    </Text>
-                </View>
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>2. How We Use Your Data</Text>
+                        <Text style={styles.paragraph}>
+                            We use the information we collect to provide, maintain, and improve our services, to process your transactions, and to communicate with you about ReelX updates and promotions.
+                        </Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>5. Your Choices</Text>
-                    <Text style={styles.paragraph}>
-                        You may update or correct your account information at any time by logging into your account or contacting us. You can also request the deletion of your account.
-                    </Text>
-                </View>
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>3. Data Sharing</Text>
+                        <Text style={styles.paragraph}>
+                            We do not share your personal information with third parties except as described in this policy, such as with your consent or to comply with legal obligations.
+                        </Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>6. Contact Us</Text>
-                    <Text style={styles.paragraph}>
-                        If you have any questions about this Privacy Policy, please contact us at support@reelx.com.
-                    </Text>
-                </View>
-            </ScrollView>
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>4. Data Security</Text>
+                        <Text style={styles.paragraph}>
+                            We take reasonable measures to help protect information about you from loss, theft, misuse, and unauthorized access, disclosure, alteration, and destruction.
+                        </Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>5. Your Choices</Text>
+                        <Text style={styles.paragraph}>
+                            You may update or correct your account information at any time by logging into your account or contacting us. You can also request the deletion of your account.
+                        </Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>6. Contact Us</Text>
+                        <Text style={styles.paragraph}>
+                            If you have any questions about this Privacy Policy, please contact us at support@reelx.com.
+                        </Text>
+                    </View>
+                </ScrollView>
+            </ResponsiveContainer>
         </SafeAreaView>
     );
 }

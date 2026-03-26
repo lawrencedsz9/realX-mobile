@@ -1,14 +1,16 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = {
     userName: string;
 };
 
 export default function GreetingHeader({ userName }: Props) {
+    const { horizontalPadding } = useResponsive();
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingHorizontal: horizontalPadding }]}>
             <View style={styles.textContainer}>
                 <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.greeting]}>
                     Hey <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.poppins.medium }, styles.userName]}>{userName}</Text>,
@@ -35,7 +37,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 12,
     },

@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type Props = {
     placeholder?: string;
@@ -11,8 +12,9 @@ type Props = {
 };
 
 export default function SearchBar({ placeholder = 'Search for anything...', value, onChangeText, onSubmit }: Props) {
+    const { horizontalPadding } = useResponsive();
     return (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, { marginHorizontal: horizontalPadding }]}>
                 <Ionicons name="search" size={20} color={Colors.brandGreen} style={styles.icon} />
                 <TextInput
                     style={[styles.input, { color: Colors.light.text }]}
@@ -37,7 +39,6 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        marginHorizontal:20,
         marginVertical:12
     },
     icon: {

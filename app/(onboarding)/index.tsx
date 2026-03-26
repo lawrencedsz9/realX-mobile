@@ -9,10 +9,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
+import { useResponsive } from '../../hooks/useResponsive';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
 
 const { width, height } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
+    const { isTablet, horizontalPadding } = useResponsive();
     const router = useRouter();
     const [step, setStep] = useState(0); // Set to 1 to show the screen in the screenshot directly, or as starting point
 
@@ -36,6 +39,7 @@ export default function OnboardingScreen() {
             <StatusBar style="light" />
 
             <SafeAreaView style={styles.safeArea}>
+                <ResponsiveContainer>
                 {step === 0 ? (
                     <View style={styles.content}>
                         {/* Logo */}
@@ -154,6 +158,7 @@ export default function OnboardingScreen() {
                         </TouchableOpacity>
                     </View>
                 )}
+                </ResponsiveContainer>
             </SafeAreaView>
         </View>
     );
@@ -209,6 +214,7 @@ const styles = StyleSheet.create({
     characterImage: {
         width: width * 0.85,
         height: height * 0.45,
+        maxWidth: 600,
     },
     footer: {
         width: '100%',
@@ -271,6 +277,7 @@ const styles = StyleSheet.create({
     cardsWrapper: {
         width: '100%',
         gap: 16,
+        paddingHorizontal: 10,
     },
     roleCard: {
         backgroundColor: '#FFFFFF',

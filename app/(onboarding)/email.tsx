@@ -22,6 +22,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
+import { useResponsive } from '../../hooks/useResponsive';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
 import { actionCodeSettings, clearAuthEmail, getAuthEmail, saveAuthEmail } from '../../utils/auth';
 
 // ✅ Email normalization (strict identity)
@@ -40,6 +42,7 @@ const normalizeEmail = (email: string): string => {
 };
 
 export default function EmailOnboarding() {
+  const { isTablet, horizontalPadding } = useResponsive();
   const router = useRouter();
   const params = useLocalSearchParams<{ role?: string; mode?: string }>();
   const { role, mode } = params;
@@ -238,19 +241,22 @@ export default function EmailOnboarding() {
 
       <View style={styles.headerBackground}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
-          <View style={styles.topButtons}>
-            <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-              <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
-              <Ionicons name="close" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
+          <ResponsiveContainer>
+            <View style={styles.topButtons}>
+              <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
+                <Ionicons name="arrow-back" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
+                <Ionicons name="close" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          </ResponsiveContainer>
         </SafeAreaView>
       </View>
 
       <View style={styles.cardContainer}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ResponsiveContainer>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.card}>
             <View style={styles.textContainer}>
               <PhonkText style={styles.titleLine}>
@@ -316,8 +322,9 @@ export default function EmailOnboarding() {
             {isLoading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Continue</Text>}
           </TouchableOpacity>
         </KeyboardAvoidingView>
-      </View>
+      </ResponsiveContainer>
     </View>
+  </View>
   );
 }
 
@@ -325,7 +332,7 @@ export default function EmailOnboarding() {
 // --- Styles remain unchanged ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.brandGreen },
-  headerBackground: { height: 250, backgroundColor: Colors.brandGreen },
+  headerBackground: { height: 250, backgroundColor: Colors.brandGreen, justifyContent: 'center' },
   headerContent: { paddingHorizontal: 20, paddingTop: 10 },
   topButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10 },
   iconButton: {

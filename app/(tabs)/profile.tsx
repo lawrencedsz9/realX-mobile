@@ -13,6 +13,8 @@ import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
 import i18n, { setStoredLanguage } from '../../src/localization/i18n';
 import { applyRTL } from '../../src/localization/rtl';
+import { ResponsiveContainer } from '../../components/ResponsiveContainer';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -97,102 +99,106 @@ export default function ProfileScreen() {
     );
   };
 
+  const { isTablet, horizontalPadding } = useResponsive();
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: isTablet ? 130 : 100, paddingHorizontal: horizontalPadding }]}
       >
-        <View style={styles.header}>
-          <PhonkText style={[{ color: Colors.light.text }, styles.headerText]}>
-            PROFILE
-          </PhonkText>
-        </View>
+        <ResponsiveContainer>
+          <View style={styles.header}>
+            <PhonkText style={[{ color: Colors.light.text }, styles.headerText]}>
+              PROFILE
+            </PhonkText>
+          </View>
 
-        <View
-          style={styles.topPill}
-        >
-          <View style={styles.profileTopRow}>
-            <View style={styles.avatarContainer}>
-              {userData?.photoURL || getAuth().currentUser?.photoURL ? (
-                <Image
-                  source={{ uri: userData?.photoURL || getAuth().currentUser?.photoURL || undefined }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0F0F0' }]}>
-                  <Ionicons name="person" size={32} color="#AAA" />
-                </View>
-              )}
-            </View>
-            <View style={styles.badge}>
-              <PhonkText style={[{ color: '#FFFFFF' }, styles.badgeText]}>ROOKIE</PhonkText>
+          <View
+            style={styles.topPill}
+          >
+            <View style={styles.profileTopRow}>
+              <View style={styles.avatarContainer}>
+                {userData?.photoURL || getAuth().currentUser?.photoURL ? (
+                  <Image
+                    source={{ uri: userData?.photoURL || getAuth().currentUser?.photoURL || undefined }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0F0F0' }]}>
+                    <Ionicons name="person" size={32} color="#AAA" />
+                  </View>
+                )}
+              </View>
+              <View style={styles.badge}>
+                <PhonkText style={[{ color: '#FFFFFF' }, styles.badgeText]}>ROOKIE</PhonkText>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View
-          style={styles.bottomPill}
-        >
-          <View style={styles.profileBottomRow}>
-            <View style={styles.userInfo}>
-              <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.userName]}>
-                {userData ? `${userData.firstName} ${userData.lastName}` : 'Darren Watkins'}
-              </Text>
+          <View
+            style={styles.bottomPill}
+          >
+            <View style={styles.profileBottomRow}>
+              <View style={styles.userInfo}>
+                <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.userName]}>
+                  {userData ? `${userData.firstName} ${userData.lastName}` : 'Darren Watkins'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => router.push('/profile-details')}
+              >
+                <Ionicons name="create-outline" size={16} color="#8E8E93" />
+                <PhonkText style={[{ color: Colors.light.text }, styles.editButtonText]}>PROFILE</PhonkText>
+              </TouchableOpacity>
             </View>
+          </View>
+
+          <View style={styles.sectionHeader}>
+            <PhonkText style={[{ color: Colors.light.text }, styles.sectionTitle]}>SAVINGS TRACKER</PhonkText>
+          </View>
+
+          <View style={styles.savingsCard}>
+            <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.savingsLabel]}>All time you've saved</Text>
+            <View style={styles.savingsAmountContainer}>
+              <PhonkText style={[{ color: '#1AD04F' }, styles.savingsAmountGreen]}>
+                {(userData?.savings ?? 0).toFixed(2)}
+              </PhonkText>
+              <PhonkText style={[{ color: Colors.light.text }, styles.savingsCurrency]}> QAR</PhonkText>
+            </View>
+          </View>
+
+          <View style={styles.menuContainer}>
+            <MenuItem icon="time-outline" label={t('redemption_history')} onPress={() => router.push('/redemption-history' as any)} />
+            <MenuItem icon="language-outline" label={t('change_language')} onPress={handleChangeLanguage} />
+            <MenuItem
+              icon="mail-outline"
+              label={t('contact_us')}
+              onPress={() => Linking.openURL('mailto:info@realx.qa')}
+            />
+            <MenuItem
+              icon="document-text-outline"
+              label={t('terms_and_conditions')}
+              onPress={() => router.push('/terms')}
+            />
+            <MenuItem
+              icon="shield-checkmark-outline"
+              label={t('privacy_policy')}
+              onPress={() => router.push('/privacy')}
+            />
             <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => router.push('/profile-details')}
+              style={styles.logoutPill}
+              onPress={handleLogout}
+              activeOpacity={0.7}
             >
-              <Ionicons name="create-outline" size={16} color="#8E8E93" />
-              <PhonkText style={[{ color: Colors.light.text }, styles.editButtonText]}>PROFILE</PhonkText>
+              <View style={styles.logoutContent}>
+                <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
+                <PhonkText style={styles.logoutText}>{t('log_out').toUpperCase()}</PhonkText>
+              </View>
             </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <PhonkText style={[{ color: Colors.light.text }, styles.sectionTitle]}>SAVINGS TRACKER</PhonkText>
-        </View>
-
-        <View style={styles.savingsCard}>
-          <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.savingsLabel]}>All time you've saved</Text>
-          <View style={styles.savingsAmountContainer}>
-            <PhonkText style={[{ color: '#1AD04F' }, styles.savingsAmountGreen]}>
-              {(userData?.savings ?? 0).toFixed(2)}
-            </PhonkText>
-            <PhonkText style={[{ color: Colors.light.text }, styles.savingsCurrency]}> QAR</PhonkText>
-          </View>
-        </View>
-
-        <View style={styles.menuContainer}>
-          <MenuItem icon="time-outline" label={t('redemption_history')} onPress={() => router.push('/redemption-history' as any)} />
-          <MenuItem icon="language-outline" label={t('change_language')} onPress={handleChangeLanguage} />
-          <MenuItem
-            icon="mail-outline"
-            label={t('contact_us')}
-            onPress={() => Linking.openURL('mailto:info@realx.qa')}
-          />
-          <MenuItem
-            icon="document-text-outline"
-            label={t('terms_and_conditions')}
-            onPress={() => router.push('/terms')}
-          />
-          <MenuItem
-            icon="shield-checkmark-outline"
-            label={t('privacy_policy')}
-            onPress={() => router.push('/privacy')}
-          />
-          <TouchableOpacity
-            style={styles.logoutPill}
-            onPress={handleLogout}
-            activeOpacity={0.7}
-          >
-            <View style={styles.logoutContent}>
-              <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
-              <PhonkText style={styles.logoutText}>{t('log_out').toUpperCase()}</PhonkText>
-            </View>
-          </TouchableOpacity>
-        </View>
+        </ResponsiveContainer>
       </ScrollView>
     </SafeAreaView>
   );
@@ -232,7 +238,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   scrollContent: {
-    paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 100,
   },

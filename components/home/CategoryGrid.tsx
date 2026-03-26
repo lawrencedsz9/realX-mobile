@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useResponsive } from '../../hooks/useResponsive';
 
 type CategoryItem = {
     id: string;
@@ -22,6 +23,7 @@ type Props = {
 
 export default function CategoryGrid({ categories: propCategories, onCategoryPress }: Props) {
     const router = useRouter();
+    const { isTablet } = useResponsive();
     const { t, i18n } = useTranslation();
     const [fetchedCategories, setFetchedCategories] = useState<CategoryItem[]>([]);
     const [loading, setLoading] = useState(!propCategories);
@@ -117,13 +119,15 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
         return null; // Or some fallback
     }
 
+    const numColumns = isTablet ? 6 : 4;
+
     return (
-        <View style={[styles.container, { minHeight: Math.ceil((displayCategories.length || 1) / 4) * 130 }]}>
+        <View style={[styles.container, { minHeight: Math.ceil((displayCategories.length || 1) / numColumns) * (isTablet ? 150 : 130) }]}>
             <FlashList
                 data={displayCategories}
                 renderItem={renderCategory}
                 keyExtractor={(item) => item.id}
-                numColumns={4}
+                numColumns={numColumns}
                 scrollEnabled={false}
             />
         </View>

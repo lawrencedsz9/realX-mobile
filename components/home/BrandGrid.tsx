@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { useResponsive } from '../../hooks/useResponsive';
 import PhonkText from '../PhonkText';
 
 type BrandItem = {
@@ -18,6 +19,7 @@ export default function BrandGrid() {
     const [brands, setBrands] = useState<BrandItem[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const { isTablet } = useResponsive();
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -64,6 +66,9 @@ export default function BrandGrid() {
         return null; // Or show a default state
     }
 
+    const itemSize = isTablet ? 100 : 70;
+    const itemGap = isTablet ? 24 : 16;
+
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -75,7 +80,7 @@ export default function BrandGrid() {
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { gap: itemGap }]}
             >
                 {brands.map((brand) => (
                     <TouchableOpacity
@@ -86,7 +91,7 @@ export default function BrandGrid() {
                     >
                         <Image
                             source={{ uri: brand.logoUrl }}
-                            style={styles.imageContainer}
+                            style={[styles.imageContainer, { width: itemSize, height: itemSize, borderRadius: itemSize / 2 }]}
                             contentFit="contain"
                             cachePolicy="memory-disk"
                         />
@@ -124,15 +129,11 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingHorizontal: 20,
-        gap: 16,
     },
     brandItem: {
         alignItems: 'center',
     },
     imageContainer: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
         alignItems: 'center',

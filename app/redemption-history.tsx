@@ -20,6 +20,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
 import PhonkText from '../components/PhonkText';
+import { useResponsive } from '../hooks/useResponsive';
+import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 /*
   UI Format based on design specs:
@@ -45,6 +47,7 @@ interface Transaction {
 }
 
 export default function RedemptionHistoryScreen() {
+  const { horizontalPadding } = useResponsive();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -199,30 +202,34 @@ export default function RedemptionHistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Redemption History</Text>
-      </View>
+      <ResponsiveContainer>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Redemption History</Text>
+        </View>
+      </ResponsiveContainer>
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.brandGreen} />
         </View>
       ) : (
-        <FlatList
-          data={transactions}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No redemptions found.</Text>
-            </View>
-          }
-        />
+        <ResponsiveContainer>
+          <FlatList
+            data={transactions}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={[styles.listContent, { paddingHorizontal: horizontalPadding }]}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No redemptions found.</Text>
+              </View>
+            }
+          />
+        </ResponsiveContainer>
       )}
     </SafeAreaView>
   );
