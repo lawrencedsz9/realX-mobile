@@ -279,9 +279,16 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
         // Update creator code owner's cashback if it's a different user
         if (updateCreatorSeparately && creatorCodeOwnerUid && creatorCashbackAmount > 0) {
             const creatorRef = db.collection('students').doc(creatorCodeOwnerUid);
-            transaction.set(creatorRef, {
+
+            await transaction.get(creatorRef);
+
+            if (!creatorDoc.exists) {
+                throw new HttpsError('not-found', 'Creator user not found');
+            }
+
+            transaction.update(creatorRef, {
                 cashback: admin.firestore.FieldValue.increment(creatorCashbackAmount),
-            }, { merge: true });
+            });
         }
 
         return {

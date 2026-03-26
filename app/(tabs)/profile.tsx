@@ -109,10 +109,8 @@ export default function ProfileScreen() {
           </PhonkText>
         </View>
 
-        <TouchableOpacity
+        <View
           style={styles.topPill}
-          activeOpacity={0.7}
-          onPress={() => router.push('/profile-details')}
         >
           <View style={styles.profileTopRow}>
             <View style={styles.avatarContainer}>
@@ -131,12 +129,10 @@ export default function ProfileScreen() {
               <PhonkText style={[{ color: '#FFFFFF' }, styles.badgeText]}>ROOKIE</PhonkText>
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={styles.bottomPill}
-          activeOpacity={0.7}
-          onPress={() => router.push('/profile-details')}
         >
           <View style={styles.profileBottomRow}>
             <View style={styles.userInfo}>
@@ -152,7 +148,7 @@ export default function ProfileScreen() {
               <PhonkText style={[{ color: Colors.light.text }, styles.editButtonText]}>PROFILE</PhonkText>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
 
         <View style={styles.sectionHeader}>
           <PhonkText style={[{ color: Colors.light.text }, styles.sectionTitle]}>SAVINGS TRACKER</PhonkText>
