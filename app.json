@@ -40,7 +40,7 @@
             {
               "scheme": "https",
               "host": "reelx-backend.firebaseapp.com",
-              "pathPrefix": "/__/auth/action"
+              "pathPrefix": "/finishSignIn"
             },
             {
               "scheme": "reelx"
