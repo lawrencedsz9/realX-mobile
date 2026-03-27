@@ -123,7 +123,7 @@ export default function RedeemGiftCard({
                                     styles.amountOptionText,
                                     selectedAmount === amount && styles.amountOptionTextSelected,
                                 ]}>
-                                    {currency} {amount.toFixed(2)}
+ {amount.toFixed(2)}
                                 </PhonkText>
                             </TouchableOpacity>
                         ))}
