@@ -14,16 +14,14 @@ import {
   SearchBar,
   TrendingOffers
 } from '../../components/home';
-import { ResponsiveContainer } from '../../components/ResponsiveContainer';
+
 import { Colors } from '../../constants/Colors';
-import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen() {
   const [userName, setUserName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
   const router = useRouter();
-  const { isTablet } = useResponsive();
   const isDark = false;
 
   useEffect(() => {
@@ -59,21 +57,19 @@ export default function HomeScreen() {
       <ScrollView
         style={[styles.container, { backgroundColor: Colors.light.background }]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.contentContainer, { paddingBottom: isTablet ? 160 : 130 }]}
+        contentContainerStyle={styles.contentContainer}
       >
-        <ResponsiveContainer>
-          <GreetingHeader userName={userName || t('user')} />
-          <SearchBar
-            placeholder={t('search_placeholder')}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmit={handleSearch}
-          />
-          <PromoBanner />
-          <CategoryGrid />
-          <TrendingOffers />
-          <BrandGrid />
-        </ResponsiveContainer>
+        <GreetingHeader userName={userName || t('user')} />
+        <SearchBar
+          placeholder={t('search_placeholder')}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmit={handleSearch}
+        />
+        <PromoBanner />
+        <CategoryGrid />
+        <TrendingOffers />
+        <BrandGrid />
       </ScrollView>
     </SafeAreaView>
   );

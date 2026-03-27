@@ -21,11 +21,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
 import PhonkText from '../components/PhonkText';
-import { useResponsive } from '../hooks/useResponsive';
-import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 export default function ProfileDetailsScreen() {
-    const { isTablet, horizontalPadding } = useResponsive();
     const router = useRouter();
     const BRAND_GREEN = Colors.brandGreen;
 
@@ -211,12 +208,8 @@ export default function ProfileDetailsScreen() {
             >
                 <ScrollView
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={[
-                        styles.scrollContent,
-                        { paddingHorizontal: horizontalPadding }
-                    ]}
+                    contentContainerStyle={styles.scrollContent}
                 >
-                    <ResponsiveContainer>
                     {/* Profile Image Section */}
                     <View style={styles.avatarContainer}>
                         <View style={[styles.avatarMain, { backgroundColor: '#F5F5F7' }]}>
@@ -319,7 +312,6 @@ export default function ProfileDetailsScreen() {
                             </View>
                         </TouchableOpacity>
                     </View>
-                    </ResponsiveContainer>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -362,6 +354,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     scrollContent: {
+        paddingHorizontal: 24,
         paddingTop: 20,
         paddingBottom: 40,
     },

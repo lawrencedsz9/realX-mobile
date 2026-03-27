@@ -11,11 +11,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
-import { useResponsive } from '../../hooks/useResponsive';
-import { ResponsiveContainer } from '../../components/ResponsiveContainer';
 
 export default function VendorScreen() {
-    const { isTablet, horizontalPadding } = useResponsive();
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const insets = useSafeAreaInsets();
@@ -101,8 +98,7 @@ export default function VendorScreen() {
         <View style={[styles.container, { backgroundColor: Colors.light.background }]}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, isTablet && { paddingBottom: 60 }]}>
-                <ResponsiveContainer>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 {/* Header Image Section */}
                 <View style={styles.headerContainer}>
                     <Image
@@ -211,7 +207,6 @@ export default function VendorScreen() {
                         })}
                     </View>
                 </View>
-                </ResponsiveContainer>
             </ScrollView>
 
             {/* T&C Modal */}
@@ -306,7 +301,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     headerContainer: {
-        height: 300,
+        height: 250,
         width: '100%',
         position: 'relative',
     },
@@ -356,6 +351,7 @@ const styles = StyleSheet.create({
     },
     detailsContainer: {
         paddingTop: 30, // Space for logo overlap
+        paddingHorizontal: 20,
     },
     vendorHeaderRow: {
         flexDirection: 'row',
@@ -444,7 +440,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         paddingHorizontal: 8,
         paddingVertical: 8,
-        marginBottom: 16,
     },
     pillButton: {
         flex: 1,

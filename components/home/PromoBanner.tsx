@@ -2,8 +2,11 @@ import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useResponsive } from '../../hooks/useResponsive';
+import { ActivityIndicator, Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const { width: screenWidth } = Dimensions.get('window');
+const BANNER_WIDTH = screenWidth - 48;
+const BANNER_HEIGHT = 192;
 
 type BannerItem = {
     bannerId: string;
@@ -47,28 +50,24 @@ export default function PromoBanner() {
         fetchBanners();
     }, []);
 
-    const { isTablet, width: screenWidth } = useResponsive();
-    const bannerWidth = isTablet ? Math.min(screenWidth - 80, 800) : screenWidth - 48;
-    const bannerHeight = isTablet ? 300 : 192;
-
     useEffect(() => {
         if (banners.length <= 1) return;
 
         const interval = setInterval(() => {
             const nextIndex = (activeIndex + 1) % banners.length;
             scrollViewRef.current?.scrollTo({
-                x: nextIndex * (bannerWidth + 10),
+                x: nextIndex * (BANNER_WIDTH + 10),
                 animated: true,
             });
             setActiveIndex(nextIndex);
         }, 3000);
 
         return () => clearInterval(interval);
-    }, [banners.length, activeIndex, bannerWidth]);
+    }, [banners.length, activeIndex]);
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
-        const index = Math.round(contentOffsetX / (bannerWidth + 10));
+        const index = Math.round(contentOffsetX / (BANNER_WIDTH + 10));
         setActiveIndex(index);
     };
 
@@ -80,7 +79,7 @@ export default function PromoBanner() {
 
     if (loading) {
         return (
-            <View style={[styles.container, { height: bannerHeight }, styles.loaderContainer]}>
+            <View style={[styles.container, styles.loaderContainer]}>
                 <ActivityIndicator size="large" color="#333" />
             </View>
         );
@@ -100,22 +99,22 @@ export default function PromoBanner() {
                 ref={scrollViewRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                snapToInterval={bannerWidth + 10}
+                snapToInterval={BANNER_WIDTH + 10}
                 decelerationRate="fast"
-                contentContainerStyle={[styles.scrollContent, isTablet && { paddingHorizontal: (screenWidth - bannerWidth) / 2 }]}
+                contentContainerStyle={styles.scrollContent}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
             >
                 {banners.map((banner) => (
                     <TouchableOpacity
                         key={banner.bannerId}
-                        style={[styles.bannerColumn, { width: bannerWidth, height: bannerHeight }]}
+                        style={styles.bannerColumn}
                         onPress={() => handlePress(banner)}
                         activeOpacity={0.9}
                     >
                         <View style={styles.topPill}>
                             <Image
-                                source={{ uri: (isTablet && banner.images.desktop) ? banner.images.desktop : banner.images.mobile }}
+                                source={{ uri: banner.images.mobile }}
                                 style={styles.topImage}
                                 contentFit="cover"
                                 cachePolicy="memory-disk"
@@ -125,7 +124,7 @@ export default function PromoBanner() {
 
                         <View style={styles.bottomPill}>
                             <Image
-                                source={{ uri: (isTablet && banner.images.desktop) ? banner.images.desktop : banner.images.mobile }}
+                                source={{ uri: banner.images.mobile }}
                                 style={styles.bottomImage}
                                 contentFit="cover"
                                 cachePolicy="memory-disk"
@@ -156,11 +155,12 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     loaderContainer: {
+        height: BANNER_HEIGHT,
         justifyContent: 'center',
         alignItems: 'center',
     },
     scrollContent: {
-        paddingHorizontal: 24,
+        paddingHorizontal: 24, // Center item by using (screenWidth - BANNER_WIDTH) / 2
         gap: 10,
     },
     paginationContainer: {
@@ -181,6 +181,8 @@ const styles = StyleSheet.create({
         width: 96,
     },
     bannerColumn: {
+        width: BANNER_WIDTH,
+        height: BANNER_HEIGHT,
     },
     topPill: {
         flex: 1,

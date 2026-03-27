@@ -16,11 +16,8 @@ import { SafeAreaView} from 'react-native-safe-area-context';
 import { RestaurantCard } from '../components/category';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
-import { useResponsive } from '../hooks/useResponsive';
-import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 export default function SearchScreen() {
-    const { isTablet, isDesktop, horizontalPadding } = useResponsive();
     const { q } = useLocalSearchParams<{ q: string }>();
     const router = useRouter();
     const isDark = false;
@@ -127,39 +124,32 @@ export default function SearchScreen() {
         }
     };
 
-    const numColumns = isDesktop ? 4 : isTablet ? 3 : 2;
-
     const renderItem = useCallback(
-        ({ item, index }: { item: any; index: number }) => {
-            const isFirstInRow = index % numColumns === 0;
-            const isLastInRow = index % numColumns === numColumns - 1;
-
-            return (
-                <View
-                    style={[
-                        styles.cardWrapper,
-                        {
-                            paddingLeft: isFirstInRow ? horizontalPadding : 8,
-                            paddingRight: isLastInRow ? horizontalPadding : 8,
-                        },
-                    ]}
-                >
-                    <RestaurantCard
-                        id={item.id}
-                        name={item.titleEn || item.titleAr || 'Untitled Offer'}
-                        cashbackText={item.descriptionEn || item.descriptionAr || 'Special Offer'}
-                        discountText={`${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF`}
-                        isTrending={item.isTrending}
-                        isTopRated={item.isTopRated}
-                        imageUri={item.bannerImage}
-                        logoUri={item.vendorProfilePicture}
-                        xcardEnabled={item.xcardEnabled}
-                        onPress={() => handleOfferPress(item)}
-                    />
-                </View>
-            );
-        },
-        [handleOfferPress, numColumns, horizontalPadding]
+        ({ item, index }: { item: any; index: number }) => (
+            <View
+                style={[
+                    styles.cardWrapper,
+                    {
+                        paddingLeft: index % 2 === 0 ? 20 : 8,
+                        paddingRight: index % 2 === 0 ? 8 : 20,
+                    },
+                ]}
+            >
+                <RestaurantCard
+                    id={item.id}
+                    name={item.titleEn || item.titleAr || 'Untitled Offer'}
+                    cashbackText={item.descriptionEn || item.descriptionAr || 'Special Offer'}
+                    discountText={`${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF`}
+                    isTrending={item.isTrending}
+                    isTopRated={item.isTopRated}
+                    imageUri={item.bannerImage}
+                    logoUri={item.vendorProfilePicture}
+                    xcardEnabled={item.xcardEnabled}
+                    onPress={() => handleOfferPress(item)}
+                />
+            </View>
+        ),
+        [handleOfferPress]
     );
 
     const renderFooter = () => {
@@ -201,43 +191,40 @@ export default function SearchScreen() {
             </View>
 
             {/* Results */}
-            <ResponsiveContainer>
-                {loading ? (
-                    <View style={styles.centeredContainer}>
-                        <ActivityIndicator size="large" color={Colors.brandGreen} />
-                    </View>
-                ) : filteredOffers.length === 0 ? (
-                    <View style={styles.centeredContainer}>
-                        <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.emptyEmoji]}>🔍</Text>
-                        <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.emptyTitle]}>
-                            {searchQuery.trim() ? 'No offers found' : 'Search for offers'}
+            {loading ? (
+                <View style={styles.centeredContainer}>
+                    <ActivityIndicator size="large" color={Colors.brandGreen} />
+                </View>
+            ) : filteredOffers.length === 0 ? (
+                <View style={styles.centeredContainer}>
+                    <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.emptyEmoji]}>🔍</Text>
+                    <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.emptyTitle]}>
+                        {searchQuery.trim() ? 'No offers found' : 'Search for offers'}
+                    </Text>
+                    <Text style={[{ color: Colors.light.tabIconDefault, fontFamily: Typography.poppins.medium }, styles.emptySubtitle]}>
+                        {searchQuery.trim()
+                            ? `We couldn't find any offers matching "${searchQuery.trim()}"`
+                            : 'Type a keyword to find deals and discounts'}
+                    </Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredOffers}
+                    keyExtractor={(item) => item.id}
+                    numColumns={2}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={renderFooter}
+                    ListHeaderComponent={
+                        <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.resultCount]}>
+                            {filteredOffers.length} {filteredOffers.length === 1 ? 'result' : 'results'}
                         </Text>
-                        <Text style={[{ color: Colors.light.tabIconDefault, fontFamily: Typography.poppins.medium }, styles.emptySubtitle]}>
-                            {searchQuery.trim()
-                                ? `We couldn't find any offers matching "${searchQuery.trim()}"`
-                                : 'Type a keyword to find deals and discounts'}
-                        </Text>
-                    </View>
-                ) : (
-                    <FlatList
-                        key={`search-grid-${numColumns}`}
-                        data={filteredOffers}
-                        keyExtractor={(item) => item.id}
-                        numColumns={numColumns}
-                        renderItem={renderItem}
-                        contentContainerStyle={styles.listContent}
-                        showsVerticalScrollIndicator={false}
-                        onEndReached={handleLoadMore}
-                        onEndReachedThreshold={0.5}
-                        ListFooterComponent={renderFooter}
-                        ListHeaderComponent={
-                            <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium, paddingHorizontal: horizontalPadding }, styles.resultCount]}>
-                                {filteredOffers.length} {filteredOffers.length === 1 ? 'result' : 'results'}
-                            </Text>
-                        }
-                    />
-                )}
-            </ResponsiveContainer>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }
@@ -309,6 +296,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Typography.poppins.medium,
         color: '#8E8E93',
+        paddingHorizontal: 20,
         paddingTop: 8,
         paddingBottom: 16,
     },

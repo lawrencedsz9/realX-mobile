@@ -3,11 +3,8 @@ import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../constants/Typography';
-import { useResponsive } from '../hooks/useResponsive';
-import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 export default function TermsScreen() {
-    const { horizontalPadding } = useResponsive();
     const router = useRouter();
 
     const handleBack = () => {
@@ -16,65 +13,61 @@ export default function TermsScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            <ResponsiveContainer>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Terms and Conditions</Text>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Terms and Conditions</Text>
+            </View>
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                <Text style={styles.lastUpdated}>Last updated: October 2023</Text>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>1. Introduction</Text>
+                    <Text style={styles.paragraph}>
+                        Welcome to ReelX. These Terms and Conditions govern your use of our application and services. By accessing or using ReelX, you agree to be bound by these terms.
+                    </Text>
                 </View>
-            </ResponsiveContainer>
 
-            <ResponsiveContainer>
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
-                >
-                    <Text style={styles.lastUpdated}>Last updated: October 2023</Text>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>2. Use of Services</Text>
+                    <Text style={styles.paragraph}>
+                        You must be at least 18 years old to use this service. You agree to use ReelX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else's use and enjoyment of ReelX.
+                    </Text>
+                </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>1. Introduction</Text>
-                        <Text style={styles.paragraph}>
-                            Welcome to ReelX. These Terms and Conditions govern your use of our application and services. By accessing or using ReelX, you agree to be bound by these terms.
-                        </Text>
-                    </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>3. Account Registration</Text>
+                    <Text style={styles.paragraph}>
+                        To access certain features, you may be required to register for an account. You represent and warrant that all registration information you submit is truthful and accurate.
+                    </Text>
+                </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>2. Use of Services</Text>
-                        <Text style={styles.paragraph}>
-                            You must be at least 18 years old to use this service. You agree to use ReelX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else's use and enjoyment of ReelX.
-                        </Text>
-                    </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>4. Intellectual Property</Text>
+                    <Text style={styles.paragraph}>
+                        The content, organization, graphics, design, and other matters related to ReelX are protected under applicable copyrights and other proprietary laws.
+                    </Text>
+                </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>3. Account Registration</Text>
-                        <Text style={styles.paragraph}>
-                            To access certain features, you may be required to register for an account. You represent and warrant that all registration information you submit is truthful and accurate.
-                        </Text>
-                    </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>5. Limitation of Liability</Text>
+                    <Text style={styles.paragraph}>
+                        ReelX shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of profits or revenues.
+                    </Text>
+                </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>4. Intellectual Property</Text>
-                        <Text style={styles.paragraph}>
-                            The content, organization, graphics, design, and other matters related to ReelX are protected under applicable copyrights and other proprietary laws.
-                        </Text>
-                    </View>
-
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>5. Limitation of Liability</Text>
-                        <Text style={styles.paragraph}>
-                            ReelX shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of profits or revenues.
-                        </Text>
-                    </View>
-
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>6. Changes to Terms</Text>
-                        <Text style={styles.paragraph}>
-                            We reserve the right to modify these terms at any time. Your continued use of ReelX after any such changes constitutes your acceptance of the new Terms and Conditions.
-                        </Text>
-                    </View>
-                </ScrollView>
-            </ResponsiveContainer>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>6. Changes to Terms</Text>
+                    <Text style={styles.paragraph}>
+                        We reserve the right to modify these terms at any time. Your continued use of ReelX after any such changes constitutes your acceptance of the new Terms and Conditions.
+                    </Text>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
