@@ -2,6 +2,8 @@
   "home": "Home",
   "wallet": "Wallet",
   "home_title": "Discounts",
+  "greeting_line": "Hey __USER_NAME__,",
+  "greeting_prompt": "Ready to save?",
   "redeem": "Redeem Discount",
   "search": "Search",
   "search_placeholder": "Search for anything...",

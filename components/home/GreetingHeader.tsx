@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, I18nManager, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 
@@ -6,14 +7,24 @@ type Props = {
     userName: string;
 };
 
+const USER_NAME_PLACEHOLDER = '__USER_NAME__';
+
 export default function GreetingHeader({ userName }: Props) {
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
+    const textAlignStyle = { textAlign: isRTL ? 'right' : 'left' };
+    const rawGreeting = t('greeting_line', { name: USER_NAME_PLACEHOLDER });
+    const [prefix, suffix] = rawGreeting.split(USER_NAME_PLACEHOLDER);
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.textContainer}>
-                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.greeting]}>
-                    Hey <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.phonk.bold }, styles.userName]}>{userName}</Text>,
+                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.greeting, textAlignStyle]}>
+                    {prefix}
+                    <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.phonk.bold }, styles.userName]}>{userName}</Text>
+                    {suffix ?? ''}
                 </Text>
-                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.subtitle]}>Ready to save?</Text>
+                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.subtitle, textAlignStyle]}>{t('greeting_prompt')}</Text>
             </View>
             <TouchableOpacity
                 style={styles.avatarContainer}
