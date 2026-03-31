@@ -57,7 +57,7 @@ export default function FilterTabs({ selectedFilter, onFilterChange, filters = d
                 useNativeDriver: true,
             }).start();
         }
-    }, [selectedFilter, filters, tabWidth]);
+    }, [selectedFilter, filters, tabWidth, translateX, opacity]);
 
     return (
         <View style={styles.outerContainer}>

@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 const { width: screenWidth } = Dimensions.get('window');
 const BANNER_WIDTH = screenWidth - 48;
@@ -72,6 +73,7 @@ export default function PromoBanner() {
     };
 
     const handlePress = (banner: BannerItem) => {
+        triggerSubtleHaptic();
         if (banner.offerId) {
             router.push(`/vendor/${banner.offerId}`);
         }

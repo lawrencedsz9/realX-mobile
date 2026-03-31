@@ -18,6 +18,7 @@ import {
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 type Brand = {
     id: string;
@@ -53,6 +54,7 @@ export default function GiftCardCheckout({
 
     const handleRedeem = async () => {
         if (!canRedeem) return;
+        triggerSubtleHaptic();
 
         const auth = getAuth();
         const user = auth.currentUser;
@@ -66,15 +68,13 @@ export default function GiftCardCheckout({
             const functions = getFunctions(undefined, 'me-central1');
             const redeemGiftCard = httpsCallable(functions, 'redeemGiftCard');
 
-            const result = await redeemGiftCard({
+            await redeemGiftCard({
                 vendorId: brand.id,
                 vendorName: brand.name,
                 giftCardAmount: selectedAmount,
                 totalAmount: totalBillNum,
                 pin,
             });
-
-            const data = result.data as any;
 
             Alert.alert(
                 'Redemption successful!',
@@ -106,7 +106,10 @@ export default function GiftCardCheckout({
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
-                    onPress={onBack}
+                    onPress={() => {
+                        triggerSubtleHaptic();
+                        onBack();
+                    }}
                     activeOpacity={0.7}
                 >
                     <Ionicons name="arrow-back" size={24} color="#000000" />
@@ -126,7 +129,10 @@ export default function GiftCardCheckout({
                 {/* Gift Card Display Card */}
                 <View style={styles.offerCardWrapper}>
                     <View style={styles.offerCard}>
-                        <TouchableOpacity style={styles.tcButton}>
+                        <TouchableOpacity
+                            style={styles.tcButton}
+                            onPress={() => triggerSubtleHaptic()}
+                        >
                             <Ionicons name="information-circle-outline" size={18} color="#888" />
                             <Text style={styles.tcText}>View T&C</Text>
                         </TouchableOpacity>
@@ -160,7 +166,10 @@ export default function GiftCardCheckout({
                     <TouchableOpacity
                         activeOpacity={1}
                         style={styles.pinContainer}
-                        onPress={() => pinInputRef.current?.focus()}
+                        onPress={() => {
+                            triggerSubtleHaptic();
+                            pinInputRef.current?.focus();
+                        }}
                     >
                         {[0, 1, 2, 3].map((index) => (
                             <View key={index} style={styles.pinBox}>

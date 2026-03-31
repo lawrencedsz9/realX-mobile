@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 type Props = {
     id: string;
@@ -29,10 +30,14 @@ export default function RestaurantCard({
     style,
     xcardEnabled = false,
 }: Props) {
+    const handlePress = () => {
+        triggerSubtleHaptic();
+        onPress?.();
+    };
     return (
         <TouchableOpacity
             style={[styles.container, style]}
-            onPress={onPress}
+            onPress={handlePress}
             activeOpacity={0.9}
         >
             {/* Image placeholder or actual image */}

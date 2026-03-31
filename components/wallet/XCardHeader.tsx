@@ -1,5 +1,4 @@
 import { StyleSheet, View } from 'react-native';
-import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
 
 export default function XCardHeader() {

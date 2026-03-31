@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { memo, useCallback } from 'react';
-import { ColorSchemeName, ScrollView, StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 
@@ -72,6 +72,8 @@ const SubCategoryChip = memo(({
     );
 });
 
+SubCategoryChip.displayName = 'SubCategoryChip';
+
 /**
  * Horizontal scrollable chips for sub-categories
  */
@@ -136,4 +138,3 @@ const styles = StyleSheet.create({
 });
 
 export default memo(SubCategoryChips);
-

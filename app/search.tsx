@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { collection, getDocs, getFirestore, query, where, limit, startAfter } from '@react-native-firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -16,27 +16,26 @@ import { SafeAreaView} from 'react-native-safe-area-context';
 import { RestaurantCard } from '../components/category';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
+import { triggerSubtleHaptic } from '../utils/haptics';
 
 export default function SearchScreen() {
     const { q } = useLocalSearchParams<{ q: string }>();
     const router = useRouter();
-    const isDark = false;
 
     const [searchQuery, setSearchQuery] = useState(q || '');
     const [offers, setOffers] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const lastDocRef = useRef<any>(null);
     const [isListEnd, setIsListEnd] = useState(false);
 
     // Fetch offers with pagination — only when user has typed a query
-    const fetchOffers = useCallback(async (isNew = false, currentQuery = searchQuery) => {
-        const trimmedQuery = currentQuery.trim().toLowerCase();
+    const fetchOffers = useCallback(async (isNew = false, currentQuery?: string) => {
+        const trimmedQuery = (currentQuery ?? searchQuery).trim().toLowerCase();
 
-        // Don't query Firestore if no search text — saves reads
         if (!trimmedQuery) {
             setOffers([]);
-            setLastDoc(null);
+            lastDocRef.current = null;
             setIsListEnd(true);
             setLoading(false);
             setLoadingMore(false);
@@ -47,7 +46,7 @@ export default function SearchScreen() {
 
         if (isNew) {
             setLoading(true);
-            setLastDoc(null);
+            lastDocRef.current = null;
             setIsListEnd(false);
         } else {
             setLoadingMore(true);
@@ -67,7 +66,10 @@ export default function SearchScreen() {
             if (isNew) {
                 q = query(offersRef, ...constraints, limit(PAGE_SIZE) as any);
             } else {
-                q = query(offersRef, ...constraints, startAfter(lastDoc) as any, limit(PAGE_SIZE) as any);
+                const startAfterDoc = lastDocRef.current;
+                q = startAfterDoc
+                    ? query(offersRef, ...constraints, startAfter(startAfterDoc) as any, limit(PAGE_SIZE) as any)
+                    : query(offersRef, ...constraints, limit(PAGE_SIZE) as any);
             }
 
             const snapshot = await getDocs(q);
@@ -85,7 +87,7 @@ export default function SearchScreen() {
             }
 
             if (snapshot.docs.length > 0) {
-                setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+                lastDocRef.current = snapshot.docs[snapshot.docs.length - 1];
                 setIsListEnd(snapshot.docs.length < PAGE_SIZE);
             } else {
                 setIsListEnd(true);
@@ -96,12 +98,17 @@ export default function SearchScreen() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [loading, loadingMore, isListEnd, lastDoc, searchQuery]);
+    }, [loading, loadingMore, isListEnd, searchQuery]);
+
+    const fetchOffersRef = useRef(fetchOffers);
+    useEffect(() => {
+        fetchOffersRef.current = fetchOffers;
+    }, [fetchOffers]);
 
     // Debounced search effect
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchOffers(true);
+            fetchOffersRef.current(true, searchQuery);
         }, 300); // 300ms debounce
 
         return () => clearTimeout(timer);
@@ -168,7 +175,14 @@ export default function SearchScreen() {
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={[styles.backButton, { backgroundColor: '#FFF' }]} onPress={() => router.back()} activeOpacity={0.8}>
+                <TouchableOpacity
+                    style={[styles.backButton, { backgroundColor: '#FFF' }]}
+                    onPress={() => {
+                        triggerSubtleHaptic();
+                        router.back();
+                    }}
+                    activeOpacity={0.8}
+                >
                     <Ionicons name="arrow-back" size={22} color="#000" />
                 </TouchableOpacity>
 
@@ -184,7 +198,13 @@ export default function SearchScreen() {
                         autoFocus
                     />
                     {searchQuery.length > 0 && (
-                        <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                triggerSubtleHaptic();
+                                setSearchQuery('');
+                            }}
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
                             <Ionicons name="close-circle" size={18} color="#AAA" />
                         </TouchableOpacity>
                     )}

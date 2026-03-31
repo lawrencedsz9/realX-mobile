@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 type CategoryItem = {
     id: string;
@@ -67,11 +68,12 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
         };
 
         fetchCategories();
-    }, [propCategories]);
+    }, [propCategories, isArabic, t]);
 
     const displayCategories = propCategories || fetchedCategories;
 
     const handleCategoryPress = (item: CategoryItem) => {
+        triggerSubtleHaptic();
         if (onCategoryPress) {
             onCategoryPress(item);
         } else if (item.id !== 'coming-soon') {

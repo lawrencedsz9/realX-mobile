@@ -80,7 +80,7 @@ export default function ProfileDetailsScreen() {
         };
 
         fetchUserData();
-    }, []);
+    }, [router]);
 
     const handleBack = () => {
         router.back();
@@ -155,7 +155,7 @@ export default function ProfileDetailsScreen() {
                             // This may throw if the user is already deleted, which is expected
                             try {
                                 await authInstance.signOut();
-                            } catch (_) {
+                            } catch {
                                 // User already deleted, sign out is a no-op
                             }
                             

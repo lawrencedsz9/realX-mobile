@@ -16,7 +16,6 @@ export default function VendorScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const isDark = false;
     const { i18n } = useTranslation();
     const isArabic = i18n.language === 'ar';
     const [vendor, setVendor] = useState<any>(null);

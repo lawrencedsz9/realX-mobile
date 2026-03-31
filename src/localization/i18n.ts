@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
@@ -37,7 +37,8 @@ export async function initI18n() {
   const storedLanguage = await getStoredLanguage();
   const initialLanguage = storedLanguage ?? getDeviceLanguage();
 
-  await i18n.use(initReactI18next).init({
+  // eslint-disable-next-line import/no-named-as-default-member
+  await i18next.use(initReactI18next).init({
     compatibilityJSON: 'v3',
     resources,
     lng: initialLanguage,
@@ -50,4 +51,4 @@ export async function initI18n() {
   return initialLanguage;
 }
 
-export default i18n;
+export default i18next;

@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
 import PhonkText from '../components/PhonkText';
+import { triggerSubtleHaptic } from '../utils/haptics';
 
 /*
   UI Format based on design specs:
@@ -184,12 +185,13 @@ const discountText =
               <TouchableOpacity
                 style={styles.redeemButton}
                 activeOpacity={0.8}
-                onPress={() =>
+                onPress={() => {
+                  triggerSubtleHaptic();
                   router.push({
                     pathname: '/redeem/[id]',
                     params: { id: item.offerId!, vendorId: item.vendorId },
-                  })
-                }
+                  });
+                }}
               >
                 <Text style={styles.redeemButtonText}>Redeem Again</Text>
               </TouchableOpacity>
@@ -205,7 +207,13 @@ const discountText =
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            triggerSubtleHaptic();
+            router.back();
+          }}
+        >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Redemption History</Text>

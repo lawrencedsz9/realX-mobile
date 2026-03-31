@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import PhonkText from '../../components/PhonkText';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 // Types for better type safety
 interface VendorData {
@@ -183,6 +184,7 @@ export default function RedeemScreen() {
     };
 
     const handleAction = () => {
+        triggerSubtleHaptic();
         if (step === 'creator') {
             setStep('pin');
             setTimeout(() => {
@@ -216,7 +218,12 @@ export default function RedeemScreen() {
         return (
             <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>Information not found</Text>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity
+                    onPress={() => {
+                        triggerSubtleHaptic();
+                        router.back();
+                    }}
+                >
                     <Text style={styles.backLink}>Go Back</Text>
                 </TouchableOpacity>
             </View>
@@ -237,6 +244,7 @@ export default function RedeemScreen() {
                             <TouchableOpacity
                                 style={styles.backButton}
                                 onPress={() => {
+                                    triggerSubtleHaptic();
                                     if (step === 'pin' && vendor.xcard === true) {
                                         setStep('creator');
                                         Keyboard.dismiss();
@@ -306,7 +314,10 @@ export default function RedeemScreen() {
                                         <TouchableOpacity
                                             activeOpacity={1}
                                             style={styles.pinVisualContainer}
-                                            onPress={() => pinInputRef.current?.focus()}
+                                            onPress={() => {
+                                                triggerSubtleHaptic();
+                                                pinInputRef.current?.focus();
+                                            }}
                                         >
                                             {[0, 1, 2, 3].map((index) => (
                                                 <View key={index} style={[styles.pinBox, pin.length === index && styles.pinBoxActive]}>

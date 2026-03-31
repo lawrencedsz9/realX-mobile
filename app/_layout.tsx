@@ -1,20 +1,16 @@
 import '@react-native-firebase/app';
 import {
   getAuth,
-  isSignInWithEmailLink,
   onAuthStateChanged,
-  signInWithEmailLink,
   type FirebaseAuthTypes
 } from '@react-native-firebase/auth';
 import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore';
 import { useFonts } from 'expo-font';
-import * as Linking from 'expo-linking';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { clearAuthEmail, getAuthEmail } from '../utils/auth';
 import { initI18n } from '../src/localization/i18n';
 import { applyRTL } from '../src/localization/rtl';
 
@@ -49,13 +45,11 @@ export default function RootLayout() {
     void setupLocalization();
   }, []);
 
-  function onAuthStateChangedHandler(currentUser: FirebaseAuthTypes.User | null) {
-    setUser(currentUser);
-    if (initializing) setInitializing(false);
-  }
-
   useEffect(() => {
-    const subscriber = onAuthStateChanged(getAuth(), onAuthStateChangedHandler);
+    const subscriber = onAuthStateChanged(getAuth(), (currentUser) => {
+      setUser(currentUser);
+      setInitializing(false);
+    });
     return subscriber;
   }, []);
 
@@ -119,7 +113,7 @@ export default function RootLayout() {
         }
       }
     }
-  }, [user, initializing, loaded, i18nReady, segments, hasProfile]);
+  }, [user, initializing, loaded, i18nReady, segments, hasProfile, router]);
 
   if ((!loaded && !error) || !i18nReady) {
     return null;

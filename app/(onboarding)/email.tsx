@@ -4,7 +4,7 @@ import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -45,7 +45,7 @@ export default function EmailOnboarding() {
   const { role, mode } = params;
 
   const [email, setEmail] = useState('');
-  const [isNewUser, setIsNewUser] = useState(mode === 'signup');
+  const isNewUser = mode === 'signup';
   const [isLoading, setIsLoading] = useState(false);
   const [checkingLink, setCheckingLink] = useState(true);
   const [manualLink, setManualLink] = useState('');
@@ -56,7 +56,7 @@ export default function EmailOnboarding() {
 
 
   // Verify email link
-  const verifyAutomaticLink = async (incomingUrl: string) => {
+  const verifyAutomaticLink = useCallback(async (incomingUrl: string) => {
     if (hasHandledLink.current) return;
 
     const authInstance = getAuth();
@@ -93,7 +93,7 @@ export default function EmailOnboarding() {
       setIsLoading(false);
       setCheckingLink(false);
     }
-  };
+  }, [isNewUser, role, router]);
 
   // Cold start
   useEffect(() => {
@@ -106,14 +106,14 @@ export default function EmailOnboarding() {
       }
     };
     checkInitialLink();
-  }, []);
+  }, [verifyAutomaticLink]);
 
   // Foreground
   useEffect(() => {
     if (url) {
       verifyAutomaticLink(url);
     }
-  }, [url]);
+  }, [url, verifyAutomaticLink]);
 
   const handleBack = () => {
     router.back();

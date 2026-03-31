@@ -12,6 +12,7 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
 import GiftCardCheckout from './GiftCardCheckout';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 type Brand = {
     id: string;
@@ -59,7 +60,10 @@ export default function RedeemGiftCard({
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
-                    onPress={onBack}
+                    onPress={() => {
+                        triggerSubtleHaptic();
+                        onBack();
+                    }}
                     activeOpacity={0.7}
                 >
                     <Ionicons name="arrow-back" size={24} color="#000000" />
@@ -117,7 +121,10 @@ export default function RedeemGiftCard({
                                     styles.amountOption,
                                     selectedAmount === amount && styles.amountOptionSelected,
                                 ]}
-                                onPress={() => setSelectedAmount(amount)}
+                                onPress={() => {
+                                    triggerSubtleHaptic();
+                                    setSelectedAmount(amount);
+                                }}
                             >
                                 <PhonkText style={[
                                     styles.amountOptionText,
@@ -144,7 +151,10 @@ export default function RedeemGiftCard({
                 <TouchableOpacity
                     style={[styles.redeemButton, selectedAmount > maxLimit && styles.redeemButtonDisabled]}
                     activeOpacity={0.8}
-                    onPress={() => setShowCheckout(true)}
+                    onPress={() => {
+                        triggerSubtleHaptic();
+                        setShowCheckout(true);
+                    }}
                     disabled={selectedAmount > maxLimit}
                 >
                     <Ionicons name="flash" size={20} color="#FFFFFF" style={styles.redeemIcon} />
@@ -152,7 +162,10 @@ export default function RedeemGiftCard({
                 </TouchableOpacity>
 
                 {/* T&C */}
-                <TouchableOpacity style={styles.tcButton}>
+                <TouchableOpacity
+                    style={styles.tcButton}
+                    onPress={() => triggerSubtleHaptic()}
+                >
                     <Ionicons name="information-circle-outline" size={18} color="#999999" />
                     <Text style={styles.tcButtonText}>View T&C</Text>
                 </TouchableOpacity>

@@ -301,7 +301,7 @@ export default function LoginScreen() {
                         </View>
                         <PhonkText style={styles.modalTitle}>ACCOUNT NOT FOUND</PhonkText>
                         <Text style={styles.modalText}>
-                            It looks like you don't have an account yet. Would you like to create one?
+                        It looks like you don&apos;t have an account yet. Would you like to create one?
                         </Text>
 
                         <TouchableOpacity

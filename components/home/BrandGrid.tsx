@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 type BrandItem = {
     id: string;
@@ -49,6 +49,7 @@ export default function BrandGrid() {
     }, []);
 
     const handlePress = (brand: BrandItem) => {
+        triggerSubtleHaptic();
         router.push(`/vendor/${brand.name}`);
     };
 

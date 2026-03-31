@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, where } from '@react-native-firebase/firestore';
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ImageSourcePropType, Keyboard, ScrollView, StatusBar, StyleSheet, Text, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -197,6 +197,8 @@ const HeaderContent = memo(({
     </>
 ));
 
+HeaderContent.displayName = 'HeaderContent';
+
 export default function CategoryScreen() {
     const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
     const router = useRouter();
@@ -211,7 +213,7 @@ export default function CategoryScreen() {
 
     const [offers, setOffers] = useState<any[]>([]);
     const [loadingOffers, setLoadingOffers] = useState(false);
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const lastDocRef = useRef<any>(null);
     const [isListEnd, setIsListEnd] = useState(false);
 
     // Get category configuration or use default
@@ -249,7 +251,7 @@ export default function CategoryScreen() {
         fetchCategory();
     }, [id]);
 
-    const fetchOffers = async (isNew = false) => {
+    const fetchOffers = useCallback(async (isNew = false) => {
         if (loadingOffers || (isListEnd && !isNew) || !isCategoryActive) return;
 
         setLoadingOffers(true);
@@ -259,39 +261,34 @@ export default function CategoryScreen() {
             const categoryName = (isArabic ? (categoryData?.nameArabic || categoryData?.nameAr) : null) || categoryData?.nameEnglish || config.title;
             const PAGE_SIZE = 10;
 
-            let q;
-
-            // Base constraints
             const baseConstraints: any[] = [where('status', '==', 'active')];
 
-            // Filter logic
             if (selectedSubCategory !== 'all') {
-                // Filter by subcategory
                 baseConstraints.push(where('categories', 'array-contains', selectedSubCategory));
             } else {
-                // Filter by main category
                 baseConstraints.push(where('mainCategory', '==', categoryName));
             }
 
-            // Top-rated / Trending logic
             if (selectedFilter === 'trending') {
                 baseConstraints.push(where('isTrending', '==', true));
             }
 
-            // Construct query with pagination
+            let q;
             if (isNew) {
                 q = query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
             } else {
-                q = query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, startAfter(lastDoc) as any, limit(PAGE_SIZE) as any);
+                const startAfterDoc = lastDocRef.current;
+                q = startAfterDoc
+                    ? query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, startAfter(startAfterDoc) as any, limit(PAGE_SIZE) as any)
+                    : query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
             }
 
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
-                const fetchedOffers = querySnapshot.docs.map((doc: any) => ({ 
-                    id: doc.id, 
+                const fetchedOffers = querySnapshot.docs.map((doc: any) => ({
+                    id: doc.id,
                     ...doc.data(),
-                    // Use the denormalized xcard field directly from the offer document
                     xcard: doc.data().xcard || false
                 }));
 
@@ -301,7 +298,7 @@ export default function CategoryScreen() {
                     setOffers(prev => [...prev, ...fetchedOffers]);
                 }
 
-                setLastDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+                lastDocRef.current = querySnapshot.docs[querySnapshot.docs.length - 1];
                 setIsListEnd(querySnapshot.docs.length < PAGE_SIZE);
             } else {
                 setIsListEnd(true);
@@ -312,17 +309,21 @@ export default function CategoryScreen() {
         } finally {
             setLoadingOffers(false);
         }
-    };
+    }, [loadingOffers, isListEnd, isCategoryActive, selectedSubCategory, selectedFilter, isArabic, categoryData, config.title]);
+
+    const fetchOffersRef = useRef(fetchOffers);
+    useEffect(() => {
+        fetchOffersRef.current = fetchOffers;
+    }, [fetchOffers]);
 
     // Initial fetch or filter change
     useEffect(() => {
-        if (!loading && isCategoryActive) {
-            // Reset pagination state
-            setLastDoc(null);
-            setIsListEnd(false);
-            fetchOffers(true);
-        }
-    }, [selectedSubCategory, selectedFilter, loading, isCategoryActive, config.title]);
+    if (!loading && isCategoryActive) {
+        lastDocRef.current = null;
+        setIsListEnd(false);
+        fetchOffersRef.current(true);
+    }
+}, [selectedSubCategory, selectedFilter, loading, isCategoryActive, config.title]);
 
     const handleLoadMore = () => {
         if (!loadingOffers && !isListEnd) {

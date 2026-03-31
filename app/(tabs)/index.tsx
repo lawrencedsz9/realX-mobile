@@ -16,13 +16,13 @@ import {
 } from '../../components/home';
 
 import { Colors } from '../../constants/Colors';
+import { triggerSubtleHaptic } from '../../utils/haptics';
 
 export default function HomeScreen() {
   const [userName, setUserName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
   const router = useRouter();
-  const isDark = false;
 
   useEffect(() => {
     const authInstance = getAuth();
@@ -45,6 +45,7 @@ export default function HomeScreen() {
   const handleSearch = useCallback(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
+    triggerSubtleHaptic();
     router.push({ pathname: '/search', params: { q: trimmed } });
   }, [searchQuery, router]);
 

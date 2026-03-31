@@ -36,7 +36,7 @@ export default function TermsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>2. Use of Services</Text>
                     <Text style={styles.paragraph}>
-                        You must be at least 18 years old to use this service. You agree to use ReelX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else's use and enjoyment of ReelX.
+                        You must be at least 18 years old to use this service. You agree to use ReelX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else&apos;s use and enjoyment of ReelX.
                     </Text>
                 </View>
 
