@@ -104,13 +104,26 @@
       "expo-asset",
       "expo-image",
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      {
+        "supportedLocales": {
+          "ios": [
+            "en",
+            "ar"
+          ],
+          "android": [
+            "en",
+            "ar"
+          ]
+        }
+      }
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
+      "supportRTl": true,
       "router": {},
       "eas": {
         "projectId": "462a3cda-e70c-4472-8637-8794ff697f77"
