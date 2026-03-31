@@ -154,8 +154,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     scrollContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 30,
         gap: 12,
+
     },
     offerCard: {
         width: 220,
