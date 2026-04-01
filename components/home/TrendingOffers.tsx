@@ -1,17 +1,23 @@
 import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, I18nManager, ScrollView, StyleSheet, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import PhonkText from '../PhonkText';
 import RestaurantCard from '../category/RestaurantCard';
+import { useTranslation } from 'react-i18next';
 
 export default function TrendingOffers() {
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
     const [offers, setOffers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView | null>(null);
     const router = useRouter();
+    const displayedOffers = useMemo(() => (isRTL ? [...offers].reverse() : offers), [offers, isRTL]);
+    const trendingLabelPrefix = t('trending_label_prefix');
+    const trendingLabelHighlight = t('trending_label_highlight');
 
     useEffect(() => {
         const fetchTrendingOffers = async () => {
@@ -46,31 +52,31 @@ export default function TrendingOffers() {
     }, []);
 
     useEffect(() => {
-        if (offers.length <= 1) {
+        if (displayedOffers.length <= 1) {
             return;
         }
 
         const interval = setInterval(() => {
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % offers.length);
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % displayedOffers.length);
         }, 4000);
 
         return () => clearInterval(interval);
-    }, [offers.length]);
+    }, [displayedOffers.length]);
 
     useEffect(() => {
-        if (!scrollViewRef.current || offers.length === 0) {
+        if (!scrollViewRef.current || displayedOffers.length === 0) {
             return;
         }
 
         const cardWidth = 220;
         const gap = 12;
         const horizontalPadding = 20;
-        const maxIndex = Math.max(0, offers.length - 1);
+        const maxIndex = Math.max(0, displayedOffers.length - 1);
         const safeIndex = Math.min(currentIndex, maxIndex);
         const offset = horizontalPadding + safeIndex * (cardWidth + gap);
 
         scrollViewRef.current.scrollTo({ x: offset, animated: true });
-    }, [currentIndex, offers.length]);
+    }, [currentIndex, displayedOffers.length]);
 
     const handleOfferPress = (offer: any) => {
         if (offer.vendorId) {
@@ -86,7 +92,7 @@ export default function TrendingOffers() {
         );
     }
 
-    if (offers.length === 0) {
+    if (displayedOffers.length === 0) {
         return null;
     }
 
@@ -94,32 +100,46 @@ export default function TrendingOffers() {
         <View style={styles.container}>
             <View style={styles.headerContainer}>
                 <View style={styles.headerTitle}>
-                    <PhonkText style={styles.trendingText}>TRENDING </PhonkText>
-                    <PhonkText style={styles.offersText}>OFFERS</PhonkText>
+                    <PhonkText style={[styles.trendingText, { writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+                        {trendingLabelPrefix}
+                    </PhonkText>
+                    <PhonkText style={[styles.offersText, { writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+                        {trendingLabelHighlight}
+                    </PhonkText>
                 </View>
             </View>
             <ScrollView
                 ref={scrollViewRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexDirection: 'row' }]}
             >
-                {offers.map((offer) => (
-                    <RestaurantCard
-                        key={offer.id}
-                        id={offer.id}
-                        name={offer.titleEn || offer.titleAr || 'Untitled Offer'}
-                        cashbackText={offer.descriptionEn || offer.descriptionAr || 'Special Offer'}
-                        discountText={`${offer.discountValue || ''}${offer.discountType === 'percentage' ? '%' : ''} OFF`}
-                        isTrending={offer.isTrending}
-                        isTopRated={offer.isTopRated}
-                        imageUri={offer.bannerImage}
-                        logoUri={offer.vendorProfilePicture}
-                        xcardEnabled={offer.xcard}
-                        onPress={() => handleOfferPress(offer)}
-                        style={styles.offerCard}
-                    />
-                ))}
+                {displayedOffers.map((offer) => {
+                    const name = isRTL
+                        ? offer.titleAr || offer.titleEn || 'Untitled Offer'
+                        : offer.titleEn || offer.titleAr || 'Untitled Offer';
+                    const cashbackText = isRTL
+                        ? offer.descriptionAr || offer.descriptionEn || 'Special Offer'
+                        : offer.descriptionEn || offer.descriptionAr || 'Special Offer';
+                    const discountText = `${offer.discountValue || ''}${offer.discountType === 'percentage' ? '%' : ''} OFF`;
+
+                    return (
+                        <RestaurantCard
+                            key={offer.id}
+                            id={offer.id}
+                            name={name}
+                            cashbackText={cashbackText}
+                            discountText={discountText}
+                            isTrending={offer.isTrending}
+                            isTopRated={offer.isTopRated}
+                            imageUri={offer.bannerImage}
+                            logoUri={offer.vendorProfilePicture}
+                            xcardEnabled={offer.xcard}
+                            onPress={() => handleOfferPress(offer)}
+                            style={styles.offerCard}
+                        />
+                    );
+                })}
             </ScrollView>
         </View>
     );

@@ -16,27 +16,44 @@ export default function GreetingHeader({ userName }: Props) {
     const rawGreeting = t('greeting_line', { name: USER_NAME_PLACEHOLDER });
     const [prefix, suffix] = rawGreeting.split(USER_NAME_PLACEHOLDER);
 
-    return (
-        <View style={[styles.container, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={styles.textContainer}>
-                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.greeting, textAlignStyle]}>
-                    {prefix}
-                    <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.phonk.bold }, styles.userName]}>{userName}</Text>
-                    {suffix ?? ''}
-                </Text>
-                <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.subtitle, textAlignStyle]}>{t('greeting_prompt')}</Text>
+    const greetingTextBlock = (
+        <View style={[styles.textContainer, isRTL && styles.textContainerRTL]}>
+            <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.greeting, textAlignStyle]}>
+                {prefix}
+                <Text style={[{ color: Colors.brandGreen, fontFamily: Typography.phonk.bold }, styles.userName]}>{userName}</Text>
+                {suffix ?? ''}
+            </Text>
+            <Text style={[{ color: '#000', fontFamily: Typography.poppins.medium }, styles.subtitle, textAlignStyle]}>{t('greeting_prompt')}</Text>
+        </View>
+    );
+
+    const avatarBlock = (
+        <TouchableOpacity
+            style={styles.avatarContainer}
+            activeOpacity={0.8}
+        >
+            <View style={[styles.avatarPlaceholder, { backgroundColor: '#F0F0F0' }]}> 
+                <Image
+                    source={require('../../assets/images/user.png')}
+                    style={styles.avatarImage}
+                />
             </View>
-            <TouchableOpacity
-                style={styles.avatarContainer}
-                activeOpacity={0.8}
-            >
-                <View style={[styles.avatarPlaceholder, { backgroundColor: '#F0F0F0' }]}>
-                    <Image
-                        source={require('../../assets/images/user.png')}
-                        style={styles.avatarImage}
-                    />
-                </View>
-            </TouchableOpacity>
+        </TouchableOpacity>
+    );
+
+    return (
+        <View style={styles.container}>
+            {isRTL ? (
+                <>
+                    {avatarBlock}
+                    {greetingTextBlock}
+                </>
+            ) : (
+                <>
+                    {greetingTextBlock}
+                    {avatarBlock}
+                </>
+            )}
         </View>
     );
 }
@@ -52,6 +69,9 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
+    },
+    textContainerRTL: {
+        alignItems: 'flex-end',
     },
     greeting: {
         fontSize: 28,

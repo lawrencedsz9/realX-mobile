@@ -1,11 +1,12 @@
 import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, I18nManager, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import PhonkText from '../PhonkText';
 import { triggerSubtleHaptic } from '../../utils/haptics';
+import { useTranslation } from 'react-i18next';
 
 type BrandItem = {
     id: string;
@@ -15,9 +16,15 @@ type BrandItem = {
 };
 
 export default function BrandGrid() {
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
     const [brands, setBrands] = useState<BrandItem[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const displayedBrands = useMemo(() => (isRTL ? [...brands].reverse() : brands), [brands, isRTL]);
+    const brandLabelPrefix = t('brand_header_prefix');
+    const brandLabelHighlight = t('brand_header_highlight');
+    const headerTextAlign = { textAlign: isRTL ? 'right' : 'left' };
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -61,24 +68,24 @@ export default function BrandGrid() {
         );
     }
 
-    if (brands.length === 0) {
+    if (displayedBrands.length === 0) {
         return null; // Or show a default state
     }
 
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <Text style={styles.headerTitle}>
-                    <PhonkText style={styles.shopByText}>TOP </PhonkText>
-                    <PhonkText style={styles.brandText}>BRANDS</PhonkText>
+                <Text style={[styles.headerTitle, headerTextAlign]}>
+                    <PhonkText style={styles.shopByText}>{brandLabelPrefix}</PhonkText>
+                    <PhonkText style={styles.brandText}>{brandLabelHighlight}</PhonkText>
                 </Text>
             </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexDirection: 'row' }]}
             >
-                {brands.map((brand) => (
+                {displayedBrands.map((brand) => (
                     <TouchableOpacity
                         key={brand.id}
                         style={styles.brandItem}
