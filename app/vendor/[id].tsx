@@ -165,11 +165,6 @@ export default function VendorScreen() {
                     </View>
 
                     <View style={styles.metaRow}>
-                        <View style={styles.ratingContainer}>
-                            <Ionicons name="star" size={16} color="#FFD700" />
-                            <Text style={[{ color: Colors.light.text, fontFamily: Typography.poppins.medium }, styles.ratingText]}>5.0</Text>
-                        </View>
-
                     </View>
 
                     {/* Offers List */}
