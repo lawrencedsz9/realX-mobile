@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, I18nManager, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Updates from 'expo-updates';
 
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -47,17 +48,18 @@ export default function ProfileScreen() {
   }, []);
 
   const changeLanguage = async (language: 'en' | 'ar') => {
+    if (i18n.language === language) {
+      return;
+    }
+
     try {
       await i18n.changeLanguage(language);
       await setStoredLanguage(language);
-
-      const directionChanged = applyRTL(language);
-
-      if (directionChanged) {
-        Alert.alert(t('restart_required'), t('restart_message'));
-      }
+      applyRTL(language);
+      await Updates.reloadAsync();
     } catch (error) {
       console.error('Language change error:', error);
+      Alert.alert(t('restart_required'), t('restart_message'));
     }
   };
 
