@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
     Alert,
+    I18nManager,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -23,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -31,6 +33,9 @@ import PhonkText from '../../components/PhonkText';
 export default function DetailsOnboarding() {
     const router = useRouter();
     const params = useLocalSearchParams<{ email?: string; role?: string }>();
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
+    const inputTextAlign: 'left' | 'right' = isRTL ? 'right' : 'left';
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dob, setDob] = useState<Date | null>(null);
@@ -46,7 +51,7 @@ export default function DetailsOnboarding() {
             const authInstance = getAuth();
             const user = authInstance.currentUser;
             if (!user) {
-                throw new Error('No authenticated user found');
+                throw new Error(t('onboarding_no_authenticated_user_message'));
             }
 
             const role = params.role || 'student';
@@ -77,7 +82,7 @@ export default function DetailsOnboarding() {
             router.replace('/(tabs)');
         } catch (error: any) {
             console.error('Error saving student details:', error);
-            Alert.alert('Error', error.message || 'Failed to save details. Please try again.');
+            Alert.alert(t('error'), error.message || t('onboarding_generic_error_message'));
         } finally {
             setIsLoading(false);
         }
@@ -97,7 +102,7 @@ export default function DetailsOnboarding() {
     };
 
     const formatDate = (date: Date | null) => {
-        if (!date) return 'Date of Birth (DD/MM/YYYY)';
+        if (!date) return t('onboarding_date_of_birth_placeholder');
         return date.toLocaleDateString('en-GB');
     };
 
@@ -140,19 +145,25 @@ export default function DetailsOnboarding() {
                         <View style={styles.card}>
                             <View style={styles.textContainer}>
                                 <PhonkText style={styles.titleLine}>
-                                    <Text style={styles.blackText}>ENTER YOUR</Text>
+                                    <Text style={styles.blackText}>{t('onboarding_details_title_prefix')}</Text>
                                 </PhonkText>
                                 <PhonkText style={styles.titleLine}>
-                                    <Text style={styles.greenText}>DETAILS</Text>
+                                    <Text style={styles.greenText}>{t('onboarding_details_title_suffix')}</Text>
                                 </PhonkText>
                             </View>
 
                             <View style={styles.formContainer}>
-                                <View style={styles.row}>
-                                    <View style={[styles.inputContainer, { flex: 1, marginRight: 10, backgroundColor: '#F3F3F3' }]}>
+                                <View style={[styles.row, isRTL && styles.rowRTL]}>
+                                    <View
+                                        style={[
+                                            styles.inputContainer,
+                                            { flex: 1, backgroundColor: '#F3F3F3' },
+                                            isRTL ? styles.inputMarginRTL : styles.inputMarginLTR,
+                                        ]}
+                                    >
                                         <TextInput
-                                            style={[styles.input, { color: '#000000' }]}
-                                            placeholder="First Name"
+                                            style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                                            placeholder={t('first_name_placeholder')}
                                             placeholderTextColor="#999999"
                                             value={firstName}
                                             onChangeText={setFirstName}
@@ -161,8 +172,8 @@ export default function DetailsOnboarding() {
                                     </View>
                                     <View style={[styles.inputContainer, { flex: 1, backgroundColor: '#F3F3F3' }]}>
                                         <TextInput
-                                            style={[styles.input, { color: '#000000' }]}
-                                            placeholder="Last Name"
+                                            style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                                            placeholder={t('last_name_placeholder')}
                                             placeholderTextColor="#999999"
                                             value={lastName}
                                             onChangeText={setLastName}
@@ -180,7 +191,13 @@ export default function DetailsOnboarding() {
                                     disabled={isLoading}
                                     activeOpacity={0.7}
                                 >
-                                    <Text style={[styles.input, !dob && { color: '#00000' }]}>
+                                    <Text
+                                        style={[
+                                            styles.input,
+                                            { textAlign: inputTextAlign },
+                                            !dob && { color: '#000000' },
+                                        ]}
+                                    >
                                         {formatDate(dob)}
                                     </Text>
                                 </TouchableOpacity>
@@ -193,7 +210,7 @@ export default function DetailsOnboarding() {
                                                     onPress={() => setShowDatePicker(false)}
                                                     style={styles.doneButtonStyle}
                                                 >
-                                                    <Text style={styles.doneButtonText}>Done</Text>
+                                                <Text style={styles.doneButtonText}>{t('done')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         )}
@@ -209,21 +226,39 @@ export default function DetailsOnboarding() {
                                 )}
 
                                 <View style={styles.genderContainer}>
-                                    <Text style={styles.label}>Gender</Text>
-                                    <View style={styles.genderOptions}>
+                                    <Text style={[styles.label, isRTL && styles.labelRTL]}>
+                                        {t('onboarding_gender_label')}
+                                    </Text>
+                                    <View style={[styles.genderOptions, isRTL && styles.genderOptionsRTL]}>
                                         <TouchableOpacity
-                                            style={[styles.genderButton, { backgroundColor: '#F3F3F3' }, gender === 'Male' && styles.genderButtonSelected]}
+                                            style={[
+                                                styles.genderButton,
+                                                { backgroundColor: '#F3F3F3' },
+                                                gender === 'Male' && styles.genderButtonSelected,
+                                            ]}
                                             onPress={() => setGender('Male')}
                                             disabled={isLoading}
                                         >
-                                            <Text style={[styles.genderText, gender === 'Male' && styles.genderTextSelected]}>Male</Text>
+                                            <Text
+                                                style={[styles.genderText, gender === 'Male' && styles.genderTextSelected]}
+                                            >
+                                                {t('onboarding_gender_male')}
+                                            </Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
-                                            style={[styles.genderButton, { backgroundColor: '#F3F3F3' }, gender === 'Female' && styles.genderButtonSelected]}
+                                            style={[
+                                                styles.genderButton,
+                                                { backgroundColor: '#F3F3F3' },
+                                                gender === 'Female' && styles.genderButtonSelected,
+                                            ]}
                                             onPress={() => setGender('Female')}
                                             disabled={isLoading}
                                         >
-                                            <Text style={[styles.genderText, gender === 'Female' && styles.genderTextSelected]}>Female</Text>
+                                            <Text
+                                                style={[styles.genderText, gender === 'Female' && styles.genderTextSelected]}
+                                            >
+                                                {t('onboarding_gender_female')}
+                                            </Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -242,7 +277,9 @@ export default function DetailsOnboarding() {
                             disabled={!isFormValid}
                             activeOpacity={0.8}
                         >
-                            <Text style={styles.buttonText}>{isLoading ? 'Saving...' : 'Continue'}</Text>
+                            <Text style={styles.buttonText}>
+                                {isLoading ? t('onboarding_saving') : t('onboarding_continue')}
+                            </Text>
                         </TouchableOpacity>
                     </KeyboardAvoidingView>
                 </ScrollView>
@@ -308,6 +345,7 @@ const styles = StyleSheet.create({
         color: Colors.brandGreen,
     },
     blackText: {
+        color: '#000000',
     },
     formContainer: {
         marginBottom: 20,
@@ -316,6 +354,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginBottom: 15,
     },
+    rowRTL: {
+        flexDirection: 'row-reverse',
+    },
     inputContainer: {
         backgroundColor: '#F3F3F3',
         borderRadius: 30,
@@ -323,6 +364,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 25,
         marginBottom: 15,
+    },
+    inputMarginRTL: {
+        marginLeft: 10,
+    },
+    inputMarginLTR: {
+        marginRight: 10,
     },
     input: {
         fontSize: 16,
@@ -337,9 +384,17 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginLeft: 10,
     },
+    labelRTL: {
+        marginLeft: 0,
+        marginRight: 10,
+        textAlign: 'right',
+    },
     genderOptions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+    },
+    genderOptionsRTL: {
+        flexDirection: 'row-reverse',
     },
     genderButton: {
         flex: 1,

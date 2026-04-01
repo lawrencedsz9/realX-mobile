@@ -4,17 +4,21 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, I18nManager, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
     const router = useRouter();
     const [step, setStep] = useState(0); // Set to 1 to show the screen in the screenshot directly, or as starting point
+
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
 
     const handleGetStarted = () => {
         setStep(1);
@@ -48,9 +52,9 @@ export default function OnboardingScreen() {
                         </View>
 
                         {/* Headline */}
-                        <View style={styles.headlineContainer}>
-                            <PhonkText style={styles.headlineBroke}>BROKE?</PhonkText>
-                            <PhonkText style={styles.headlineNotAnymore}>NOT ANYMORE.</PhonkText>
+                        <View style={[styles.headlineContainer, isRTL && styles.headlineRTL]}>
+                            <PhonkText style={styles.headlineBroke}>{t('onboarding_headline_broke')}</PhonkText>
+                            <PhonkText style={styles.headlineNotAnymore}>{t('onboarding_headline_not_anymore')}</PhonkText>
                         </View>
 
                         {/* Character Graphic */}
@@ -65,18 +69,18 @@ export default function OnboardingScreen() {
 
                         {/* Footer */}
                         <View style={styles.footer}>
-                            <Text style={styles.subtext}>
-                                Student-only deals + cashback that actually hits different.
+                            <Text style={[styles.subtext, isRTL && styles.subtextRTL]}>
+                                {t('onboarding_student_subtext')}
                             </Text>
 
                             <TouchableOpacity
-                                style={styles.button}
+                                style={[styles.button, isRTL ? styles.buttonRTL : styles.buttonLTR]}
                                 onPress={handleGetStarted}
                                 activeOpacity={0.9}
                             >
-                                <PhonkText style={styles.buttonText}>GET STARTED</PhonkText>
+                                <PhonkText style={styles.buttonText}>{t('onboarding_get_started')}</PhonkText>
                                 <View style={styles.arrowCircle}>
-                                    <Ionicons name="arrow-forward" size={24} color="white" />
+                                    <Ionicons name={isRTL ? 'arrow-back' : 'arrow-forward'} size={24} color="white" />
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -95,7 +99,7 @@ export default function OnboardingScreen() {
                         {/* Role Cards */}
                         <View style={styles.cardsWrapper}>
                             <TouchableOpacity
-                                style={styles.roleCard}
+                                style={[styles.roleCard, isRTL && styles.rowReverse]}
                                 activeOpacity={0.9}
                                 onPress={() => handleSelectRole('student')}
                             >
@@ -106,17 +110,17 @@ export default function OnboardingScreen() {
                                         contentFit="contain"
                                     />
                                 </View>
-                                <View style={styles.roleTextContainer}>
-                                    <PhonkText style={styles.roleTitle}>JOIN AS STUDENT</PhonkText>
-                                    <Text style={styles.roleDescription}>
-                                        Get exclusive discounts on 50+ brands + 1% cashback on every purchase
+                                <View style={[styles.roleTextContainer, isRTL && styles.roleTextContainerRTL]}>
+                                    <PhonkText style={styles.roleTitle}>{t('onboarding_join_as_student')}</PhonkText>
+                                    <Text style={[styles.roleDescription, isRTL && styles.subtextRTL]}>
+                                        {t('onboarding_student_role_description')}
                                     </Text>
                                 </View>
-                                <Ionicons name="chevron-forward-outline" size={32} color="#AAAAAA" />
+                                <Ionicons name={isRTL ? 'chevron-back-outline' : 'chevron-forward-outline'} size={32} color="#AAAAAA" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.roleCard}
+                                style={[styles.roleCard, isRTL && styles.rowReverse]}
                                 activeOpacity={0.9}
                                 onPress={() => handleSelectRole('creator')}
                             >
@@ -127,13 +131,13 @@ export default function OnboardingScreen() {
                                         contentFit="contain"
                                     />
                                 </View>
-                                <View style={styles.roleTextContainer}>
-                                    <PhonkText style={styles.roleTitle}>JOIN AS CREATOR</PhonkText>
-                                    <Text style={styles.roleDescription}>
-                                        Share your personal code and earn double cashback when others use it
+                                <View style={[styles.roleTextContainer, isRTL && styles.roleTextContainerRTL]}>
+                                    <PhonkText style={styles.roleTitle}>{t('onboarding_join_as_creator')}</PhonkText>
+                                    <Text style={[styles.roleDescription, isRTL && styles.subtextRTL]}>
+                                        {t('onboarding_creator_role_description')}
                                     </Text>
                                 </View>
-                                <Ionicons name="chevron-forward-outline" size={32} color="#AAAAAA" />
+                                <Ionicons name={isRTL ? 'chevron-back-outline' : 'chevron-forward-outline'} size={32} color="#AAAAAA" />
                             </TouchableOpacity>
                         </View>
 
@@ -147,8 +151,8 @@ export default function OnboardingScreen() {
                                 glassEffectStyle="regular"
                                 colorScheme="light"
                             >
-                                <Text style={styles.loginText}>
-                                    Already have an account? <Text style={styles.loginBold}>Login</Text>
+                                <Text style={[styles.loginText, isRTL && styles.subtextRTL]}>
+                                    {t('onboarding_login_prompt')} <Text style={styles.loginBold}>{t('onboarding_login_action')}</Text>
                                 </Text>
                             </GlassView>
                         </TouchableOpacity>
@@ -232,8 +236,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingLeft: 30,
-        paddingRight: 10,
         // Shadow for iOS
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -310,6 +312,29 @@ const styles = StyleSheet.create({
         lineHeight: 16,
         paddingRight: 10,
     },
+    headlineRTL: {
+        alignSelf: 'flex-end',
+        paddingRight: 10,
+    },
+    subtextRTL: {
+        textAlign: 'right',
+    },
+    roleTextContainerRTL: {
+        marginLeft: 0,
+        marginRight: 4,
+    },
+    rowReverse: {
+        flexDirection: 'row-reverse',
+    },
+    buttonLTR: {
+        paddingLeft: 30,
+        paddingRight: 10,
+    },
+    buttonRTL: {
+        paddingLeft: 10,
+        paddingRight: 30,
+        flexDirection: 'row-reverse',
+    },
     loginPill: {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         paddingVertical: 15,
@@ -328,6 +353,5 @@ const styles = StyleSheet.create({
         color: "#000000",
     },
 });
-
 
 

@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  I18nManager,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -23,6 +24,7 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
 import { actionCodeSettings, clearAuthEmail, getAuthEmail, saveAuthEmail } from '../../utils/auth';
+import { useTranslation } from 'react-i18next';
 
 // ✅ Email normalization (strict identity)
 const normalizeEmail = (email: string): string => {
@@ -43,6 +45,12 @@ export default function EmailOnboarding() {
   const router = useRouter();
   const params = useLocalSearchParams<{ role?: string; mode?: string }>();
   const { role, mode } = params;
+  const { t } = useTranslation();
+
+  const isRTL = I18nManager.isRTL;
+  const arrowIconName = isRTL ? 'arrow-forward' : 'arrow-back';
+  const inputTextAlign: 'left' | 'right' = isRTL ? 'right' : 'left';
+  const roleTitle = role === 'creator' ? t('onboarding_email_title_creator') : t('onboarding_email_title_student');
 
   const [email, setEmail] = useState('');
   const isNewUser = mode === 'signup';
@@ -69,7 +77,7 @@ export default function EmailOnboarding() {
       let storedEmail = await getAuthEmail();
 
       if (!storedEmail) {
-        throw new Error('Session expired. Please request a new login link on this device.');
+        throw new Error(t('onboarding_session_expired_message'));
       }
 
       const normalizedEmail = normalizeEmail(storedEmail);
@@ -88,12 +96,15 @@ export default function EmailOnboarding() {
       }
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Verification Failed', err.message || 'Failed to verify link.');
+      Alert.alert(
+        t('onboarding_verification_failed_title'),
+        err.message || t('onboarding_magic_link_failed_message')
+      );
     } finally {
       setIsLoading(false);
       setCheckingLink(false);
     }
-  }, [isNewUser, role, router]);
+  }, [isNewUser, role, router, t]);
 
   // Cold start
   useEffect(() => {
@@ -135,7 +146,7 @@ export default function EmailOnboarding() {
         const result = await checkStudent({ email: normalizedEmail });
 
         if ((result.data as { exists: boolean }).exists) {
-          Alert.alert('Account exists', 'Please login instead.');
+          Alert.alert(t('onboarding_account_exists_title'), t('onboarding_account_exists_message'));
           return;
         }
       }
@@ -143,10 +154,13 @@ export default function EmailOnboarding() {
       await sendSignInLinkToEmail(authInstance, normalizedEmail, actionCodeSettings);
       await saveAuthEmail(normalizedEmail);
 
-      Alert.alert('Email Sent', `A magic link has been sent to ${normalizedEmail}. Check your inbox.`);
+      Alert.alert(
+        t('onboarding_magic_link_sent_title'),
+        t('onboarding_magic_link_sent_message', { email: normalizedEmail })
+      );
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'An error occurred. Please try again.');
+      Alert.alert(t('error'), err.message || t('onboarding_generic_error_message'));
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +177,7 @@ export default function EmailOnboarding() {
         const storedEmail = await getAuthEmail();
 
         if (!storedEmail) {
-          Alert.alert('Error', 'No email found in storage. Please start again.');
+          Alert.alert(t('error'), t('onboarding_missing_stored_email_message'));
           return;
         }
 
@@ -182,11 +196,11 @@ export default function EmailOnboarding() {
           router.replace('/(tabs)');
         }
       } else {
-        Alert.alert('Invalid Link', 'The link you pasted is not valid.');
+        Alert.alert(t('onboarding_invalid_link_title'), t('onboarding_invalid_link_message'));
       }
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'Failed to verify link.');
+      Alert.alert(t('error'), err.message || t('onboarding_magic_link_failed_message'));
     } finally {
       setIsLoading(false);
     }
@@ -214,9 +228,9 @@ export default function EmailOnboarding() {
 
       <View style={styles.headerBackground}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
-          <View style={styles.topButtons}>
+          <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
             <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-              <Ionicons name="arrow-back" size={24} color="black" />
+              <Ionicons name={arrowIconName} size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
               <Ionicons name="close" size={24} color="black" />
@@ -230,10 +244,12 @@ export default function EmailOnboarding() {
           <View style={styles.card}>
             <View style={styles.textContainer}>
               <PhonkText style={styles.titleLine}>
-                <Text style={styles.greenText}>CREATE YOUR</Text>
+                <Text style={styles.greenText}>{t('onboarding_email_title_prefix')}</Text>
               </PhonkText>
               <PhonkText style={styles.titleLine}>
-                <Text style={styles.blackText}>{role === 'creator' ? 'CREATOR' : 'STUDENT'} ACCOUNT</Text>
+                <Text style={styles.blackText}>
+                  {`${roleTitle} ${t('onboarding_email_title_suffix')}`}
+                </Text>
               </PhonkText>
             </View>
 
@@ -241,8 +257,8 @@ export default function EmailOnboarding() {
               <View style={[styles.singleInputContainer, { marginBottom: 15 }]}>
                 <TextInput
                   ref={inputRef}
-                  style={styles.input}
-                  placeholder="Student Email"
+                  style={[styles.input, { textAlign: inputTextAlign }]}
+                  placeholder={t('onboarding_email_placeholder')}
                   placeholderTextColor="#999"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -259,8 +275,8 @@ export default function EmailOnboarding() {
                   <Ionicons name="mail-outline" size={60} color={Colors.brandGreen} />
                   <View style={[styles.singleInputContainer, { marginTop: 20, width: '100%' }]}>
                     <TextInput
-                      style={styles.input}
-                      placeholder="Paste the link from your email here"
+                      style={[styles.input, { textAlign: inputTextAlign }]}
+                      placeholder={t('onboarding_manual_link_placeholder')}
                       placeholderTextColor="#999"
                       value={manualLink}
                       onChangeText={setManualLink}
@@ -272,9 +288,7 @@ export default function EmailOnboarding() {
               )}
             </View>
 
-            <Text style={styles.infoText}>
-              Use your university email address to access exclusive student deals and discounts.
-            </Text>
+            <Text style={styles.infoText}>{t('onboarding_email_description')}</Text>
           </View>
         </TouchableWithoutFeedback>
 
@@ -283,14 +297,18 @@ export default function EmailOnboarding() {
           keyboardVerticalOffset={20}
           style={styles.footer}
         >
-          <TouchableOpacity
-            style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
-            onPress={handleContinue}
-            disabled={isLoading || !email}
-            activeOpacity={0.8}
-          >
-            {isLoading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Continue</Text>}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
+              onPress={handleContinue}
+              disabled={isLoading || !email}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>{t('onboarding_continue')}</Text>
+              )}
+            </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>
     </View>
@@ -304,6 +322,7 @@ const styles = StyleSheet.create({
   headerBackground: { height: 250, backgroundColor: Colors.brandGreen },
   headerContent: { paddingHorizontal: 20, paddingTop: 10 },
   topButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10 },
+  topButtonsRTL: { flexDirection: 'row-reverse' },
   iconButton: {
     width: 44,
     height: 44,

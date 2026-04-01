@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    I18nManager,
     Keyboard,
     KeyboardAvoidingView,
     Modal,
@@ -24,6 +25,7 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
 import { actionCodeSettings, clearAuthEmail, getAuthEmail, saveAuthEmail } from '../../utils/auth';
+import { useTranslation } from 'react-i18next';
 
 // ✅ Email normalization
 const normalizeEmail = (email: string): string => {
@@ -42,6 +44,11 @@ const normalizeEmail = (email: string): string => {
 
 export default function LoginScreen() {
     const router = useRouter();
+    const { t } = useTranslation();
+    const isRTL = I18nManager.isRTL;
+    const arrowIconName = isRTL ? 'arrow-forward' : 'arrow-back';
+    const inputTextAlign: 'left' | 'right' = isRTL ? 'right' : 'left';
+    const [sentEmail, setSentEmail] = useState('');
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isLinkSent, setIsLinkSent] = useState(false);
@@ -70,11 +77,14 @@ export default function LoginScreen() {
                         await clearAuthEmail();
                         console.log('Successfully signed in automatically!');
                     } else {
-                        Alert.alert('Error', 'No email found in storage. Please try starting again.');
+                        Alert.alert(t('error'), t('onboarding_missing_stored_email_message'));
                     }
                 } catch (err: any) {
                     console.error(err);
-                    Alert.alert('Verification Failed', err.message || 'Failed to verify link.');
+                    Alert.alert(
+                        t('onboarding_verification_failed_title'),
+                        err.message || t('onboarding_magic_link_failed_message')
+                    );
                 } finally {
                     setIsLoading(false);
                 }
@@ -83,8 +93,8 @@ export default function LoginScreen() {
 
         if (url && isLinkSent) {
             verifyAutomaticLink(url);
-        }
-    }, [url, isLinkSent]);
+    }
+}, [url, isLinkSent, t]);
 
     const handleBack = () => {
         if (isLinkSent) {
@@ -101,6 +111,7 @@ export default function LoginScreen() {
         await sendSignInLinkToEmail(authInstance, normalizedEmail, actionCodeSettings);
         await saveAuthEmail(normalizedEmail);
 
+        setSentEmail(normalizedEmail);
         setIsLinkSent(true);
     };
 
@@ -122,12 +133,12 @@ export default function LoginScreen() {
             }
 
             await handleSendMagicLink(normalizedEmail);
-        } catch (err: any) {
-            console.error(err);
-            Alert.alert('Error', err.message || 'An error occurred. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
+    } catch (err: any) {
+        console.error(err);
+        Alert.alert(t('error'), err.message || t('onboarding_generic_error_message'));
+    } finally {
+        setIsLoading(false);
+    }
     };
 
     const handleManualLinkVerify = async () => {
@@ -149,14 +160,14 @@ export default function LoginScreen() {
                     await clearAuthEmail();
                     console.log('Successfully signed in manually!');
                 } else {
-                    Alert.alert('Error', 'No email found in storage. Please try starting again.');
+                    Alert.alert(t('error'), t('onboarding_missing_stored_email_message'));
                 }
             } else {
-                Alert.alert('Invalid Link', 'The link you pasted is not a valid sign-in link.');
+                Alert.alert(t('onboarding_invalid_link_title'), t('onboarding_invalid_link_message'));
             }
         } catch (err: any) {
             console.error(err);
-            Alert.alert('Error', err.message || 'Failed to verify link.');
+            Alert.alert(t('error'), err.message || t('onboarding_magic_link_failed_message'));
         } finally {
             setIsLoading(false);
         }
@@ -170,9 +181,12 @@ export default function LoginScreen() {
                 setIsLoading(true);
                 try {
                     await handleSendMagicLink(email);
-                    Alert.alert('Email Sent', 'A new link has been sent to your email.');
+                    Alert.alert(
+                        t('onboarding_magic_link_sent_title'),
+                        t('onboarding_magic_link_resent_message')
+                    );
                 } catch (err: any) {
-                    Alert.alert('Error', err.message || 'Failed to resend email.');
+                    Alert.alert(t('error'), err.message || t('onboarding_generic_error_message'));
                 } finally {
                     setIsLoading(false);
                 }
@@ -189,9 +203,9 @@ export default function LoginScreen() {
 
             <View style={styles.headerBackground}>
                 <SafeAreaView edges={['top']} style={styles.headerContent}>
-                    <View style={styles.topButtons}>
+                    <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
                         <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-                            <Ionicons name="arrow-back" size={24} color="black" />
+                            <Ionicons name={arrowIconName} size={24} color="black" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
                             <Ionicons name="close" size={24} color="black" />
@@ -205,17 +219,12 @@ export default function LoginScreen() {
                     <View style={styles.card}>
                         <View style={styles.textContainer}>
                             {isLinkSent ? (
-                                <>
-                                    <PhonkText style={styles.titleLine}>
-                                        <Text style={styles.greenText}>CHECK YOUR</Text>
-                                    </PhonkText>
-                                    <PhonkText style={styles.titleLine}>
-                                        <Text style={styles.blackText}>EMAIL</Text>
-                                    </PhonkText>
-                                </>
+                                <PhonkText style={styles.titleLine}>
+                                    <Text style={styles.greenText}>{t('onboarding_login_check_email_title')}</Text>
+                                </PhonkText>
                             ) : (
                                 <PhonkText style={styles.titleLine}>
-                                    <Text style={styles.greenText}>LOGIN</Text>
+                                    <Text style={styles.greenText}>{t('onboarding_login_title')}</Text>
                                 </PhonkText>
                             )}
                         </View>
@@ -226,8 +235,8 @@ export default function LoginScreen() {
                                     <Ionicons name="mail-outline" size={60} color={Colors.brandGreen} />
                                     <View style={[styles.singleInputContainer, { backgroundColor: '#F3F3F3' }]}>
                                         <TextInput
-                                            style={[styles.input, { color: '#000000' }]}
-                                            placeholder="Paste the link from your email here"
+                                            style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                                            placeholder={t('onboarding_manual_link_placeholder')}
                                             placeholderTextColor="#999999"
                                             value={manualLink}
                                             onChangeText={setManualLink}
@@ -240,8 +249,8 @@ export default function LoginScreen() {
                                 <View style={[styles.singleInputContainer, { backgroundColor: '#F3F3F3' }]}>
                                     <TextInput
                                         ref={inputRef}
-                                        style={[styles.input, { color: '#000000' }]}
-                                        placeholder="Student Email"
+                                        style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                                        placeholder={t('onboarding_email_placeholder')}
                                         placeholderTextColor="#999999"
                                         keyboardType="email-address"
                                         autoCapitalize="none"
@@ -257,8 +266,8 @@ export default function LoginScreen() {
 
                         <Text style={styles.infoText}>
                             {isLinkSent
-                                ? `We've sent a magic link to ${email}. Click the link in your email to login.`
-                                : 'Enter your email to receive a secure login link.'}
+                                ? t('onboarding_link_sent_info', { email: sentEmail || email })
+                                : t('onboarding_login_info')}
                         </Text>
                     </View>
                 </TouchableWithoutFeedback>
@@ -268,23 +277,27 @@ export default function LoginScreen() {
                     keyboardVerticalOffset={20}
                     style={styles.footer}
                 >
-                    <TouchableOpacity
-                        style={[
-                            styles.button,
-                            (isLoading || (!isLinkSent && !email)) && styles.buttonDisabled
-                        ]}
-                        onPress={handleContinue}
-                        disabled={isLoading || (!isLinkSent && !email)}
-                        activeOpacity={0.8}
-                    >
-                        {isLoading ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text style={styles.buttonText}>
-                                {isLinkSent ? (manualLink ? 'Verify Link' : 'Resend Email') : 'Login'}
-                            </Text>
-                        )}
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.button,
+                                (isLoading || (!isLinkSent && !email)) && styles.buttonDisabled
+                            ]}
+                            onPress={handleContinue}
+                            disabled={isLoading || (!isLinkSent && !email)}
+                            activeOpacity={0.8}
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text style={styles.buttonText}>
+                                    {isLinkSent
+                                        ? manualLink
+                                            ? t('onboarding_verify_link')
+                                            : t('onboarding_resend_email')
+                                        : t('onboarding_login_title')}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
                 </KeyboardAvoidingView>
             </View>
 
@@ -299,10 +312,8 @@ export default function LoginScreen() {
                         <View style={styles.modalIconContainer}>
                             <Ionicons name="person-add-outline" size={40} color={Colors.brandGreen} />
                         </View>
-                        <PhonkText style={styles.modalTitle}>ACCOUNT NOT FOUND</PhonkText>
-                        <Text style={styles.modalText}>
-                        It looks like you don&apos;t have an account yet. Would you like to create one?
-                        </Text>
+                        <PhonkText style={styles.modalTitle}>{t('onboarding_account_not_found_title')}</PhonkText>
+                        <Text style={styles.modalText}>{t('onboarding_account_not_found_message')}</Text>
 
                         <TouchableOpacity
                             style={styles.modalPrimaryButton}
@@ -311,14 +322,14 @@ export default function LoginScreen() {
                                 router.push({ pathname: '/(onboarding)/email', params: { role: 'student', mode: 'signup' } });
                             }}
                         >
-                            <Text style={styles.modalPrimaryButtonText}>Sign Up</Text>
+                            <Text style={styles.modalPrimaryButtonText}>{t('onboarding_sign_up')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={styles.modalSecondaryButton}
                             onPress={() => setShowSignUpModal(false)}
                         >
-                            <Text style={styles.modalSecondaryButtonText}>Cancel</Text>
+                            <Text style={styles.modalSecondaryButtonText}>{t('cancel')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -345,6 +356,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingTop: 10,
+    },
+    topButtonsRTL: {
+        flexDirection: 'row-reverse',
     },
     iconButton: {
         width: 44,
@@ -382,8 +396,6 @@ const styles = StyleSheet.create({
     },
     greenText: {
         color: Colors.brandGreen,
-    },
-    blackText: {
     },
     inputWrapper: {
         marginBottom: 20,
