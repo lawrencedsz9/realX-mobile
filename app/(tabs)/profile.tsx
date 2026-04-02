@@ -355,6 +355,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    flexDirection: 'row',
   },
   userName: {
     fontSize: 20,
