@@ -69,7 +69,7 @@ export default function OnboardingScreen() {
                         </View>
 
                         {/* Character Graphic */}
-                        <View style={styles.graphicContainer}>
+                        <View style={[styles.graphicContainer, isRTL && styles.graphicContainerRTL]}>
                             <Image
                                 source={require('../../assets/images/onboarding.png')}
                                 style={styles.characterImage}
@@ -362,6 +362,12 @@ const styles = StyleSheet.create({
     roleTextContainerRTL: {
         marginLeft: 0,
         marginRight: 4,
+    },
+    graphicContainerRTL: {
+        alignSelf: 'flex-end',
+        alignItems: 'flex-end',
+        marginRight: -24,
+        marginLeft: 0,
     },
     rowReverse: {
         flexDirection: 'row-reverse',
