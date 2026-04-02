@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { getAuth } from '@react-native-firebase/auth';
 import {
   collection,
@@ -43,9 +44,16 @@ interface Transaction {
   finalAmount?: number;
   offerId?: string;
   createdAt?: any;
+  offerAmount?: number;
+  paidAmount?: number;
+  amount?: number;
+  timestamp?: any;
 }
 
 export default function RedemptionHistoryScreen() {
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const currency = t('currency_qar');
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -117,33 +125,23 @@ export default function RedemptionHistoryScreen() {
     };
   }, []);
 
-  const formatDate = (timestamp?: any) => {
-    if (!timestamp || !timestamp.toDate) return '';
-    const date = timestamp.toDate();
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
   const renderItem = ({ item }: { item: Transaction }) => {
     const logoUri = vendorLogos[item.vendorId];
-    
-    // Fallbacks
-    const savings = item.discountAmount ?? 0;
-    const paid = item.finalAmount ?? item.totalAmount ?? 0;
-const discountPercent =
-  item.discountAmount && item.totalAmount
-    ? Math.round((item.discountAmount / item.totalAmount) * 100)
-    : null;
+    const savings = (item.offerAmount || 0) - (item.paidAmount || 0);
+    const paid = item.paidAmount || 0;
 
-const discountText =
-  discountPercent
-    ? `${discountPercent}% Student Discount`
-    : 'Offer Redeemed';
+    const discountText =
+      item.discountType === 'student'
+        ? t('student_discount', { percent: item.amount || 0 })
+        : t('offer_redeemed_label');
+
+    const dateStr = item.timestamp
+      ? new Date(item.timestamp).toLocaleDateString(isArabic ? 'ar-QA' : 'en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '';
 
     return (
       <View style={{ marginBottom: 24 }}>
@@ -161,13 +159,19 @@ const discountText =
                 <PhonkText style={styles.vendorName} numberOfLines={1}>
                   {item.vendorName || 'VENDOR'}
                 </PhonkText>
-                <Text style={styles.savingsText}>Estimated savings: {savings.toFixed(0)} QAR</Text>
+                <Text style={[styles.savingsText, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                  {t('estimated_savings', {
+                    amount: t('amount_with_currency', { amount: savings.toFixed(0), currency }),
+                  })}
+                </Text>
               </View>
             </View>
 
             <View style={styles.paidInfo}>
-              <Text style={styles.paidLabel}>Total Paid</Text>
-              <PhonkText style={styles.paidAmount}>{paid.toFixed(0)} QAR</PhonkText>
+              <Text style={styles.paidLabel}>{t('total_paid')}</Text>
+              <PhonkText style={[styles.paidAmount, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                {t('amount_with_currency', { amount: paid.toFixed(0), currency })}
+              </PhonkText>
             </View>
           </View>
 
@@ -175,8 +179,8 @@ const discountText =
 
           <View style={styles.cardFooter}>
             <View style={styles.offerInfo}>
-              <Text style={styles.offerLabel}>Offer Redeemed</Text>
-              <Text style={styles.offerValue} numberOfLines={1}>
+              <Text style={styles.offerLabel}>{t('offer_redeemed_label')}</Text>
+              <Text style={[styles.offerValue, { writingDirection: isArabic ? 'rtl' : 'ltr' }]} numberOfLines={1}>
                 {discountText}
               </Text>
             </View>
@@ -193,13 +197,13 @@ const discountText =
                   });
                 }}
               >
-                <Text style={styles.redeemButtonText}>Redeem Again</Text>
+                <Text style={styles.redeemButtonText}>{t('redeem_again')}</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        <Text style={styles.dateText}>Redeemed on {formatDate(item.createdAt)}</Text>
+        <Text style={[styles.dateText, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>{t('redeemed_on', { date: dateStr })}</Text>
       </View>
     );
   };
@@ -216,7 +220,7 @@ const discountText =
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Redemption History</Text>
+        <Text style={styles.headerTitle}>{t('redemption_history')}</Text>
       </View>
 
       {loading ? (
@@ -232,7 +236,7 @@ const discountText =
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No redemptions found.</Text>
+              <Text style={styles.emptyText}>{t('no_redemptions_found')}</Text>
             </View>
           }
         />

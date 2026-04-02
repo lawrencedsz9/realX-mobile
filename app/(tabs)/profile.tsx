@@ -178,11 +178,10 @@ export default function ProfileScreen() {
           >
             {t('all_time_saved')}
           </Text>
-          <View style={[styles.savingsAmountContainer]}> 
-            <PhonkText style={[{ color: '#1AD04F', textAlign: isRTL ? 'right' : 'left' }, styles.savingsAmountGreen]}>
-              {(userData?.savings ?? 0).toFixed(2)}
+          <View style={[styles.savingsAmountContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+            <PhonkText style={[{ color: '#1AD04F', textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }, styles.savingsAmountGreen]}>
+              {t('amount_with_currency', { amount: (userData?.savings ?? 0).toFixed(2), currency: t('currency_qar') })}
             </PhonkText>
-            <PhonkText style={[{ color: Colors.light.text, textAlign: isRTL ? 'right' : 'left' }, styles.savingsCurrency]}> {t('currency_qar')}</PhonkText>
           </View>
         </View>
 

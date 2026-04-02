@@ -171,5 +171,15 @@
   "redemption_successful_title": "تم الاسترداد بنجاح! 🎉",
   "you_saved_success_message": "لقد وفرت {{currency}} {{amount}}!",
   "cashback_earned_success_message": "الكاش باك المكتسب: {{currency}} {{amount}}",
-  "continue_caps": "متابعة"
+  "continue_caps": "متابعة",
+  "amount_with_currency": "{{amount}} {{currency}}",
+  "amount_with_currency_negative": "− {{amount}} {{currency}}",
+  "amount_with_currency_positive": "+ {{amount}} {{currency}}",
+  "estimated_savings": "توفير تقديري: {{amount}}",
+  "total_paid": "إجمالي المبلغ المدفوع",
+  "student_discount": "خصم طلاب بقيمة {{percent}}٪",
+  "offer_redeemed_label": "تم استرداد العرض",
+  "redeem_again": "استرد مجدداً",
+  "redeemed_on": "تم الاسترداد في {{date}}",
+  "no_redemptions_found": "لم يتم العثور على عمليات استرداد."
 }

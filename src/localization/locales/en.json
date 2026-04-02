@@ -179,5 +179,15 @@
   "redemption_successful_title": "Redemption Successful! 🎉",
   "you_saved_success_message": "You saved {{currency}} {{amount}}!",
   "cashback_earned_success_message": "Cashback earned: {{currency}} {{amount}}",
-  "continue_caps": "CONTINUE"
+  "continue_caps": "CONTINUE",
+  "amount_with_currency": "{{amount}} {{currency}}",
+  "amount_with_currency_negative": "- {{amount}} {{currency}}",
+  "amount_with_currency_positive": "+ {{amount}} {{currency}}",
+  "estimated_savings": "Estimated savings: {{amount}}",
+  "total_paid": "Total Paid",
+  "student_discount": "{{percent}}% Student Discount",
+  "offer_redeemed_label": "Offer Redeemed",
+  "redeem_again": "Redeem Again",
+  "redeemed_on": "Redeemed on {{date}}",
+  "no_redemptions_found": "No redemptions found."
 }

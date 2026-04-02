@@ -27,6 +27,7 @@ import PhonkText from '../../components/PhonkText';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import { triggerSubtleHaptic } from '../../utils/haptics';
+import { normalizeDigits } from '../../utils/numbers';
 
 // Types for better type safety
 interface VendorData {
@@ -122,7 +123,7 @@ export default function RedeemScreen() {
     }, [id, vendorId]);
 
     // Discount calculation
-    const totalAmount = parseFloat(amount) || 0;
+    const totalAmount = parseFloat(normalizeDigits(amount)) || 0;
     const discountValue = Number(offer?.discountValue) || 0;
     const discountType = offer?.discountType || 'percentage';
 
@@ -156,8 +157,8 @@ export default function RedeemScreen() {
                 vendorId: resolvedVendorId,
                 vendorName: (isArabic ? (vendor?.nameAr || vendor?.name) : vendor?.name) || '',
                 totalAmount,
-                pin,
-                creatorCode: creatorCode ? creatorCode.trim() : undefined,
+                pin: normalizeDigits(pin),
+                creatorCode: creatorCode ? normalizeDigits(creatorCode).trim() : undefined,
                 discountValue,
                 discountType,
             });
@@ -203,11 +204,14 @@ export default function RedeemScreen() {
         } else {
             Keyboard.dismiss();
 
-            if (pin.length !== 4) {
+            const normalizedPin = normalizeDigits(pin);
+            const normalizedAmount = normalizeDigits(amount);
+
+            if (normalizedPin.length !== 4) {
                 Alert.alert(t('hold_on'), t('enter_4_digit_pin'));
                 return;
             }
-            if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+            if (!normalizedAmount || isNaN(Number(normalizedAmount)) || Number(normalizedAmount) <= 0) {
                 Alert.alert(t('hold_on'), t('enter_valid_amount'));
                 return;
             }
@@ -276,7 +280,7 @@ export default function RedeemScreen() {
                             {/* Offer Card */}
                             <View style={styles.offerCardWrapper}>
                                 <View style={styles.offerCard}>
-                                    <PhonkText style={[styles.offerTitle, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
+                                    <PhonkText style={[styles.offerTitle, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
                                         {t('flat_off_prefix')}<Text style={styles.greenText}>
                                             {offer.discountValue}{offer.discountType === 'percentage' ? '%' : ''}
                                         </Text>{t('flat_off_suffix')}
@@ -301,9 +305,9 @@ export default function RedeemScreen() {
                                     </Text>
                                     <View style={[styles.creatorInputContainer, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
                                         <TextInput
-                                            style={[styles.creatorInput, { textAlign: isArabic ? 'right' : 'left' }]}
+                                            style={[styles.creatorInput, { textAlign: isArabic ? 'right' : 'left', writingDirection: isArabic ? 'rtl' : 'ltr' }]}
                                             value={creatorCode}
-                                            onChangeText={(text) => setCreatorCode(text.toUpperCase())}
+                                            onChangeText={(text) => setCreatorCode(normalizeDigits(text).toUpperCase())}
                                             placeholder={t('creator_code_placeholder')}
                                             placeholderTextColor="#CCC"
                                             autoCapitalize="characters"
@@ -343,7 +347,8 @@ export default function RedeemScreen() {
                                             style={styles.hiddenPinInput}
                                             value={pin}
                                             onChangeText={(text) => {
-                                                const numericText = text.replace(/[^0-9]/g, '');
+                                                const normalized = normalizeDigits(text);
+                                                const numericText = normalized.replace(/[^0-9]/g, '');
                                                 if (numericText.length <= 4) {
                                                     setPin(numericText);
                                                 }
@@ -360,12 +365,20 @@ export default function RedeemScreen() {
 
                                     <Text style={[styles.inputLabel, { textAlign: isArabic ? 'right' : 'left' }]}>{t('total_bill')}:</Text>
                                     <View style={[styles.amountInputContainer, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
-                                        <Text style={styles.currencyPrefix}>{t('currency_qar')}</Text>
+                                        <Text style={[styles.currencyPrefix, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>{t('currency_qar')}</Text>
                                         <TextInput
                                             ref={amountInputRef}
-                                            style={[styles.amountInput, { textAlign: isArabic ? 'right' : 'left' }]}
+                                            style={[styles.amountInput, { textAlign: isArabic ? 'right' : 'left', writingDirection: isArabic ? 'rtl' : 'ltr' }]}
                                             value={amount}
-                                            onChangeText={setAmount}
+                                            onChangeText={(text) => {
+                                                const normalized = normalizeDigits(text);
+                                                // Allow only digits and one decimal point
+                                                const filtered = normalized.replace(/[^0-9.]/g, '');
+                                                // Ensure only one dot
+                                                const parts = filtered.split('.');
+                                                const final = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : filtered;
+                                                setAmount(final);
+                                            }}
                                             keyboardType="decimal-pad"
                                             placeholder="0"
                                             placeholderTextColor="#CCC"
@@ -379,23 +392,23 @@ export default function RedeemScreen() {
                                         <View style={styles.breakdownContainer}>
                                             <View style={[styles.breakdownRow, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
                                                 <Text style={[styles.breakdownLabel, { textAlign: isArabic ? 'right' : 'left' }]}>{t('total_bill')}</Text>
-                                                <Text style={styles.breakdownValue}>
-                                                    {t('currency_qar')} {totalAmount.toFixed(2)}
+                                                <Text style={[styles.breakdownValue, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                                                    {t('amount_with_currency', { amount: totalAmount.toFixed(2), currency: t('currency_qar') })}
                                                 </Text>
                                             </View>
                                             <View style={[styles.breakdownRow, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
                                                 <Text style={[styles.breakdownLabelGreen, { textAlign: isArabic ? 'right' : 'left' }]}>
-                                                    {t('home_title')} ({offer.discountValue}{discountType === 'percentage' ? '%' : ''})
+                                                    {t('home_title')} ({offer.discountValue}{offer.discountType === 'percentage' ? '%' : ''})
                                                 </Text>
-                                                <Text style={styles.breakdownValueGreen}>
-                                                    − {t('currency_qar')} {discountAmount.toFixed(2)}
+                                                <Text style={[styles.breakdownValueGreen, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                                                    {t('amount_with_currency_negative', { amount: discountAmount.toFixed(2), currency: t('currency_qar') })}
                                                 </Text>
                                             </View>
                                             <View style={styles.breakdownDivider} />
                                             <View style={[styles.breakdownRow, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
                                                 <Text style={[styles.breakdownLabelBold, { textAlign: isArabic ? 'right' : 'left' }]}>{t('amount_to_pay_label')}</Text>
-                                                <PhonkText style={styles.breakdownValueBold}>
-                                                    {t('currency_qar')} {finalAmount.toFixed(2)}
+                                                <PhonkText style={[styles.breakdownValueBold, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                                                    {t('amount_with_currency', { amount: finalAmount.toFixed(2), currency: t('currency_qar') })}
                                                 </PhonkText>
                                             </View>
                                             {vendor.xcard === true && (
@@ -403,8 +416,8 @@ export default function RedeemScreen() {
                                                     <Text style={[styles.cashbackLabel, { textAlign: isArabic ? 'right' : 'left' }]}>
                                                         {t('cashback_label_formatted', { percentage: 1 })}
                                                     </Text>
-                                                    <Text style={styles.cashbackValue}>
-                                                        + {t('currency_qar')} {(finalAmount * 0.01).toFixed(2)}
+                                                    <Text style={[styles.cashbackValue, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
+                                                        {t('amount_with_currency_positive', { amount: (finalAmount * 0.01).toFixed(2), currency: t('currency_qar') })}
                                                     </Text>
                                                 </View>
                                             )}
