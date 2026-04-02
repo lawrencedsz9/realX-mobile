@@ -123,7 +123,7 @@ export default function LoginScreen() {
 
         try {
             const fnInstance = getFunctions(undefined, 'me-central1');
-            const checkStudent = httpsCallable(fnInstance, 'checkStudentExists');
+            const checkStudent = httpsCallable(fnInstance, 'checkStudentExistsLogin');
 
             const result = await checkStudent({ email: normalizedEmail });
 

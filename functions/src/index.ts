@@ -420,3 +420,19 @@ export const checkStudentExists = onCall(async (request: CallableRequest) => {
 
   return { exists: !snapshot.empty };
 });
+
+export const checkStudentExistsLogin = onCall(async (request: CallableRequest) => {
+  const email = request.data?.email?.toLowerCase()?.trim();
+
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'Email required');
+  }
+
+  const snapshot = await db
+    .collection('students')
+    .where('email', '==', email)
+    .limit(1)
+    .get();
+
+  return { exists: !snapshot.empty };
+});

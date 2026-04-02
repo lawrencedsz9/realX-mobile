@@ -125,7 +125,7 @@
   ,"onboarding_email_description": "Use your university email address to access exclusive student deals and discounts."
   ,"onboarding_continue": "Continue"
   ,"onboarding_magic_link_sent_title": "Email Sent"
-  ,"onboarding_magic_link_sent_message": "A magic link has been sent to {{email}}. Check your inbox."
+  ,"onboarding_magic_link_sent_message": "A magic link has been sent to {{email}}. Make sure to check your spam folder."
   ,"onboarding_magic_link_failed_message": "Failed to verify link."
   ,"onboarding_session_expired_message": "Session expired. Please request a new login link on this device."
   ,"onboarding_verification_failed_title": "Verification Failed"

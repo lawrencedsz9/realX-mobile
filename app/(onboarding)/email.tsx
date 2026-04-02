@@ -294,6 +294,9 @@ export default function EmailOnboarding() {
             </View>
 
             <Text style={styles.infoText}>{t('onboarding_email_description')}</Text>
+
+            <Text style={styles.infoText}>No student Email? Send us a mail at support@realx.qa</Text>
+
           </View>
         </TouchableWithoutFeedback>
 
@@ -350,7 +353,7 @@ const styles = StyleSheet.create({
   inputWrapper: { marginBottom: 20 },
   singleInputContainer: { backgroundColor: '#F3F3F3', borderRadius: 30, height: 60, justifyContent: 'center', paddingHorizontal: 25 },
   input: { fontSize: 16, fontFamily: Typography.poppins.medium, color: '#000' },
-  infoText: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 20, paddingHorizontal: 10, fontFamily: Typography.poppins.medium },
+  infoText: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 20, paddingHorizontal: 10, fontFamily: Typography.poppins.medium, margin: 8 },
   footer: { paddingBottom: 40 },
   button: { backgroundColor: Colors.brandGreen, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   buttonDisabled: { opacity: 0.6 },
