@@ -6,10 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Dimensions, I18nManager, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Updates from 'expo-updates';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
 import { useTranslation } from 'react-i18next';
+import { setStoredLanguage } from '../../src/localization/i18n';
+import { applyRTL } from '../../src/localization/rtl';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,8 +20,16 @@ export default function OnboardingScreen() {
     const router = useRouter();
     const [step, setStep] = useState(0); // Set to 1 to show the screen in the screenshot directly, or as starting point
 
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const isRTL = I18nManager.isRTL;
+
+    const changeLanguage = async (lang: 'en' | 'ar') => {
+        if (i18n.language === lang) return;
+        await setStoredLanguage(lang);
+        await i18n.changeLanguage(lang);
+        applyRTL(lang);
+        await Updates.reloadAsync();
+    };
 
     const handleGetStarted = () => {
         setStep(1);
@@ -73,6 +84,15 @@ export default function OnboardingScreen() {
                                 {t('onboarding_student_subtext')}
                             </Text>
 
+                            <View style={styles.languageSwitcher}>
+                                <TouchableOpacity onPress={() => changeLanguage('en')}>
+                                    <Text style={[styles.langText, i18n.language === 'en' && styles.langTextActive]}>English</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.langSeparator}> | </Text>
+                                <TouchableOpacity onPress={() => changeLanguage('ar')}>
+                                    <Text style={[styles.langText, i18n.language === 'ar' && styles.langTextActive]}>العربية</Text>
+                                </TouchableOpacity>
+                            </View>
                             <TouchableOpacity
                                 style={[styles.button, isRTL ? styles.buttonRTL : styles.buttonLTR]}
                                 onPress={handleGetStarted}
@@ -208,7 +228,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         alignSelf: 'flex-start',
         marginLeft: -24, // Negate content padding to hit edge
-        marginTop: 20,
+        marginTop: 50,
     },
     characterImage: {
         width: width * 0.85,
@@ -216,7 +236,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         width: '100%',
-        paddingBottom: 40,
+        paddingBottom: 8,
         paddingHorizontal: 10,
     },
     subtext: {
@@ -225,7 +245,7 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         textAlign: 'left',
         width: '100%',
-        marginBottom: 30,
+        marginBottom: 32,
         lineHeight: 24,
     },
     button: {
@@ -255,6 +275,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#18B852',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    languageSwitcher: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    langText: {
+        fontFamily: Typography.poppins.medium,
+        fontSize: 16,
+        color: '#FFFFFF',
+        opacity: 0.6,
+    },
+    langTextActive: {
+        opacity: 1,
+        fontFamily: Typography.poppins.semiBold,
+    },
+    langSeparator: {
+        fontSize: 16,
+        color: '#FFFFFF',
+        marginHorizontal: 15,
+        opacity: 0.6,
     },
     // Role selection styles
     roleSelectionContent: {
