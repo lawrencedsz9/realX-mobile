@@ -191,7 +191,7 @@ export default function ProfileScreen() {
           activeOpacity={0.9}
         >
           <ImageBackground
-            source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/reelx-backend.firebasestorage.app/o/universities%2Funi_id4w96g49%2Fbanner_1775060689467_Frame%20427318887.png?alt=media' }}
+            source={require('../../assets/images/uni.png')}
             style={styles.universityBannerBg}
             imageStyle={{ borderRadius: 20 }}
           >
