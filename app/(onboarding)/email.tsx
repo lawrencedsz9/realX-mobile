@@ -41,6 +41,11 @@ const normalizeEmail = (email: string): string => {
   return trimmed;
 };
 
+const isEduQaEmail = (email: string): boolean => {
+  return /^[^@]+@[^@]+\.edu\.qa$/.test(email);
+};
+
+
 export default function EmailOnboarding() {
   const router = useRouter();
   const params = useLocalSearchParams<{ role?: string; mode?: string }>();

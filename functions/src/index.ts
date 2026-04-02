@@ -402,6 +402,16 @@ export const checkStudentExists = onCall(async (request: CallableRequest) => {
     throw new HttpsError('invalid-argument', 'Email required');
   }
 
+  // ✅ Restrict ONLY self-signup emails
+  const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
+
+  if (!isEduQa) {
+    throw new HttpsError(
+      'permission-denied',
+      'Only .edu.qa emails can sign up'
+    );
+  }
+
   const snapshot = await db
     .collection('students')
     .where('email', '==', email)
