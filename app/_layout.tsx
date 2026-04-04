@@ -14,6 +14,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initI18n } from '../src/localization/i18n';
 import { applyRTL } from '../src/localization/rtl';
 
+
+import CustomSplash from './splash'; // adjust path if needed
+
+
+
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -26,7 +31,7 @@ export default function RootLayout() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
-
+  const [appReady, setAppReady] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -80,16 +85,16 @@ export default function RootLayout() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (
-      i18nReady &&
-      (loaded || error) &&
-      !initializing &&
-      (user === null || hasProfile !== null)
-    ) {
-      void SplashScreen.hideAsync();
-    }
-  }, [i18nReady, loaded, error, initializing, user, hasProfile]);
+useEffect(() => {
+  if (
+    i18nReady &&
+    (loaded || error) &&
+    !initializing &&
+    (user === null || hasProfile !== null)
+  ) {
+    setAppReady(true);
+  }
+}, [i18nReady, loaded, error, initializing, user, hasProfile]);
 
   useEffect(() => {
     if (initializing || !loaded || !i18nReady) return;
@@ -115,9 +120,15 @@ export default function RootLayout() {
     }
   }, [user, initializing, loaded, i18nReady, segments, hasProfile, router]);
 
-  if ((!loaded && !error) || !i18nReady) {
-    return null;
-  }
+const [showSplash, setShowSplash] = useState(true);
+
+if (!appReady || showSplash) {
+  return (
+    <CustomSplash
+      onFinish={() => setShowSplash(false)}
+    />
+  );
+}
 
   return (
     <SafeAreaProvider>

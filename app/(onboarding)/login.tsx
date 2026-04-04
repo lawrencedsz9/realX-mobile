@@ -198,8 +198,11 @@ export default function LoginScreen() {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: Colors.brandGreen }]}>
-            <StatusBar style="light" />
+<KeyboardAvoidingView
+  style={[styles.container, { backgroundColor: Colors.brandGreen }]}
+  behavior="padding"
+  keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+>            <StatusBar style="light" />
 
             <View style={styles.headerBackground}>
                 <SafeAreaView edges={['top']} style={styles.headerContent}>
@@ -272,11 +275,7 @@ export default function LoginScreen() {
                     </View>
                 </TouchableWithoutFeedback>
 
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    keyboardVerticalOffset={20}
-                    style={styles.footer}
-                >
+                <View style={styles.footer}>
                         <TouchableOpacity
                             style={[
                                 styles.button,
@@ -298,7 +297,7 @@ export default function LoginScreen() {
                                 </Text>
                             )}
                         </TouchableOpacity>
-                </KeyboardAvoidingView>
+                </View>
             </View>
 
             <Modal
@@ -334,7 +333,7 @@ export default function LoginScreen() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -421,6 +420,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         paddingBottom: 40,
+        marginTop: 'auto'
     },
     button: {
         backgroundColor: Colors.brandGreen,

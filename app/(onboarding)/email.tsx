@@ -228,8 +228,11 @@ export default function EmailOnboarding() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+<KeyboardAvoidingView
+  style={styles.container}
+  behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+  keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+>      <StatusBar style="light" />
 
       <View style={styles.headerBackground}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
@@ -244,8 +247,8 @@ export default function EmailOnboarding() {
         </SafeAreaView>
       </View>
 
-      <View style={styles.cardContainer}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+<View style={[styles.cardContainer, { flex: 1 }]}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.card}>
             <View style={styles.textContainer}>
               <PhonkText style={styles.titleLine}>
@@ -319,7 +322,7 @@ export default function EmailOnboarding() {
             </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -354,7 +357,7 @@ const styles = StyleSheet.create({
   singleInputContainer: { backgroundColor: '#F3F3F3', borderRadius: 30, height: 60, justifyContent: 'center', paddingHorizontal: 25 },
   input: { fontSize: 16, fontFamily: Typography.poppins.medium, color: '#000' },
   infoText: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 20, paddingHorizontal: 10, fontFamily: Typography.poppins.medium, margin: 8 },
-  footer: { paddingBottom: 40 },
+  footer: { paddingBottom: 40, marginTop: 'auto' },
   button: { backgroundColor: Colors.brandGreen, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontSize: 18, fontFamily: Typography.poppins.medium },

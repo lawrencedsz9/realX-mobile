@@ -163,13 +163,12 @@ export default function OnboardingScreen() {
 
                         {/* Login Pill */}
                         <TouchableOpacity
-                            activeOpacity={0.8}
+                            activeOpacity={0.9}
                             onPress={handleLogin}
                         >
                             <GlassView
                                 style={styles.loginPill}
                                 glassEffectStyle="regular"
-                                colorScheme="light"
                             >
                                 <Text style={[styles.loginText, isRTL && styles.subtextRTL]}>
                                     {t('onboarding_login_prompt')} <Text style={styles.loginBold}>{t('onboarding_login_action')}</Text>
@@ -382,21 +381,21 @@ const styles = StyleSheet.create({
         flexDirection: 'row-reverse',
     },
     loginPill: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         paddingVertical: 15,
         paddingHorizontal: 35,
         borderRadius: 100,
         marginTop: 50,
         overflow: 'hidden',
+        backgroundColor: '#FFFFFF'
     },
     loginText: {
-        color: '#FFFFFF',
+        color: '#000000',
         fontFamily: Typography.poppins.medium,
         fontSize: 16,
     },
     loginBold: {
         fontFamily: Typography.poppins.semiBold,
-        color: "#000000",
+        color: "#18B852",
     },
 });
 
