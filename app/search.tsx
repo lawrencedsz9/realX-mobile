@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { collection, getDocs, getFirestore, query, where, limit, startAfter } from '@react-native-firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
@@ -21,6 +22,8 @@ import { triggerSubtleHaptic } from '../utils/haptics';
 export default function SearchScreen() {
     const { q } = useLocalSearchParams<{ q: string }>();
     const router = useRouter();
+    const { i18n } = useTranslation();
+    const isArabic = i18n.language === 'ar';
 
     const [searchQuery, setSearchQuery] = useState(q || '');
     const [results, setResults] = useState<any[]>([]);
@@ -73,37 +76,11 @@ export default function SearchScreen() {
 
             const snapshot = await getDocs(q);
 
-            // Flatten vendors into searchable result items (one per offer + vendors without offers)
-            const fetched: any[] = [];
-            snapshot.docs.forEach((docSnap: any) => {
-                const vendorData = docSnap.data();
-                const vendorOffers = vendorData.offers || [];
-
-                if (vendorOffers.length > 0) {
-                    vendorOffers.forEach((offer: any, index: number) => {
-                        fetched.push({
-                            id: `${docSnap.id}_offer_${index}`,
-                            vendorId: docSnap.id,
-                            ...offer,
-                            vendorName: vendorData.name,
-                            vendorNameAr: vendorData.nameAr,
-                            vendorProfilePicture: vendorData.profilePicture,
-                            xcard: vendorData.xcard || false,
-                        });
-                    });
-                } else {
-                    fetched.push({
-                        id: docSnap.id,
-                        vendorId: docSnap.id,
-                        titleEn: vendorData.name,
-                        titleAr: vendorData.nameAr,
-                        vendorName: vendorData.name,
-                        vendorNameAr: vendorData.nameAr,
-                        vendorProfilePicture: vendorData.profilePicture,
-                        xcard: vendorData.xcard || false,
-                    });
-                }
-            });
+            // Map vendor documents directly
+            const fetched: any[] = snapshot.docs.map((docSnap: any) => ({
+                id: docSnap.id,
+                ...docSnap.data(),
+            }));
 
             if (isNew) {
                 setResults(fetched);
@@ -139,11 +116,9 @@ export default function SearchScreen() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const handleOfferPress = useCallback(
-        (offer: any) => {
-            if (offer.vendorId) {
-                router.push({ pathname: '/vendor/[id]', params: { id: offer.vendorId } });
-            }
+    const handleVendorPress = useCallback(
+        (vendor: any) => {
+            router.push({ pathname: '/vendor/[id]', params: { id: vendor.id } });
         },
         [router]
     );
@@ -167,19 +142,18 @@ export default function SearchScreen() {
             >
                 <RestaurantCard
                     id={item.id}
-                    name={item.titleEn || item.titleAr || 'Untitled Offer'}
-                    cashbackText={item.descriptionEn || item.descriptionAr || 'Special Offer'}
-                    discountText={item.discountValue ? `${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF` : ''}
+                    name={isArabic ? (item.nameAr || item.nameEn || item.name || 'Vendor') : (item.nameEn || item.name || 'Vendor')}
+                    cashbackText={isArabic ? (item.shortDescriptionAR || item.shortDescriptionAr || item.descriptionAr || item.brandDescription || '') : (item.shortDescription || item.brandDescription || item.descriptionEn || '')}
                     isTrending={item.isTrending}
                     isTopRated={item.isTopRated}
-                    imageUri={item.bannerImage || item.coverImage}
-                    logoUri={item.vendorProfilePicture || item.profilePicture}
+                    imageUri={item.coverImage}
+                    logoUri={item.profilePicture}
                     xcardEnabled={item.xcard}
-                    onPress={() => handleOfferPress(item)}
+                    onPress={() => handleVendorPress(item)}
                 />
             </View>
         ),
-        [handleOfferPress]
+        [handleVendorPress, isArabic]
     );
 
     const renderFooter = () => {
