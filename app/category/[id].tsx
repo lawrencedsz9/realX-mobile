@@ -475,7 +475,7 @@ export default function CategoryScreen() {
                             <RestaurantCard
                                 id={item.id}
                                 name={isArabic ? (item.nameAr || item.nameEn || item.name || 'Vendor') : (item.nameEn || item.name || 'Vendor')}
-                                cashbackText={isArabic ? (item.descriptionAr || item.brandDescription || item.descriptionEn || '') : (item.brandDescription || item.descriptionEn || item.descriptionAr || '')}
+                                cashbackText={isArabic ? (item.shortDescriptionAR || item.shortDescriptionAr || item.descriptionAr || item.brandDescription || '') : (item.shortDescription || item.brandDescription || item.descriptionEn || '')}
                                 isTrending={item.isTrending}
                                 isTopRated={item.isTopRated}
                                 imageUri={item.coverImage}
