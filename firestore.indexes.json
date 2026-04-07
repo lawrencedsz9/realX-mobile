@@ -10,12 +10,18 @@
       ]
     },
     {
-      "collectionGroup": "offers",
+      "collectionGroup": "vendors",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "categories", "arrayConfig": "ARRAY_CONTAINS" },
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "xcard", "order": "ASCENDING" },
+        { "fieldPath": "mainCategory", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "vendors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subcategory", "arrayConfig": "ARRAY_CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }

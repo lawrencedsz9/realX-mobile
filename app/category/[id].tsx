@@ -62,7 +62,6 @@ const categoryConfig: Record<string, {
         id: string;
         name: string;
         cashbackText?: string;
-        discountText?: string;
         isTrending?: boolean;
         logoUri?: string;
     }[];
@@ -98,7 +97,7 @@ interface HeaderContentProps {
     handleSearch: () => void;
     t: any;
     showComingSoon: boolean;
-    loadingOffers: boolean;
+    loadingVendors: boolean;
 }
 
 const HeaderContent = memo(({
@@ -120,7 +119,7 @@ const HeaderContent = memo(({
     handleSearch,
     t,
     showComingSoon,
-    loadingOffers,
+    loadingVendors,
 }: HeaderContentProps) => (
     <>
         <CategoryHeader
@@ -211,8 +210,8 @@ export default function CategoryScreen() {
     const [selectedSubCategory, setSelectedSubCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [offers, setOffers] = useState<any[]>([]);
-    const [loadingOffers, setLoadingOffers] = useState(false);
+    const [vendors, setVendors] = useState<any[]>([]);
+    const [loadingVendors, setLoadingVendors] = useState(false);
     const lastDocRef = useRef<any>(null);
     const [isListEnd, setIsListEnd] = useState(false);
     const flashListRef = useRef<any>(null);
@@ -230,8 +229,8 @@ export default function CategoryScreen() {
     const isCategoryActive = categoryData ? categoryData.isActive !== false : true;
 
     // Determine if we should show the "Coming Soon" UI
-    // It shows if the category is explicitly inactive OR if we've finished the initial fetch and found no offers
-    const showComingSoon = !isCategoryActive || (isListEnd && offers.length === 0 && !loadingOffers);
+    // It shows if the category is explicitly inactive OR if we've finished the initial fetch and found no vendors
+    const showComingSoon = !isCategoryActive || (isListEnd && vendors.length === 0 && !loadingVendors);
     const englishCategoryName = useMemo(() => {
         return categoryData?.nameEnglish || englishName || name || config.title || undefined;
     }, [categoryData?.nameEnglish, config.title, englishName, name]);
@@ -265,25 +264,25 @@ export default function CategoryScreen() {
         fetchCategory();
     }, [id]);
 
-    const fetchOffers = useCallback(async (isNew = false) => {
-        if (loadingOffers || (isListEnd && !isNew) || !isCategoryActive) return;
+    const fetchVendors = useCallback(async (isNew = false) => {
+        if (loadingVendors || (isListEnd && !isNew) || !isCategoryActive) return;
 
-        setLoadingOffers(true);
+        setLoadingVendors(true);
         try {
             if (!englishCategoryName) {
                 setIsListEnd(true);
-                setOffers([]);
+                setVendors([]);
                 return;
             }
 
             const db = getFirestore();
-            const offersRef = collection(db, 'offers');
+            const vendorsRef = collection(db, 'vendors');
             const PAGE_SIZE = 10;
 
-            const baseConstraints: any[] = [where('status', '==', 'active')];
+            const baseConstraints: any[] = [];
 
             if (selectedSubCategory !== 'all') {
-                baseConstraints.push(where('categories', 'array-contains', selectedSubCategory));
+                baseConstraints.push(where('subcategory', 'array-contains', selectedSubCategory));
             } else {
                 baseConstraints.push(where('mainCategory', '==', englishCategoryName));
             }
@@ -296,27 +295,27 @@ export default function CategoryScreen() {
 
             let q;
             if (isNew) {
-                q = query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
+                q = query(vendorsRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
             } else {
                 const startAfterDoc = lastDocRef.current;
                 q = startAfterDoc
-                    ? query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, startAfter(startAfterDoc) as any, limit(PAGE_SIZE) as any)
-                    : query(offersRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
+                    ? query(vendorsRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, startAfter(startAfterDoc) as any, limit(PAGE_SIZE) as any)
+                    : query(vendorsRef, ...baseConstraints, orderBy('createdAt', 'desc') as any, limit(PAGE_SIZE) as any);
             }
 
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
-                const fetchedOffers = querySnapshot.docs.map((doc: any) => ({
+                const fetchedVendors = querySnapshot.docs.map((doc: any) => ({
                     id: doc.id,
                     ...doc.data(),
                     xcard: doc.data().xcard || false
                 }));
 
                 if (isNew) {
-                    setOffers(fetchedOffers);
+                    setVendors(fetchedVendors);
                 } else {
-                    setOffers(prev => [...prev, ...fetchedOffers]);
+                    setVendors(prev => [...prev, ...fetchedVendors]);
                 }
 
                 restoreFlashListScroll();
@@ -326,34 +325,34 @@ export default function CategoryScreen() {
             } else {
                 setIsListEnd(true);
                 if (isNew) {
-                    setOffers([]);
+                    setVendors([]);
                     restoreFlashListScroll();
                 }
             }
         } catch (error) {
-            console.error("Error fetching offers:", error);
+            console.error("Error fetching vendors:", error);
         } finally {
-            setLoadingOffers(false);
+            setLoadingVendors(false);
         }
-    }, [loadingOffers, isListEnd, isCategoryActive, selectedSubCategory, selectedFilter, englishCategoryName, restoreFlashListScroll]);
+    }, [loadingVendors, isListEnd, isCategoryActive, selectedSubCategory, selectedFilter, englishCategoryName, restoreFlashListScroll]);
 
-    const fetchOffersRef = useRef(fetchOffers);
+    const fetchVendorsRef = useRef(fetchVendors);
     useEffect(() => {
-        fetchOffersRef.current = fetchOffers;
-    }, [fetchOffers]);
+        fetchVendorsRef.current = fetchVendors;
+    }, [fetchVendors]);
 
     // Initial fetch or filter change
     useEffect(() => {
     if (!loading && isCategoryActive) {
         lastDocRef.current = null;
         setIsListEnd(false);
-        fetchOffersRef.current(true);
+        fetchVendorsRef.current(true);
     }
 }, [selectedSubCategory, selectedFilter, loading, isCategoryActive, englishCategoryName]);
 
     const handleLoadMore = () => {
-        if (!loadingOffers && !isListEnd) {
-            fetchOffers(false);
+        if (!loadingVendors && !isListEnd) {
+            fetchVendors(false);
         }
     };
 
@@ -385,13 +384,6 @@ export default function CategoryScreen() {
         console.log('Restaurant pressed:', restaurant.name);
     }, []);
 
-    const handlePromoPress = useCallback((promo: { id: string; title: string; vendorId?: string }) => {
-        if (promo.vendorId) {
-            router.push({ pathname: '/vendor/[id]', params: { id: promo.vendorId } });
-        } else {
-            console.log('Promo pressed but no vendorId:', promo.title);
-        }
-    }, [router]);
 
     const subCategories = useMemo(() => {
         const fetchedSubCategories = categoryData?.subcategories?.map((sub: any) => ({
@@ -409,24 +401,24 @@ export default function CategoryScreen() {
     const headerTitle = (isArabic ? (categoryData?.nameArabic || categoryData?.nameAr || name) : null) || categoryData?.nameEnglish || name || config.title;
     const headerIcon = categoryData?.imageUrl || config.icon;
 
-    const filteredOffers = useMemo(() => {
-        if (!searchQuery.trim()) return offers;
+    const filteredVendors = useMemo(() => {
+        if (!searchQuery.trim()) return vendors;
         const lowerQuery = searchQuery.toLowerCase();
-        return offers.filter((offer: any) => {
-            const titleEn = offer.titleEn?.toLowerCase() || '';
-            const titleAr = offer.titleAr?.toLowerCase() || '';
-            const descEn = offer.descriptionEn?.toLowerCase() || '';
-            const descAr = offer.descriptionAr?.toLowerCase() || '';
-            
-            return titleEn.includes(lowerQuery) || 
-                   titleAr.includes(lowerQuery) || 
-                   descEn.includes(lowerQuery) || 
+        return vendors.filter((vendor: any) => {
+            const nameEn = vendor.nameEn?.toLowerCase() || vendor.name?.toLowerCase() || '';
+            const nameAr = vendor.nameAr?.toLowerCase() || '';
+            const descEn = vendor.descriptionEn?.toLowerCase() || vendor.brandDescription?.toLowerCase() || '';
+            const descAr = vendor.descriptionAr?.toLowerCase() || '';
+
+            return nameEn.includes(lowerQuery) ||
+                   nameAr.includes(lowerQuery) ||
+                   descEn.includes(lowerQuery) ||
                    descAr.includes(lowerQuery);
         });
-    }, [offers, searchQuery]);
+    }, [vendors, searchQuery]);
 
     const renderFooter = () => {
-        if (!loadingOffers) return <View style={{ height: 20 }} />;
+        if (!loadingVendors) return <View style={{ height: 20 }} />;
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color={Colors.brandGreen} />
@@ -440,7 +432,7 @@ export default function CategoryScreen() {
             {!loading && isCategoryActive ? (
                 <FlashList
                     ref={flashListRef}
-                    data={filteredOffers}
+                    data={filteredVendors}
                     keyExtractor={(item) => item.id}
                     numColumns={2}
                     contentContainerStyle={styles.contentContainer}
@@ -467,7 +459,7 @@ export default function CategoryScreen() {
                             handleSearch={handleSearch}
                             t={t}
                             showComingSoon={showComingSoon}
-                            loadingOffers={loadingOffers}
+                            loadingVendors={loadingVendors}
                         />
                     }
                     ListFooterComponent={renderFooter}
@@ -482,15 +474,14 @@ export default function CategoryScreen() {
                         ]}>
                             <RestaurantCard
                                 id={item.id}
-                                name={isArabic ? (item.titleAr || item.titleEn || 'Untitled Offer') : (item.titleEn || item.titleAr || 'Untitled Offer')}
-                                cashbackText={isArabic ? (item.descriptionAr || item.descriptionEn || 'Special Offer') : (item.descriptionEn || item.descriptionAr || 'Special Offer')}
-                                discountText={`${item.discountValue}${item.discountType === 'percentage' ? '%' : ''} OFF`}
+                                name={isArabic ? (item.nameAr || item.nameEn || item.name || 'Vendor') : (item.nameEn || item.name || 'Vendor')}
+                                cashbackText={isArabic ? (item.descriptionAr || item.brandDescription || item.descriptionEn || '') : (item.brandDescription || item.descriptionEn || item.descriptionAr || '')}
                                 isTrending={item.isTrending}
                                 isTopRated={item.isTopRated}
-                                imageUri={item.bannerImage}
-                                logoUri={item.vendorProfilePicture}
+                                imageUri={item.coverImage}
+                                logoUri={item.profilePicture}
                                 xcardEnabled={item.xcard}
-                                onPress={() => handlePromoPress({ id: item.id, title: item.titleEn, vendorId: item.vendorId })}
+                                onPress={() => router.push({ pathname: '/vendor/[id]', params: { id: item.id } })}
                             />
                         </View>
                     )}
@@ -520,7 +511,7 @@ export default function CategoryScreen() {
                         handleSearch={handleSearch}
                         t={t}
                         showComingSoon={showComingSoon}
-                        loadingOffers={loadingOffers}
+                        loadingVendors={loadingVendors}
                     />
                 </ScrollView>
             )}
@@ -578,18 +569,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 24,
         zIndex: 10,
-    },
-    offersContainer: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 16,
-    },
-    offersGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 16,
-        justifyContent: 'flex-start',
-        paddingHorizontal: 20,
     },
     loadingContainer: {
         padding: 20,

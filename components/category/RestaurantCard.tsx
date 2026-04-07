@@ -10,7 +10,6 @@ type Props = {
     name: string;
     nameAr?: string;
     cashbackText?: string;
-    discountText?: string;
     isTrending?: boolean;
     isTopRated?: boolean;
     imageUri?: string;
@@ -23,8 +22,7 @@ type Props = {
 export default function RestaurantCard({
     name,
     nameAr,
-    cashbackText = 'Cashbacks',
-    discountText = '60% DISCOUNT',
+    cashbackText = '',
     isTrending = false,
     isTopRated = false,
     imageUri,
@@ -94,22 +92,18 @@ export default function RestaurantCard({
             {/* Content */}
             <View style={styles.content}>
                 <Text style={[
-                  { color: '#000', fontFamily: Typography.poppins.medium }, 
+                  { color: '#000', fontFamily: Typography.poppins.medium },
                   styles.name,
                   { textAlign: isArabic ? 'right' : 'left', writingDirection: isArabic ? 'rtl' : 'ltr' }
                 ]} numberOfLines={1}>{isArabic ? (nameAr || name) : name}</Text>
 
-                {/* Discount Tag */}
-                <View style={[
-                  styles.discountWrapper,
-                  { alignSelf: isArabic ? 'flex-end' : 'flex-start' }
-                ]}>
+                {cashbackText ? (
                     <Text style={[
-                      { color: Colors.brandGreen, fontFamily: Typography.poppins.medium }, 
-                      styles.discountText,
-                      { textAlign: isArabic ? 'right' : 'left' }
-                    ]}>{discountText}</Text>
-                </View>
+                      { color: '#666666', fontFamily: Typography.poppins.medium },
+                      styles.descriptionText,
+                      { textAlign: isArabic ? 'right' : 'left', writingDirection: isArabic ? 'rtl' : 'ltr' }
+                    ]} numberOfLines={2}>{cashbackText}</Text>
+                ) : null}
             </View>
         </TouchableOpacity>
     );
@@ -220,35 +214,21 @@ const styles = StyleSheet.create({
     },
 
     content: {
-        paddingLeft: 0
+        paddingLeft: 0,
+        paddingTop: 8,
+        paddingHorizontal: 10,
+        paddingBottom: 8,
     },
     name: {
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: Typography.poppins.semiBold,
-        marginBottom: 4,
+        marginBottom: 2,
     },
-    cashbackRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        marginBottom: 4,
-    },
-    cashbackText: {
+    descriptionText: {
         fontSize: 12,
         fontFamily: Typography.poppins.medium,
         color: '#666666',
-    },
-    discountWrapper: {
-        backgroundColor: 'rgba(76, 217, 100, 0.1)', // Light green background for discount
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        alignSelf: 'flex-start',
-    },
-    discountText: {
-        fontSize: 13,
-        fontFamily: Typography.poppins.semiBold,
-        color: Colors.brandGreen,
+        lineHeight: 16,
     },
 
     topPill: {

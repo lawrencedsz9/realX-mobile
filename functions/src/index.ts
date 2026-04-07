@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
+//These are the cloud functions file 
+
 
 import * as admin from 'firebase-admin';
 import { CallableRequest, HttpsError, onCall } from 'firebase-functions/v2/https';
