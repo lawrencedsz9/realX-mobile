@@ -39,11 +39,14 @@ interface Transaction {
   vendorName: string;
   vendorNameAr?: string;
   totalAmount: number;
-  discountValue?: number;
-  discountType?: string;
   discountAmount?: number;
   finalAmount?: number;
-  offerId?: string;
+  offer?: {
+    discountType?: string;
+    discountValue?: number;
+    titleEn?: string;
+    titleAr?: string;
+  } | null;
   createdAt?: any;
   offerAmount?: number;
   paidAmount?: number;
@@ -132,8 +135,8 @@ export default function RedemptionHistoryScreen() {
     const paid = item.paidAmount || 0;
 
     const discountText =
-      item.discountType === 'student'
-        ? t('student_discount', { percent: item.amount || 0 })
+      item.offer?.discountType && item.offer?.discountValue
+        ? `${item.offer.discountValue}${item.offer.discountType === 'percentage' ? '%' : ''} OFF`
         : t('offer_redeemed_label');
 
     const dateStr = item.timestamp

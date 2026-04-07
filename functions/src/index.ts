@@ -140,9 +140,7 @@ const processTransaction = async (options) => {
     pin,
     type,
     giftCardAmount = 0,
-    offerId = null,
-    discountValue = 0,
-    discountType = null,
+    offerIndex = null,
     creatorCode = null,
   } = options;
 
@@ -200,14 +198,26 @@ const processTransaction = async (options) => {
 
     /**
      * =============================
-     * 4. OFFER LOGIC
+     * 4. OFFER LOGIC (from vendor's embedded offers)
      * =============================
      */
     let creatorData = null;
+    let appliedOffer = null;
 
     if (type !== 'giftcard') {
-      discountCents = calculateDiscount(totalCents, discountType, discountValue);
-      finalCents = totalCents - discountCents;
+      if (offerIndex !== null && offerIndex !== undefined) {
+        const vendorOffers = vendorData.offers || [];
+        if (offerIndex < 0 || offerIndex >= vendorOffers.length) {
+          throw new HttpsError('not-found', 'Offer not found for this vendor');
+        }
+        appliedOffer = vendorOffers[offerIndex];
+        discountCents = calculateDiscount(
+          totalCents,
+          appliedOffer.discountType,
+          appliedOffer.discountValue
+        );
+        finalCents = totalCents - discountCents;
+      }
 
       creatorData = await validateCreatorCode(tx, creatorCode);
     }
@@ -262,7 +272,7 @@ const processTransaction = async (options) => {
       creatorUid: creatorData?.creatorUid || null,
       cashbackAmount: fromCents(userCashback),
       creatorCashbackAmount: fromCents(creatorCashback),
-      offerId,
+      offer: appliedOffer || null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
