@@ -1,6 +1,6 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { collection, doc, getDoc, getDocs, getFirestore, query, where } from '@react-native-firebase/firestore';
+import { doc, getDoc, getDocs, getFirestore, query, where, collection } from '@react-native-firebase/firestore';
 import { GlassView } from 'expo-glass-effect';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -67,17 +67,13 @@ export default function VendorScreen() {
                 if (vendorData) {
                     setVendor(vendorData);
 
-                    // Fetch Offers using the actual document ID
-                    const offersRef = collection(db, 'offers');
-                    const q = query(offersRef, where('vendorId', '==', foundVendorId), where('status', '==', 'active'));
-                    const querySnapshot = await getDocs(q);
-
-                    const fetchedOffers = querySnapshot.docs.map((doc: any) => ({
-                        id: doc.id,
-                        ...doc.data()
+                    // Use offers array from vendor document
+                    const vendorOffers = (vendorData.offers || []).map((offer: any, index: number) => ({
+                        id: `${foundVendorId}_offer_${index}`,
+                        ...offer,
                     }));
 
-                    setOffers(fetchedOffers);
+                    setOffers(vendorOffers);
                 }
             } catch (error) {
                 console.error("Error fetching vendor data:", error);
@@ -208,7 +204,17 @@ export default function VendorScreen() {
 
                                         <TouchableOpacity
                                             style={[styles.pillButton, styles.redeemPill]}
-                                            onPress={() => router.push(`/redeem/${offer.id}?vendorId=${actualVendorId || id}`)}
+                                            onPress={() => {
+                                                const offerData = JSON.stringify({
+                                                    titleEn: offer.titleEn,
+                                                    titleAr: offer.titleAr,
+                                                    descriptionEn: offer.descriptionEn,
+                                                    descriptionAr: offer.descriptionAr,
+                                                    discountValue: offer.discountValue,
+                                                    discountType: offer.discountType,
+                                                });
+                                                router.push(`/redeem/${offer.id}?vendorId=${actualVendorId || id}&offerData=${encodeURIComponent(offerData)}`);
+                                            }}
                                         >
                                             <Ionicons name="flash" size={18} color="#FFF" />
                                             <Text style={[{ color: '#FFF', fontFamily: Typography.poppins.medium }, styles.pillButtonTextSmall]}>{t('redeem_caps')}</Text>
@@ -270,7 +276,6 @@ export default function VendorScreen() {
                                         : (selectedOfferForTC?.descriptionEn || selectedOfferForTC?.descriptionAr || t('no_specific_terms'))}
                                 </Text>
 
-                                {/* Common Terms could go here */}
                                 <View style={styles.commonTerms}>
                                     <View style={[styles.termRow, { flexDirection: isArabic ? 'row-reverse' : 'row' }]}>
                                         <Ionicons name="checkmark-circle" size={18} color={Colors.brandGreen} />

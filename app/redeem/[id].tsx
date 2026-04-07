@@ -49,7 +49,7 @@ interface OfferData {
 }
 
 export default function RedeemScreen() {
-    const { id, vendorId } = useLocalSearchParams<{ id: string; vendorId: string }>();
+    const { id, vendorId, offerData: offerDataParam } = useLocalSearchParams<{ id: string; vendorId: string; offerData: string }>();
     const router = useRouter();
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === 'ar';
@@ -76,19 +76,15 @@ export default function RedeemScreen() {
             try {
                 const db = getFirestore();
 
-                // Fetch Offer first to get vendorId if not provided
-                const offerRef = doc(db, 'offers', id);
-                const offerSnap = await getDoc(offerRef);
-
                 let currentVendorId = vendorId;
 
-                if (offerSnap.exists() && isMounted) {
-                    const offerData = offerSnap.data() as OfferData;
-                    setOffer(offerData);
-
-                    // If vendorId was not provided, use the one from the offer document
-                    if (!currentVendorId && offerData.vendorId) {
-                        currentVendorId = offerData.vendorId;
+                // Use offer data passed from vendor page (embedded offers)
+                if (offerDataParam && isMounted) {
+                    try {
+                        const parsedOffer = JSON.parse(decodeURIComponent(offerDataParam)) as OfferData;
+                        setOffer(parsedOffer);
+                    } catch (e) {
+                        console.error("Error parsing offer data from params:", e);
                     }
                 }
 
