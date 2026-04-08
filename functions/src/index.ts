@@ -533,7 +533,123 @@ export const checkStudentExistsLogin = onCall(async (request: CallableRequest) =
 
 /**
  * =============================
- * Admin Broadcast Notification
+ * Admin Send Notification (Callable)
+ * =============================
+ */
+export const sendNotification = onCall(async (request: CallableRequest) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Login required');
+  }
+
+  // Verify admin role
+  const adminDoc = await db.collection('students').doc(request.auth.uid).get();
+  if (!adminDoc.exists || adminDoc.data()?.admin !== true) {
+    throw new HttpsError('permission-denied', 'Admin access required');
+  }
+
+  const { title, body, imageUrl } = request.data;
+
+  if (!title || !body) {
+    throw new HttpsError('invalid-argument', 'Title and body are required');
+  }
+
+  // Fetch all users with FCM tokens from students collection
+  const usersSnapshot = await db
+    .collection('students')
+    .where('fcmToken', '!=', null)
+    .get();
+
+  const tokens: string[] = [];
+  usersSnapshot.forEach((doc) => {
+    const token = doc.data().fcmToken;
+    if (token) tokens.push(token);
+  });
+
+  const totalRecipients = tokens.length;
+
+  if (tokens.length === 0) {
+    await db.collection('notifications').add({
+      title,
+      body,
+      imageUrl: imageUrl || null,
+      sentBy: request.auth.uid,
+      sentAt: admin.firestore.FieldValue.serverTimestamp(),
+      successCount: 0,
+      failureCount: 0,
+      totalRecipients: 0,
+    });
+
+    return { successCount: 0, failureCount: 0, totalRecipients: 0 };
+  }
+
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (let i = 0; i < tokens.length; i += 500) {
+    const batch = tokens.slice(i, i + 500);
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens: batch,
+      notification: {
+        title,
+        body,
+      },
+      data: {
+        type: 'admin_broadcast',
+      },
+      android: {
+        notification: {
+          channelId: 'reelx_general',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+          },
+        },
+      },
+    });
+
+    successCount += response.successCount;
+    failureCount += response.failureCount;
+
+    // Clean up invalid tokens
+    response.responses.forEach((resp, idx) => {
+      if (
+        !resp.success &&
+        resp.error &&
+        (resp.error.code === 'messaging/invalid-registration-token' ||
+          resp.error.code === 'messaging/registration-token-not-registered')
+      ) {
+        const failedToken = batch[idx];
+        usersSnapshot.forEach((doc) => {
+          if (doc.data().fcmToken === failedToken) {
+            db.collection('students').doc(doc.id).update({
+              fcmToken: admin.firestore.FieldValue.delete(),
+            });
+          }
+        });
+      }
+    });
+  }
+
+  await db.collection('notifications').add({
+    title,
+    body,
+    imageUrl: imageUrl || null,
+    sentBy: request.auth.uid,
+    sentAt: admin.firestore.FieldValue.serverTimestamp(),
+    successCount,
+    failureCount,
+    totalRecipients,
+  });
+
+  return { successCount, failureCount, totalRecipients };
+});
+
+/**
+ * =============================
+ * Admin Broadcast Notification (Firestore Trigger)
  * =============================
  */
 export const sendAdminNotification = onDocumentCreated(
