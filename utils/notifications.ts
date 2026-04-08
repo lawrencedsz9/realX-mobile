@@ -1,6 +1,16 @@
 import { getAuth } from '@react-native-firebase/auth';
 import { doc, getFirestore, updateDoc, serverTimestamp } from '@react-native-firebase/firestore';
-import messaging, { type FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import {
+  getMessaging,
+  requestPermission,
+  AuthorizationStatus,
+  registerDeviceForRemoteMessages,
+  getToken,
+  onTokenRefresh,
+  onMessage,
+  setBackgroundMessageHandler,
+  type FirebaseMessagingTypes,
+} from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import {
   scheduleNotificationAsync,
@@ -35,11 +45,13 @@ export const registerPushToken = async () => {
   if (!user) return;
 
   try {
+    const messaging = getMessaging();
+
     // Request permission on iOS (Android grants by default)
-    const authStatus = await messaging().requestPermission();
+    const authStatus = await requestPermission(messaging);
     const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      authStatus === AuthorizationStatus.AUTHORIZED ||
+      authStatus === AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
       console.log('Notification permission denied');
@@ -48,11 +60,11 @@ export const registerPushToken = async () => {
 
     // On iOS, register for APNS before fetching FCM token
     if (Platform.OS === 'ios') {
-      await messaging().registerDeviceForRemoteMessages();
+      await registerDeviceForRemoteMessages(messaging);
     }
 
     // Get the FCM token
-    const token = await messaging().getToken();
+    const token = await getToken(messaging);
 
     // Store in Firestore
     const db = getFirestore();
@@ -72,7 +84,8 @@ export const registerPushToken = async () => {
  * Returns an unsubscribe function.
  */
 export const onTokenRefreshListener = () => {
-  return messaging().onTokenRefresh(async (token) => {
+  const messaging = getMessaging();
+  return onTokenRefresh(messaging, async (token) => {
     const auth = getAuth();
     const user = auth.currentUser;
     if (!user) return;
@@ -117,7 +130,9 @@ export const clearPushToken = async () => {
  * Returns an unsubscribe function.
  */
 export const setupForegroundMessageHandler = () => {
-  return messaging().onMessage(
+  const messaging = getMessaging();
+  return onMessage(
+    messaging,
     async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
       const { title, body } = remoteMessage.notification ?? {};
 
@@ -160,7 +175,9 @@ export const showLocalNotification = async (
  * Must be called at the top level of the app entry point.
  */
 export const registerBackgroundHandler = () => {
-  messaging().setBackgroundMessageHandler(
+  const messaging = getMessaging();
+  setBackgroundMessageHandler(
+    messaging,
     async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
       // For notification+data messages, the OS displays the notification automatically.
       // This handler is for any additional background processing.
