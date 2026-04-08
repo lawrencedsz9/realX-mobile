@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, 
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ImageSourcePropType, Keyboard, NativeSyntheticEvent, NativeScrollEvent, ScrollView, StatusBar, StyleSheet, Text, View, Image } from 'react-native';
+import { ActivityIndicator, Dimensions, ImageSourcePropType, Keyboard, NativeSyntheticEvent, NativeScrollEvent, ScrollView, StatusBar, StyleSheet, Text, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -163,23 +163,6 @@ const HeaderContent = memo(({
             </>
         ) : (
             <View style={styles.comingSoonContainer}>
-                <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                    {BACKGROUND_ICONS.map((icon, i) => (
-                        <Ionicons
-                            key={i}
-                            name={icon.name}
-                            size={icon.size}
-                            color={icon.color}
-                            style={{
-                                position: 'absolute',
-                                top: icon.top as any,
-                                left: icon.left as any,
-                                transform: [{ rotate: icon.rotation }],
-                                opacity: 0.3,
-                            }}
-                        />
-                    ))}
-                </View>
                 <Image 
                     source={require('../../assets/images/comingsoon.png')} 
                     style={styles.comingSoonImage} 
@@ -429,6 +412,25 @@ export default function CategoryScreen() {
     return (
         <SafeAreaView style={styles.safeArea} edges={['top']}>
             <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
+            {showComingSoon && !loading && (
+                <View style={styles.backgroundIconsOverlay} pointerEvents="none">
+                    {BACKGROUND_ICONS.map((icon, i) => (
+                        <Ionicons
+                            key={i}
+                            name={icon.name}
+                            size={icon.size}
+                            color={icon.color}
+                            style={{
+                                position: 'absolute',
+                                top: icon.top as any,
+                                left: icon.left as any,
+                                transform: [{ rotate: icon.rotation }],
+                                opacity: 0.3,
+                            }}
+                        />
+                    ))}
+                </View>
+            )}
             {!loading && isCategoryActive ? (
                 <FlashList
                     ref={flashListRef}
@@ -535,14 +537,16 @@ const styles = StyleSheet.create({
     flatListContent: {
         paddingBottom: 20,
     },
+    backgroundIconsOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
     comingSoonContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 40,
-        paddingVertical: 100,
-        position: 'relative',
-        overflow: 'hidden',
+        minHeight: Dimensions.get('window').height - 250,
     },
     comingSoonImage: {
         width: 200,

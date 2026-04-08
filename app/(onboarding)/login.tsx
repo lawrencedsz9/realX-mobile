@@ -202,7 +202,8 @@ export default function LoginScreen() {
   style={[styles.container, { backgroundColor: Colors.brandGreen }]}
   behavior="padding"
   keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
->            <StatusBar style="light" />
+>
+            <StatusBar style="light" />
 
             <View style={styles.headerBackground}>
                 <SafeAreaView edges={['top']} style={styles.headerContent}>
