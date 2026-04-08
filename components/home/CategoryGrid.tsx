@@ -158,7 +158,6 @@ export default function CategoryGrid({ categories: propCategories, onCategoryPre
                             <View style={styles.drawerHandleContainer}>
                                 <View style={styles.drawerHandle} />
                             </View>
-                            <Text style={styles.drawerTitle}>{t('coming_soon')}</Text>
                             <ScrollView
                                 style={styles.drawerList}
                                 contentContainerStyle={styles.drawerListContent}

@@ -34,6 +34,9 @@ interface RedemptionResult {
     discountAmount: number;
     cashbackAmount: number;
     creatorName?: string;
+    totalAmount: number;
+    finalAmount: number;
+    creatorEarned?: number;
 }
 
 // Types for better type safety
@@ -177,6 +180,9 @@ export default function RedeemScreen() {
                 discountAmount: data.discountAmount || discountAmount,
                 cashbackAmount: data.cashbackAmount || 0,
                 creatorName: data.creatorName,
+                totalAmount,
+                finalAmount,
+                creatorEarned: data.creatorEarned,
             });
         } catch (error: any) {
             console.error('Offer redemption error:', error);
@@ -290,6 +296,14 @@ export default function RedeemScreen() {
                         </Text>
                     </View>
 
+                    {/* Amount to Pay */}
+                    <View style={styles.successPayBadge}>
+                        <Ionicons name="card" size={16} color="#000" />
+                        <Text style={styles.successPayText}>
+                            {t('amount_to_pay_label')}: {currency} {redemptionResult.finalAmount.toFixed(2)}
+                        </Text>
+                    </View>
+
                     {/* Cashback Badge (only if > 0) */}
                     {redemptionResult.cashbackAmount > 0 && (
                         <View style={styles.successSavedBadge}>
@@ -305,6 +319,16 @@ export default function RedeemScreen() {
                         <Text style={styles.successCreatorText}>
                             {t('thanks_to_creator', { creator: redemptionResult.creatorName })}
                         </Text>
+                    )}
+
+                    {/* Creator Earned */}
+                    {redemptionResult.creatorName && redemptionResult.creatorEarned != null && redemptionResult.creatorEarned > 0 && (
+                        <View style={[styles.successSavedBadge, { backgroundColor: '#FF9800' }]}>
+                            <Ionicons name="gift" size={16} color="#FFF" />
+                            <Text style={styles.successSavedText}>
+                                {redemptionResult.creatorName} {t('creator_earned_message', { currency, amount: redemptionResult.creatorEarned.toFixed(2) })}
+                            </Text>
+                        </View>
                     )}
                 </View>
             </View>
@@ -893,5 +917,20 @@ const styles = StyleSheet.create({
         fontFamily: Typography.poppins.medium,
         textAlign: 'center',
         marginTop: 12,
+    },
+    successPayBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F0F0F0',
+        borderRadius: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        marginBottom: 10,
+        gap: 8,
+    },
+    successPayText: {
+        color: '#000',
+        fontSize: 14,
+        fontFamily: Typography.poppins.semiBold,
     },
 });

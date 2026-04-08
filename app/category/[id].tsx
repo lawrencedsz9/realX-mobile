@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 40,
-        minHeight: Dimensions.get('window').height - 250,
+        minHeight: Dimensions.get('window').height - 200,
     },
     comingSoonImage: {
         width: 200,
