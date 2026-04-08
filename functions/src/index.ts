@@ -5,6 +5,7 @@
 
 import * as admin from 'firebase-admin';
 import { CallableRequest, HttpsError, onCall } from 'firebase-functions/v2/https';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from 'firebase-functions';
 
 admin.initializeApp();
@@ -73,6 +74,51 @@ const validateCreatorCode = async (tx, creatorCode: string | null) => {
  * Pricing / Discount Logic
  * =============================
  */
+
+/**
+ * =============================
+ * Push Notification Helpers
+ * =============================
+ */
+const sendCreatorNotification = async (
+  creatorUid: string,
+  cashbackAmount: number,
+  vendorName: string
+) => {
+  try {
+    const creatorDoc = await db.collection('students').doc(creatorUid).get();
+    const fcmToken = creatorDoc.data()?.fcmToken;
+
+    if (!fcmToken) return;
+
+    await admin.messaging().send({
+      token: fcmToken,
+      notification: {
+        title: 'Your code was used!',
+        body: `Someone used your code at ${vendorName}. You earned QAR ${cashbackAmount.toFixed(2)} cashback!`,
+      },
+      data: {
+        type: 'creator_code_used',
+        vendorName,
+        cashbackAmount: cashbackAmount.toString(),
+      },
+      android: {
+        notification: {
+          channelId: 'reelx_creator',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Failed to send creator notification:', error);
+  }
+};
 const calculateDiscount = (totalCents: number, discountType, discountValue) => {
   let discountCents = 0;
 
@@ -315,6 +361,9 @@ const processTransaction = async (options) => {
     return {
       transactionId: transactionRef.id,
       finalAmount: fromCents(finalCents),
+      creatorUid: creatorData?.creatorUid || null,
+      creatorCashback: fromCents(creatorCashback),
+      vendorName,
     };
   });
 };
@@ -329,11 +378,22 @@ export const redeemGiftCard = onCall(async (request: CallableRequest) => {
     throw new HttpsError('unauthenticated', 'Login required');
   }
 
-  return processTransaction({
+  const result = await processTransaction({
     uid: request.auth.uid,
     type: 'giftcard',
     ...request.data,
   });
+
+  // Send creator notification outside the transaction
+  if (result.creatorUid && result.creatorCashback > 0) {
+    sendCreatorNotification(
+      result.creatorUid,
+      result.creatorCashback,
+      result.vendorName
+    ).catch((err) => console.error('Creator notification failed:', err));
+  }
+
+  return result;
 });
 
 export const redeemOffer = onCall(async (request: CallableRequest) => {
@@ -341,11 +401,22 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
     throw new HttpsError('unauthenticated', 'Login required');
   }
 
-  return processTransaction({
+  const result = await processTransaction({
     uid: request.auth.uid,
     type: 'offer',
     ...request.data,
   });
+
+  // Send creator notification outside the transaction
+  if (result.creatorUid && result.creatorCashback > 0) {
+    sendCreatorNotification(
+      result.creatorUid,
+      result.creatorCashback,
+      result.vendorName
+    ).catch((err) => console.error('Creator notification failed:', err));
+  }
+
+  return result;
 });
 
 /**
@@ -448,3 +519,120 @@ export const checkStudentExistsLogin = onCall(async (request: CallableRequest) =
 
   return { exists: !snapshot.empty };
 });
+
+/**
+ * =============================
+ * Admin Broadcast Notification
+ * =============================
+ */
+export const sendAdminNotification = onDocumentCreated(
+  {
+    document: 'notifications/{notificationId}',
+    region: 'me-central1',
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const notification = snap.data();
+    if (!notification || notification.status !== 'pending') return;
+
+    // Mark as processing
+    await snap.ref.update({ status: 'sending' });
+
+    try {
+      // Fetch all users with FCM tokens
+      const usersSnapshot = await db
+        .collection('students')
+        .where('fcmToken', '!=', null)
+        .get();
+
+      const tokens: string[] = [];
+      usersSnapshot.forEach((doc) => {
+        const token = doc.data().fcmToken;
+        if (token) tokens.push(token);
+      });
+
+      if (tokens.length === 0) {
+        await snap.ref.update({
+          status: 'no_tokens',
+          completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return;
+      }
+
+      // Send in batches of 500 (FCM multicast limit)
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (let i = 0; i < tokens.length; i += 500) {
+        const batch = tokens.slice(i, i + 500);
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: batch,
+          notification: {
+            title: notification.title,
+            body: notification.body,
+          },
+          data: {
+            type: 'admin_broadcast',
+            notificationId: snap.id,
+          },
+          android: {
+            notification: {
+              channelId: 'reelx_general',
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: 'default',
+              },
+            },
+          },
+        });
+
+        successCount += response.successCount;
+        failureCount += response.failureCount;
+
+        // Clean up invalid tokens
+        const invalidTokens: { token: string; uid: string }[] = [];
+        response.responses.forEach((resp, idx) => {
+          if (
+            !resp.success &&
+            resp.error &&
+            (resp.error.code === 'messaging/invalid-registration-token' ||
+              resp.error.code === 'messaging/registration-token-not-registered')
+          ) {
+            const failedToken = batch[idx];
+            usersSnapshot.forEach((doc) => {
+              if (doc.data().fcmToken === failedToken) {
+                invalidTokens.push({ token: failedToken, uid: doc.id });
+              }
+            });
+          }
+        });
+
+        // Remove invalid tokens from Firestore
+        for (const { uid } of invalidTokens) {
+          await db.collection('students').doc(uid).update({
+            fcmToken: admin.firestore.FieldValue.delete(),
+          });
+        }
+      }
+
+      await snap.ref.update({
+        status: 'completed',
+        successCount,
+        failureCount,
+        completedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (error: any) {
+      console.error('Error sending broadcast notification:', error);
+      await snap.ref.update({
+        status: 'failed',
+        error: error.message || 'Unknown error',
+        completedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  }
+);

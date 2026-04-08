@@ -14,6 +14,7 @@ import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
 import i18n, { setStoredLanguage } from '../../src/localization/i18n';
 import { applyRTL } from '../../src/localization/rtl';
+import { clearPushToken } from '../../utils/notifications';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -89,6 +90,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              await clearPushToken();
               await signOut(getAuth());
             } catch (error) {
               console.error('Logout error:', error);

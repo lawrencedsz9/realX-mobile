@@ -196,5 +196,7 @@
   "cannot_be_combined": "لا يمكن دمجه مع عروض أخرى",
   "redeem_caps": "استرداد",
   "vendor_not_found": "البائع غير موجود",
-  "no_specific_terms": "لا توجد شروط محددة لهذا العرض."
+  "no_specific_terms": "لا توجد شروط محددة لهذا العرض.",
+  "notification_creator_code_used_title": "تم استخدام كودك!",
+  "notification_creator_code_used_body": "شخص ما استخدم كودك في {{vendor}}. لقد ربحت {{currency}} {{amount}} كاش باك!"
 }

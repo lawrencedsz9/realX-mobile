@@ -196,5 +196,7 @@
   "no_redemptions_found": "No redemptions found.",
   "filter_all": "All",
   "filter_cash": "Cash",
-  "filter_top": "Top"
+  "filter_top": "Top",
+  "notification_creator_code_used_title": "Your code was used!",
+  "notification_creator_code_used_body": "Someone used your code at {{vendor}}. You earned {{currency}} {{amount}} cashback!"
 }

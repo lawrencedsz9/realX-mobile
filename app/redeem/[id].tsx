@@ -28,6 +28,7 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import { triggerSubtleHaptic } from '../../utils/haptics';
 import { normalizeDigits } from '../../utils/numbers';
+import { showLocalNotification } from '../../utils/notifications';
 
 // Types for better type safety
 interface VendorData {
@@ -153,10 +154,17 @@ export default function RedeemScreen() {
             const currency = t('currency_qar');
             const savedAmount = data.discountAmount?.toFixed(2) || discountAmount.toFixed(2);
             let message = t('you_saved_success_message', { currency, amount: savedAmount });
-            
+
             if (data.cashbackAmount > 0) {
                 message += `\n${t('cashback_earned_success_message', { currency, amount: data.cashbackAmount.toFixed(2) })}`;
             }
+
+            // Show local notification for the redemption
+            showLocalNotification(
+                t('redemption_successful_title'),
+                message,
+                { type: 'redemption_success', transactionId: data.transactionId }
+            );
 
             Alert.alert(
                 t('redemption_successful_title'),

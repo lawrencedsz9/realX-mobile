@@ -20,6 +20,7 @@ import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../PhonkText';
 import { triggerSubtleHaptic } from '../../utils/haptics';
+import { showLocalNotification } from '../../utils/notifications';
 import { useTranslation } from 'react-i18next';
 
 type Brand = {
@@ -79,6 +80,18 @@ export default function GiftCardCheckout({
                 totalAmount: totalBillNum,
                 pin,
             });
+
+            const successMessage = t('redemption_success_message', {
+                currency,
+                amount: selectedAmount.toFixed(2),
+            });
+
+            // Show local notification for the gift card redemption
+            showLocalNotification(
+                t('redemption_success_title'),
+                successMessage,
+                { type: 'giftcard_redemption' }
+            );
 
             Alert.alert(
                 t('redemption_success_title'),
