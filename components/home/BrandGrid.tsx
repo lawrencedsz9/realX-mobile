@@ -12,6 +12,7 @@ type BrandItem = {
     id: string;
     name: string;
     logoUrl: string;
+    vendorId: string;
     isActive: boolean;
 };
 
@@ -40,6 +41,7 @@ export default function BrandGrid() {
                             id: b.id,
                             name: b.name,
                             logoUrl: b.logoUrl,
+                            vendorId: b.vendorId,
                             isActive: b.isActive,
                         })) as BrandItem[];
                     setBrands(activeBrands);
@@ -56,7 +58,7 @@ export default function BrandGrid() {
 
     const handlePress = (brand: BrandItem) => {
         triggerSubtleHaptic();
-        router.push(`/vendor/${brand.name}`);
+        router.push(`/vendor/${brand.vendorId}`);
     };
 
     // Split brands into rows: ≤4 = 1 row, 5-8 = 2 rows, >8 = 2 scrollable rows

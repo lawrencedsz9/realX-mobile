@@ -17,7 +17,7 @@ type BannerItem = {
         mobile?: string;
     };
     isActive: boolean;
-    offerId: string;
+    vendorId: string;
     lastUpdated?: string;
 };
 
@@ -74,8 +74,8 @@ export default function PromoBanner() {
 
     const handlePress = (banner: BannerItem) => {
         triggerSubtleHaptic();
-        if (banner.offerId) {
-            router.push(`/vendor/${banner.offerId}`);
+        if (banner.vendorId) {
+            router.push(`/vendor/${banner.vendorId}`);
         }
     };
 
