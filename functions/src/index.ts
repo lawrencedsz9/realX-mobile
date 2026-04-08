@@ -66,7 +66,9 @@ const validateCreatorCode = async (tx, creatorCode: string | null) => {
     throw new HttpsError('not-found', 'Creator not found');
   }
 
-  return { creatorUid, creatorRef, code };
+  const creatorName = creatorDoc.data()?.name || null;
+
+  return { creatorUid, creatorRef, code, creatorName };
 };
 
 /**
@@ -358,10 +360,19 @@ const processTransaction = async (options) => {
       });
     }
 
+    // Total cashback for the redeeming user (self-use = double)
+    const totalUserCashbackCents =
+      creatorData?.creatorUid === uid
+        ? userCashback + creatorCashback
+        : userCashback;
+
     return {
       transactionId: transactionRef.id,
       finalAmount: fromCents(finalCents),
+      discountAmount: fromCents(discountCents),
+      cashbackAmount: fromCents(totalUserCashbackCents),
       creatorUid: creatorData?.creatorUid || null,
+      creatorName: creatorData?.creatorName || null,
       creatorCashback: fromCents(creatorCashback),
       vendorName,
     };

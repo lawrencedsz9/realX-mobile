@@ -36,7 +36,6 @@ interface RedemptionResult {
     creatorName?: string;
     totalAmount: number;
     finalAmount: number;
-    creatorEarned?: number;
 }
 
 // Types for better type safety
@@ -181,8 +180,7 @@ export default function RedeemScreen() {
                 cashbackAmount: data.cashbackAmount || 0,
                 creatorName: data.creatorName,
                 totalAmount,
-                finalAmount,
-                creatorEarned: data.creatorEarned,
+                finalAmount: data.finalAmount || finalAmount,
             });
         } catch (error: any) {
             console.error('Offer redemption error:', error);
@@ -319,16 +317,6 @@ export default function RedeemScreen() {
                         <Text style={styles.successCreatorText}>
                             {t('thanks_to_creator', { creator: redemptionResult.creatorName })}
                         </Text>
-                    )}
-
-                    {/* Creator Earned */}
-                    {redemptionResult.creatorName && redemptionResult.creatorEarned != null && redemptionResult.creatorEarned > 0 && (
-                        <View style={[styles.successSavedBadge, { backgroundColor: '#FF9800' }]}>
-                            <Ionicons name="gift" size={16} color="#FFF" />
-                            <Text style={styles.successSavedText}>
-                                {redemptionResult.creatorName} {t('creator_earned_message', { currency, amount: redemptionResult.creatorEarned.toFixed(2) })}
-                            </Text>
-                        </View>
                     )}
                 </View>
             </View>
