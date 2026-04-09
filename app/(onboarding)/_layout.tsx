@@ -6,6 +6,7 @@ export default function OnboardingLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="email" />
             <Stack.Screen name="login" />
+            <Stack.Screen name="verify" />
             <Stack.Screen name="details" />
         </Stack>
     );

@@ -14,9 +14,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.reelx.app",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "associatedDomains": [
-        "applinks:reelx-backend.web.app"
-      ],
+      "associatedDomains": [],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -32,26 +30,7 @@
         "backgroundImage": "./assets/images/icon.png",
         "monochromeImage": "./assets/images/icon.png"
       },
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "reelx-backend.web.app",
-              "pathPrefix": "/finishSignIn"
-            },
-            {
-              "scheme": "reelx"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ],
+      "intentFilters": [],
       "predictiveBackGestureEnabled": false
     },
     "web": {

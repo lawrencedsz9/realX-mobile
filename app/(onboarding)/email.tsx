@@ -1,10 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { getAuth, isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from '@react-native-firebase/auth';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
-import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,10 +21,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import PhonkText from '../../components/PhonkText';
-import { actionCodeSettings, clearAuthEmail, getAuthEmail, saveAuthEmail } from '../../utils/auth';
 import { useTranslation } from 'react-i18next';
 
-// ✅ Email normalization (strict identity)
+// Email normalization (strict identity)
 const normalizeEmail = (email: string): string => {
   const trimmed = email.trim().toLowerCase();
   const [local, domain] = trimmed.split('@');
@@ -40,11 +37,6 @@ const normalizeEmail = (email: string): string => {
 
   return trimmed;
 };
-
-const isEduQaEmail = (email: string): boolean => {
-  return /^[^@]+@[^@]+\.edu\.qa$/.test(email);
-};
-
 
 export default function EmailOnboarding() {
   const router = useRouter();
@@ -60,94 +52,22 @@ export default function EmailOnboarding() {
   const [email, setEmail] = useState('');
   const isNewUser = mode === 'signup';
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingLink, setCheckingLink] = useState(true);
-  const [manualLink, setManualLink] = useState('');
   const inputRef = useRef<TextInput>(null);
-
-  const hasHandledLink = useRef(false);
-  const url = Linking.useLinkingURL();
-
-
-  // Verify email link
-  const verifyAutomaticLink = useCallback(async (incomingUrl: string) => {
-    if (hasHandledLink.current) return;
-
-    const authInstance = getAuth();
-    if (!(await isSignInWithEmailLink(authInstance, incomingUrl))) return;
-
-    setIsLoading(true);
-    hasHandledLink.current = true;
-
-    try {
-      let storedEmail = await getAuthEmail();
-
-      if (!storedEmail) {
-        throw new Error(t('onboarding_session_expired_message'));
-      }
-
-      const normalizedEmail = normalizeEmail(storedEmail);
-
-      await signInWithEmailLink(authInstance, normalizedEmail, incomingUrl);
-      
-      await clearAuthEmail();
-
-      if (isNewUser) {
-        router.replace({
-          pathname: '/(onboarding)/details',
-          params: { role, email: normalizedEmail },
-        });
-      } else {
-        router.replace('/(tabs)');
-      }
-    } catch (err: any) {
-      console.error(err);
-      Alert.alert(
-        t('onboarding_verification_failed_title'),
-        err.message || t('onboarding_magic_link_failed_message')
-      );
-    } finally {
-      setIsLoading(false);
-      setCheckingLink(false);
-    }
-  }, [isNewUser, role, router, t]);
-
-  // Cold start
-  useEffect(() => {
-    const checkInitialLink = async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (initialUrl) {
-        verifyAutomaticLink(initialUrl);
-      } else {
-        setCheckingLink(false);
-      }
-    };
-    checkInitialLink();
-  }, [verifyAutomaticLink]);
-
-  // Foreground
-  useEffect(() => {
-    if (url) {
-      verifyAutomaticLink(url);
-    }
-  }, [url, verifyAutomaticLink]);
 
   const handleBack = () => {
     router.back();
   };
 
-  const handleSendMagicLink = async () => {
+  const handleSendOtp = async () => {
     const normalizedEmail = normalizeEmail(email);
     if (!normalizedEmail) return;
 
     setIsLoading(true);
     try {
-      const authInstance = getAuth();
-
-      // ✅ Signup: Check if account exists (prevent duplicates)
+      // Signup: check if account already exists
       if (isNewUser) {
         const fnInstance = getFunctions(undefined, 'me-central1');
         const checkStudent = httpsCallable(fnInstance, 'checkStudentExists');
-
         const result = await checkStudent({ email: normalizedEmail });
 
         if ((result.data as { exists: boolean }).exists) {
@@ -156,13 +76,16 @@ export default function EmailOnboarding() {
         }
       }
 
-      await sendSignInLinkToEmail(authInstance, normalizedEmail, actionCodeSettings);
-      await saveAuthEmail(normalizedEmail);
+      // Send OTP
+      const fnInstance = getFunctions(undefined, 'me-central1');
+      const sendOtp = httpsCallable(fnInstance, 'sendOtp');
+      await sendOtp({ email: normalizedEmail, purpose: isNewUser ? 'signup' : 'login' });
 
-      Alert.alert(
-        t('onboarding_magic_link_sent_title'),
-        t('onboarding_magic_link_sent_message', { email: normalizedEmail })
-      );
+      // Navigate to verification screen
+      router.replace({
+        pathname: '/(onboarding)/verify',
+        params: { email: normalizedEmail, purpose: isNewUser ? 'signup' : 'login', role },
+      });
     } catch (err: any) {
       console.error(err);
       Alert.alert(t('error'), err.message || t('onboarding_generic_error_message'));
@@ -171,68 +94,17 @@ export default function EmailOnboarding() {
     }
   };
 
-  const handleManualLinkVerify = async () => {
-    if (!manualLink.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const authInstance = getAuth();
-
-      if (await isSignInWithEmailLink(authInstance, manualLink)) {
-        const storedEmail = await getAuthEmail();
-
-        if (!storedEmail) {
-          Alert.alert(t('error'), t('onboarding_missing_stored_email_message'));
-          return;
-        }
-
-        const normalizedEmail = normalizeEmail(storedEmail);
-
-        await signInWithEmailLink(authInstance, normalizedEmail, manualLink);
-
-        await clearAuthEmail();
-
-        if (isNewUser) {
-          router.replace({
-            pathname: '/(onboarding)/details',
-            params: { role, email: normalizedEmail },
-          });
-        } else {
-          router.replace('/(tabs)');
-        }
-      } else {
-        Alert.alert(t('onboarding_invalid_link_title'), t('onboarding_invalid_link_message'));
-      }
-    } catch (err: any) {
-      console.error(err);
-      Alert.alert(t('error'), err.message || t('onboarding_magic_link_failed_message'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleContinue = async () => {
-    if (manualLink) {
-      await handleManualLinkVerify();
-      return;
-    }
-    await handleSendMagicLink();
+    await handleSendOtp();
   };
-
-  if (checkingLink) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={Colors.brandGreen} />
-      </View>
-    );
-  }
 
   return (
-<KeyboardAvoidingView
-  style={styles.container}
-  behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-  keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
->      <StatusBar style="light" />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <StatusBar style="light" />
 
       <View style={styles.headerBackground}>
         <SafeAreaView edges={['top']} style={styles.headerContent}>
@@ -247,8 +119,8 @@ export default function EmailOnboarding() {
         </SafeAreaView>
       </View>
 
-<View style={[styles.cardContainer, { flex: 1 }]}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={[styles.cardContainer, { flex: 1 }]}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.card}>
             <View style={styles.textContainer}>
               <PhonkText style={styles.titleLine}>
@@ -277,29 +149,10 @@ export default function EmailOnboarding() {
                   autoFocus
                 />
               </View>
-
-              {manualLink && (
-                <View style={{ alignItems: 'center', marginVertical: 10 }}>
-                  <Ionicons name="mail-outline" size={60} color={Colors.brandGreen} />
-                  <View style={[styles.singleInputContainer, { marginTop: 20, width: '100%' }]}>
-                    <TextInput
-                      style={[styles.input, { textAlign: inputTextAlign }]}
-                      placeholder={t('onboarding_manual_link_placeholder')}
-                      placeholderTextColor="#999"
-                      value={manualLink}
-                      onChangeText={setManualLink}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                    />
-                  </View>
-                </View>
-              )}
             </View>
 
             <Text style={styles.infoText}>{t('onboarding_email_description')}</Text>
-
             <Text style={styles.infoText}>No student Email? Send us a mail at support@realx.qa</Text>
-
           </View>
         </TouchableWithoutFeedback>
 
@@ -308,26 +161,24 @@ export default function EmailOnboarding() {
           keyboardVerticalOffset={20}
           style={styles.footer}
         >
-            <TouchableOpacity
-              style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
-              onPress={handleContinue}
-              disabled={isLoading || !email}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>{t('onboarding_continue')}</Text>
-              )}
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
+            onPress={handleContinue}
+            disabled={isLoading || !email}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>{t('onboarding_continue')}</Text>
+            )}
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-
-// --- Styles remain unchanged ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.brandGreen },
   headerBackground: { height: 250, backgroundColor: Colors.brandGreen },

@@ -1,15 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
-//These are the cloud functions file 
+//These are the cloud functions file
 
 
 import * as admin from 'firebase-admin';
 import { CallableRequest, HttpsError, onCall } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from 'firebase-functions';
+import { Resend } from 'resend';
 
 admin.initializeApp();
 setGlobalOptions({ region: 'me-central1', maxInstances: 10 });
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const db = admin.firestore();
 
@@ -529,6 +532,252 @@ export const checkStudentExistsLogin = onCall(async (request: CallableRequest) =
     .get();
 
   return { exists: !snapshot.empty };
+});
+
+/**
+ * =============================
+ * OTP Auth Constants
+ * =============================
+ */
+const OTP_EXPIRY_MINUTES = 5;
+const MAX_OTP_SENDS_PER_WINDOW = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const COOLDOWN_MS = 60 * 1000; // 60 seconds
+const MAX_VERIFY_ATTEMPTS = 3;
+
+/**
+ * =============================
+ * Send OTP
+ * =============================
+ */
+export const sendOtp = onCall(async (request: CallableRequest) => {
+  const email = request.data?.email?.toLowerCase()?.trim();
+  const purpose = request.data?.purpose; // "signup" | "login"
+
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'Email is required');
+  }
+
+  if (!purpose || !['signup', 'login'].includes(purpose)) {
+    throw new HttpsError('invalid-argument', 'Purpose must be "signup" or "login"');
+  }
+
+  // Signup: restrict to .edu.qa
+  if (purpose === 'signup') {
+    const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
+    if (!isEduQa) {
+      throw new HttpsError('permission-denied', 'Only .edu.qa emails can sign up');
+    }
+
+    // Check if account already exists
+    const snapshot = await db
+      .collection('students')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      throw new HttpsError('already-exists', 'An account with this email already exists');
+    }
+  }
+
+  // Login: verify account exists
+  if (purpose === 'login') {
+    const snapshot = await db
+      .collection('students')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      throw new HttpsError('not-found', 'No account found with this email');
+    }
+  }
+
+  // Rate limiting
+  const now = admin.firestore.Timestamp.now();
+  const otpRef = db.collection('otps').doc(email);
+  const otpDoc = await otpRef.get();
+
+  if (otpDoc.exists) {
+    const data = otpDoc.data()!;
+    const windowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
+    const windowAge = now.toMillis() - windowStart;
+
+    // Check 15-minute window limit
+    if (windowAge < RATE_LIMIT_WINDOW_MS) {
+      const sendCount = data.rateLimit?.sendCount ?? 0;
+      if (sendCount >= MAX_OTP_SENDS_PER_WINDOW) {
+        const retryAfterMinutes = Math.ceil((RATE_LIMIT_WINDOW_MS - windowAge) / 60000);
+        throw new HttpsError(
+          'resource-exhausted',
+          `Too many OTP requests. Try again in ${retryAfterMinutes} minutes.`
+        );
+      }
+    }
+
+    // Check 60-second cooldown
+    const lastSent = data.createdAt?.toMillis() ?? 0;
+    const elapsed = now.toMillis() - lastSent;
+    if (elapsed < COOLDOWN_MS) {
+      const retryAfter = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+      throw new HttpsError(
+        'resource-exhausted',
+        `Please wait ${retryAfter} seconds before requesting a new code.`,
+        { retryAfter }
+      );
+    }
+  }
+
+  // Generate 6-digit OTP
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+
+  // Calculate new rate limit values
+  let sendCount = 1;
+  let windowStart = now;
+
+  if (otpDoc.exists) {
+    const data = otpDoc.data()!;
+    const existingWindowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
+    const windowAge = now.toMillis() - existingWindowStart;
+
+    if (windowAge < RATE_LIMIT_WINDOW_MS) {
+      sendCount = (data.rateLimit?.sendCount ?? 0) + 1;
+      windowStart = data.rateLimit?.windowStart ?? now;
+    }
+  }
+
+  // Store OTP in Firestore
+  await otpRef.set({
+    code,
+    attempts: 0,
+    createdAt: now,
+    expiresAt: admin.firestore.Timestamp.fromMillis(now.toMillis() + OTP_EXPIRY_MINUTES * 60 * 1000),
+    purpose,
+    verified: false,
+    rateLimit: { sendCount, windowStart },
+  });
+
+  // Send email via Resend
+  try {
+    await resend.emails.send({
+      from: 'ReelX <welcome@realx.qa>',
+      to: email,
+      subject: 'Your ReelX Verification Code',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+          <h1 style="color: #18B852; font-size: 24px; margin-bottom: 24px;">ReelX</h1>
+          <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Your verification code is:</p>
+          <div style="background: #f5f5f5; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #18B852;">${code}</span>
+          </div>
+          <p style="font-size: 14px; color: #666; margin-bottom: 8px;">This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+          <p style="font-size: 14px; color: #999;">If you didn't request this code, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error('Failed to send OTP email:', error);
+    throw new HttpsError('internal', 'Failed to send verification email. Please try again.');
+  }
+
+  return { success: true };
+});
+
+/**
+ * =============================
+ * Verify OTP
+ * =============================
+ */
+export const verifyOtp = onCall(async (request: CallableRequest) => {
+  const email = request.data?.email?.toLowerCase()?.trim();
+  const code = request.data?.code?.trim();
+  const purpose = request.data?.purpose;
+
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'Email is required');
+  }
+
+  if (!code || !/^\d{6}$/.test(code)) {
+    throw new HttpsError('invalid-argument', 'A valid 6-digit code is required');
+  }
+
+  if (!purpose || !['signup', 'login'].includes(purpose)) {
+    throw new HttpsError('invalid-argument', 'Purpose must be "signup" or "login"');
+  }
+
+  const now = admin.firestore.Timestamp.now();
+  const otpRef = db.collection('otps').doc(email);
+  const otpDoc = await otpRef.get();
+
+  if (!otpDoc.exists) {
+    throw new HttpsError('not-found', 'No verification code found. Please request a new one.');
+  }
+
+  const data = otpDoc.data()!;
+
+  if (data.verified) {
+    throw new HttpsError('permission-denied', 'This code has already been used. Please request a new one.');
+  }
+
+  if (data.expiresAt.toMillis() < now.toMillis()) {
+    throw new HttpsError('deadline-exceeded', 'Code has expired. Please request a new one.');
+  }
+
+  if (data.attempts >= MAX_VERIFY_ATTEMPTS) {
+    throw new HttpsError('resource-exhausted', 'Too many attempts. Please request a new code.');
+  }
+
+  // Increment attempts
+  await otpRef.update({
+    attempts: admin.firestore.FieldValue.increment(1),
+  });
+
+  // Check code match
+  if (data.code !== code) {
+    const remaining = MAX_VERIFY_ATTEMPTS - (data.attempts + 1);
+    throw new HttpsError(
+      'invalid-argument',
+      `Incorrect code. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+    );
+  }
+
+  // Mark as verified
+  await otpRef.update({ verified: true });
+
+  let uid: string;
+
+  if (purpose === 'signup') {
+    // Create Firebase Auth user (or get existing)
+    try {
+      const userRecord = await admin.auth().getUserByEmail(email);
+      uid = userRecord.uid;
+    } catch {
+      const userRecord = await admin.auth().createUser({
+        email,
+        emailVerified: true,
+      });
+      uid = userRecord.uid;
+    }
+  } else {
+    // Login: look up UID from students collection
+    const snapshot = await db
+      .collection('students')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      throw new HttpsError('not-found', 'No account found with this email');
+    }
+
+    uid = snapshot.docs[0].id;
+  }
+
+  // Generate custom token
+  const customToken = await admin.auth().createCustomToken(uid);
+
+  return { success: true, customToken };
 });
 
 /**

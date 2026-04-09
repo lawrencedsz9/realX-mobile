@@ -96,6 +96,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
     }
 
+    // ─── otps collection (admin SDK only) ──────────────────────────────────
+    match /otps/{email} {
+      allow read, write: if false;
+    }
+
     // Deny everything else by default
     match /{document=**} {
       allow read, write: if false;

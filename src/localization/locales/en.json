@@ -201,5 +201,13 @@
   "filter_cash": "Cash",
   "filter_top": "Top",
   "notification_creator_code_used_title": "Your code was used!",
-  "notification_creator_code_used_body": "Someone used your code at {{vendor}}. You earned {{currency}} {{amount}} cashback!"
+  "notification_creator_code_used_body": "Someone used your code at {{vendor}}. You earned {{currency}} {{amount}} cashback!",
+  "onboarding_otp_verify_title": "VERIFY YOUR EMAIL",
+  "onboarding_otp_check_email_title": "CHECK YOUR EMAIL",
+  "onboarding_otp_subtitle": "We sent a 6-digit code to {{email}}",
+  "onboarding_otp_verify_button": "Verify",
+  "onboarding_otp_resend": "Resend Code",
+  "onboarding_otp_resend_in": "Resend in {{seconds}}s",
+  "onboarding_otp_generic_error": "Verification failed. Please try again.",
+  "onboarding_otp_send_failed": "Failed to send code. Please try again."
 }

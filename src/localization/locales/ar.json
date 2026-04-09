@@ -200,6 +200,14 @@
   "redeem_caps": "استرداد",
   "vendor_not_found": "البائع غير موجود",
   "no_specific_terms": "لا توجد شروط محددة لهذا العرض.",
-  "notification_creator_code_used_title": "تم استخدام رمزك!",
-  "notification_creator_code_used_body": "شخص ما استخدم رمزك في {{vendor}}. لقد ربحت {{currency}} {{amount}} مكافأة نقدية!"
+  "notification_creator_code_used_title": "تم استخدام كودك!",
+  "notification_creator_code_used_body": "شخص ما استخدم كودك في {{vendor}}. لقد ربحت {{currency}} {{amount}} كاش باك!",
+  "onboarding_otp_verify_title": "تأكيد بريدك الإلكتروني",
+  "onboarding_otp_check_email_title": "تحقق من بريدك",
+  "onboarding_otp_subtitle": "أرسلنا رمز من 6 أرقام إلى {{email}}",
+  "onboarding_otp_verify_button": "تأكيد",
+  "onboarding_otp_resend": "إعادة إرسال الرمز",
+  "onboarding_otp_resend_in": "إعادة الإرسال خلال {{seconds}} ثانية",
+  "onboarding_otp_generic_error": "فشل التحقق. يرجى المحاولة مرة أخرى.",
+  "onboarding_otp_send_failed": "فشل إرسال الرمز. يرجى المحاولة مرة أخرى."
 }
