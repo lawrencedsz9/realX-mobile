@@ -16,7 +16,6 @@ import {
   setNotificationChannelAsync,
   AndroidImportance,
   presentNotificationAsync,
-  requestPermissionsAsync,
 } from 'expo-notifications';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
 
@@ -61,9 +60,8 @@ export const setupNotificationChannels = async () => {
       name: 'Creator Earnings',
       importance: AndroidImportance.HIGH,
     });
-  } else if (Platform.OS === 'ios') {
-    await requestPermissionsAsync();
   }
+  // iOS permissions are handled by registerPushToken via RNFB messaging
 };
 
 /**
@@ -79,12 +77,14 @@ export const registerPushToken = async () => {
 
     // Request permission on iOS (Android grants by default)
     const authStatus = await requestPermission(messaging);
+    console.log('📱 Notification auth status:', authStatus, AuthorizationStatus);
+
     const enabled =
       authStatus === AuthorizationStatus.AUTHORIZED ||
       authStatus === AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
-      console.log('Notification permission denied');
+      console.log('Notification permission denied. Status:', authStatus);
       return;
     }
 

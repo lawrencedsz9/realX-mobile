@@ -12,7 +12,13 @@ import { Resend } from 'resend';
 admin.initializeApp();
 setGlobalOptions({ region: 'me-central1', maxInstances: 10 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 const db = admin.firestore();
 
@@ -660,19 +666,26 @@ export const sendOtp = onCall(async (request: CallableRequest) => {
 
   // Send email via Resend
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'ReelX <welcome@realx.qa>',
       to: email,
       subject: 'Your ReelX Verification Code',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-          <h1 style="color: #18B852; font-size: 24px; margin-bottom: 24px;">ReelX</h1>
-          <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Your verification code is:</p>
-          <div style="background: #f5f5f5; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
-            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #18B852;">${code}</span>
+        <div style="font-family: Arial, sans-serif; max-width: 480px;
+          margin: 0 auto; padding: 32px;">
+          <h1 style="color: #18B852; font-size: 24px;
+            margin-bottom: 24px;">ReelX</h1>
+          <p style="font-size: 16px; color: #333;
+            margin-bottom: 16px;">Your verification code is:</p>
+          <div style="background: #f5f5f5; border-radius: 12px;
+            padding: 20px; text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 36px; font-weight: bold;
+              letter-spacing: 8px; color: #18B852;">${code}</span>
           </div>
-          <p style="font-size: 14px; color: #666; margin-bottom: 8px;">This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
-          <p style="font-size: 14px; color: #999;">If you didn't request this code, you can safely ignore this email.</p>
+          <p style="font-size: 14px; color: #666; margin-bottom: 8px;">
+            This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+          <p style="font-size: 14px; color: #999;">If you didn't request
+            this code, you can safely ignore this email.</p>
         </div>
       `,
     });
