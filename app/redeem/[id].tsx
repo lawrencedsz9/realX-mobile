@@ -456,7 +456,9 @@ export default function RedeemScreen() {
                                                 const filtered = normalized.replace(/[^0-9.]/g, '');
                                                 // Ensure only one dot
                                                 const parts = filtered.split('.');
-                                                const final = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : filtered;
+                                                const integerPart = parts[0].slice(0, 3);
+                                                const decimalPart = parts.length > 1 ? `.${parts.slice(1).join('')}` : '';
+                                                const final = integerPart + decimalPart;
                                                 setAmount(final);
                                             }}
                                             keyboardType="decimal-pad"

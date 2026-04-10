@@ -205,6 +205,11 @@ export default function VerifyOtpScreen() {
     ? t('onboarding_otp_verify_title')
     : t('onboarding_otp_verify_title');
 
+  // Split title into first words and last word for visual hierarchy
+  const titleWords = titleText.split(' ');
+  const titlePrefix = titleWords.slice(0, -1).join(' ');
+  const titleSuffix = titleWords[titleWords.length - 1];
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -229,44 +234,50 @@ export default function VerifyOtpScreen() {
       <View style={[styles.cardContainer, { flex: 1 }]}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.card}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="mail-open-outline" size={64} color={Colors.brandGreen} />
+            <View style={styles.iconCircle}>
+              <Ionicons name="mail-open-outline" size={40} color={Colors.brandGreen} />
             </View>
 
             <View style={styles.textContainer}>
-              <PhonkText style={styles.titleLine}>
-                <Text style={styles.greenText}>{titleText}</Text>
+              <Text style={styles.titleSmall}>{titlePrefix}</Text>
+              <PhonkText style={styles.titleLarge}>
+                <Text style={styles.greenText}>{titleSuffix}</Text>
               </PhonkText>
             </View>
 
             <Text style={styles.subtitle}>
-              {t('onboarding_otp_subtitle', { email: email || '' })}
+              {t('onboarding_otp_subtitle', { email: '' })}
             </Text>
+            {email ? <Text style={styles.emailText}>{email}</Text> : null}
 
             <View style={[styles.otpContainer, isRTL && styles.otpContainerRTL]}>
               {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                <TextInput
-                  key={index}
-                  ref={(ref) => { inputRefs.current[index] = ref; }}
-                  style={[
-                    styles.otpInput,
-                    { textAlign: inputTextAlign },
-                    otp[index] ? styles.otpInputFilled : null,
-                  ]}
-                  keyboardType="number-pad"
-                  maxLength={OTP_LENGTH}
-                  value={otp[index]}
-                  onChangeText={(value) => handleOtpChange(value, index)}
-                  onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-                  editable={!isLoading}
-                  autoFocus={index === 0}
-                  selectTextOnFocus
-                />
+                <View key={index} style={[
+                  styles.otpBox,
+                  otp[index] ? styles.otpBoxFilled : null,
+                  !otp[index] && index === otp.findIndex(d => d === '') ? styles.otpBoxActive : null,
+                ]}>
+                  <TextInput
+                    ref={(ref) => { inputRefs.current[index] = ref; }}
+                    style={[styles.otpInput, { textAlign: inputTextAlign }]}
+                    keyboardType="number-pad"
+                    maxLength={OTP_LENGTH}
+                    value={otp[index]}
+                    onChangeText={(value) => handleOtpChange(value, index)}
+                    onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
+                    editable={!isLoading}
+                    autoFocus={index === 0}
+                    selectTextOnFocus
+                  />
+                </View>
               ))}
             </View>
 
             {error && (
-              <Text style={styles.errorText}>{error}</Text>
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle-outline" size={16} color="#E53935" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
             )}
 
             <View style={styles.resendContainer}>
@@ -275,7 +286,7 @@ export default function VerifyOtpScreen() {
                   {t('onboarding_otp_resend_in', { seconds: cooldownSeconds })}
                 </Text>
               ) : (
-                <TouchableOpacity onPress={handleResend} disabled={resendLoading}>
+                <TouchableOpacity onPress={handleResend} disabled={resendLoading} style={styles.resendButton}>
                   {resendLoading ? (
                     <ActivityIndicator size="small" color={Colors.brandGreen} />
                   ) : (
@@ -293,7 +304,7 @@ export default function VerifyOtpScreen() {
           style={styles.footer}
         >
           <TouchableOpacity
-            style={[styles.button, (!isOtpComplete || isLoading) && styles.buttonDisabled]}
+            style={[styles.button, isOtpComplete && !isLoading && styles.buttonEnabled]}
             onPress={handleVerify}
             disabled={!isOtpComplete || isLoading}
             activeOpacity={0.8}
@@ -335,62 +346,108 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     marginTop: -80,
-    paddingHorizontal: 30,
-    paddingTop: 40,
+    paddingHorizontal: 28,
+    paddingTop: 36,
   },
   card: { flex: 1, alignItems: 'center' },
-  iconContainer: {
-    marginBottom: 24,
-    marginTop: 10,
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0F9F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 8,
   },
-  textContainer: { marginBottom: 16, alignItems: 'center' },
-  titleLine: { fontSize: 28, textAlign: 'center', lineHeight: 34 },
+  textContainer: { marginBottom: 12, alignItems: 'center' },
+  titleSmall: {
+    fontSize: 16,
+    fontFamily: Typography.poppins.medium,
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  titleLarge: { fontSize: 36, textAlign: 'center', lineHeight: 42 },
   greenText: { color: Colors.brandGreen },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#999',
     textAlign: 'center',
     lineHeight: 20,
     fontFamily: Typography.poppins.medium,
-    marginBottom: 32,
+    marginBottom: 2,
     paddingHorizontal: 10,
+  },
+  emailText: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: Typography.poppins.semiBold,
+    marginBottom: 28,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: 8,
     marginBottom: 16,
   },
   otpContainerRTL: {
     flexDirection: 'row-reverse',
   },
+  otpBox: {
+    width: 50,
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  otpBoxFilled: {
+    backgroundColor: '#F0F9F0',
+    borderColor: Colors.brandGreen,
+  },
+  otpBoxActive: {
+    borderColor: '#CCC',
+  },
   otpInput: {
-    width: 48,
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#F3F3F3',
+    width: '100%',
+    height: '100%',
     fontSize: 24,
     fontFamily: Typography.poppins.semiBold,
     color: '#000',
     textAlign: 'center',
+    backgroundColor: 'transparent',
   },
-  otpInputFilled: {
-    backgroundColor: '#E8F5E9',
-    borderColor: Colors.brandGreen,
-    borderWidth: 1.5,
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 8,
+    gap: 6,
   },
   errorText: {
     fontSize: 13,
     color: '#E53935',
-    textAlign: 'center',
     fontFamily: Typography.poppins.medium,
-    marginTop: 8,
-    marginBottom: 8,
-    paddingHorizontal: 20,
+    flex: 1,
   },
   resendContainer: {
-    marginTop: 16,
-    marginBottom: 20,
+    marginTop: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  resendButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   cooldownText: {
     fontSize: 14,
@@ -405,16 +462,24 @@ const styles = StyleSheet.create({
   footer: { paddingBottom: 40, marginTop: 'auto' },
   button: {
     backgroundColor: Colors.brandGreen,
-    height: 64,
-    borderRadius: 32,
+    height: 62,
+    borderRadius: 31,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    opacity: 0.5,
   },
-  buttonDisabled: { opacity: 0.6 },
+  buttonEnabled: {
+    opacity: 1,
+    shadowColor: Colors.brandGreen,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: Typography.poppins.medium,
+    fontSize: 17,
+    fontFamily: Typography.poppins.semiBold,
   },
 });

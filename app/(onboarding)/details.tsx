@@ -143,11 +143,13 @@ export default function DetailsOnboarding() {
                 >
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <View style={styles.card}>
+                            <View style={styles.iconCircle}>
+                                <Ionicons name="create-outline" size={32} color={Colors.brandGreen} />
+                            </View>
+
                             <View style={styles.textContainer}>
-                                <PhonkText style={styles.titleLine}>
-                                    <Text style={styles.blackText}>{t('onboarding_details_title_prefix')}</Text>
-                                </PhonkText>
-                                <PhonkText style={styles.titleLine}>
+                                <Text style={styles.titleSmall}>{t('onboarding_details_title_prefix')}</Text>
+                                <PhonkText style={styles.titleLarge}>
                                     <Text style={styles.greenText}>{t('onboarding_details_title_suffix')}</Text>
                                 </PhonkText>
                             </View>
@@ -157,8 +159,9 @@ export default function DetailsOnboarding() {
                                     <View
                                         style={[
                                             styles.inputContainer,
-                                            { flex: 1, backgroundColor: '#F3F3F3' },
+                                            { flex: 1 },
                                             isRTL ? styles.inputMarginRTL : styles.inputMarginLTR,
+                                            firstName ? styles.inputFocused : null,
                                         ]}
                                     >
                                         <TextInput
@@ -170,7 +173,11 @@ export default function DetailsOnboarding() {
                                             editable={!isLoading}
                                         />
                                     </View>
-                                    <View style={[styles.inputContainer, { flex: 1, backgroundColor: '#F3F3F3' }]}>
+                                    <View style={[
+                                        styles.inputContainer,
+                                        { flex: 1 },
+                                        lastName ? styles.inputFocused : null,
+                                    ]}>
                                         <TextInput
                                             style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
                                             placeholder={t('last_name_placeholder')}
@@ -183,7 +190,7 @@ export default function DetailsOnboarding() {
                                 </View>
 
                                 <TouchableOpacity
-                                    style={[styles.inputContainer, { backgroundColor: '#F3F3F3' }]}
+                                    style={[styles.inputContainer, dob ? styles.inputFocused : null]}
                                     onPress={() => {
                                         Keyboard.dismiss();
                                         setShowDatePicker(true);
@@ -191,11 +198,12 @@ export default function DetailsOnboarding() {
                                     disabled={isLoading}
                                     activeOpacity={0.7}
                                 >
+                                    <Ionicons name="calendar-outline" size={20} color={dob ? Colors.brandGreen : '#999'} style={styles.inputIcon} />
                                     <Text
                                         style={[
                                             styles.input,
-                                            { textAlign: inputTextAlign },
-                                            !dob && { color: '#000000' },
+                                            { textAlign: inputTextAlign, flex: 1 },
+                                            !dob && { color: '#999999' },
                                         ]}
                                     >
                                         {formatDate(dob)}
@@ -233,12 +241,16 @@ export default function DetailsOnboarding() {
                                         <TouchableOpacity
                                             style={[
                                                 styles.genderButton,
-                                                { backgroundColor: '#F3F3F3' },
                                                 gender === 'Male' && styles.genderButtonSelected,
                                             ]}
                                             onPress={() => setGender('Male')}
                                             disabled={isLoading}
                                         >
+                                            <Ionicons
+                                                name="male-outline"
+                                                size={18}
+                                                color={gender === 'Male' ? Colors.brandGreen : '#666'}
+                                            />
                                             <Text
                                                 style={[styles.genderText, gender === 'Male' && styles.genderTextSelected]}
                                             >
@@ -248,12 +260,16 @@ export default function DetailsOnboarding() {
                                         <TouchableOpacity
                                             style={[
                                                 styles.genderButton,
-                                                { backgroundColor: '#F3F3F3' },
                                                 gender === 'Female' && styles.genderButtonSelected,
                                             ]}
                                             onPress={() => setGender('Female')}
                                             disabled={isLoading}
                                         >
+                                            <Ionicons
+                                                name="female-outline"
+                                                size={18}
+                                                color={gender === 'Female' ? Colors.brandGreen : '#666'}
+                                            />
                                             <Text
                                                 style={[styles.genderText, gender === 'Female' && styles.genderTextSelected]}
                                             >
@@ -272,7 +288,7 @@ export default function DetailsOnboarding() {
                         style={styles.footer}
                     >
                         <TouchableOpacity
-                            style={[styles.button, !isFormValid && styles.buttonDisabled]}
+                            style={[styles.button, isFormValid && styles.buttonEnabled]}
                             onPress={handleContinue}
                             disabled={!isFormValid}
                             activeOpacity={0.8}
@@ -308,155 +324,113 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     iconButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 44, height: 44, borderRadius: 22,
         backgroundColor: 'rgba(255, 255, 255, 1)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        justifyContent: 'center', alignItems: 'center',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
     },
     cardContainer: {
-        flex: 1,
-        backgroundColor: 'white',
-        borderTopLeftRadius: 50,
-        borderTopRightRadius: 50,
-        marginTop: -80,
-        paddingHorizontal: 30,
-        paddingTop: 40,
+        flex: 1, backgroundColor: 'white',
+        borderTopLeftRadius: 50, borderTopRightRadius: 50,
+        marginTop: -80, paddingHorizontal: 28, paddingTop: 36,
     },
     card: {
-        flex: 1,
+        flex: 1, alignItems: 'center',
+    },
+    iconCircle: {
+        width: 72, height: 72, borderRadius: 36,
+        backgroundColor: '#F0F9F0',
+        justifyContent: 'center', alignItems: 'center',
+        marginBottom: 12, marginTop: 4,
     },
     textContainer: {
-        marginBottom: 30,
+        marginBottom: 24,
         alignItems: 'center',
     },
-    titleLine: {
-        fontSize: 32,
-        textAlign: 'center',
-        lineHeight: 38,
+    titleSmall: {
+        fontSize: 14, fontFamily: Typography.poppins.medium,
+        color: '#666', textTransform: 'uppercase', letterSpacing: 2,
+        marginBottom: 4, textAlign: 'center',
     },
-    greenText: {
-        color: Colors.brandGreen,
+    titleLarge: {
+        fontSize: 32, textAlign: 'center', lineHeight: 38,
     },
-    blackText: {
-        color: '#000000',
-    },
+    greenText: { color: Colors.brandGreen },
     formContainer: {
-        marginBottom: 20,
+        marginBottom: 20, width: '100%',
     },
-    row: {
-        flexDirection: 'row',
-        marginBottom: 15,
-    },
-    rowRTL: {
-        flexDirection: 'row-reverse',
-    },
+    row: { flexDirection: 'row', marginBottom: 12 },
+    rowRTL: { flexDirection: 'row-reverse' },
     inputContainer: {
-        backgroundColor: '#F3F3F3',
-        borderRadius: 30,
-        height: 60,
-        justifyContent: 'center',
-        paddingHorizontal: 25,
-        marginBottom: 15,
+        backgroundColor: '#F5F5F5', borderRadius: 16,
+        height: 56, justifyContent: 'center',
+        paddingHorizontal: 18, marginBottom: 12,
+        flexDirection: 'row', alignItems: 'center',
+        borderWidth: 2, borderColor: 'transparent',
     },
-    inputMarginRTL: {
-        marginLeft: 10,
+    inputFocused: {
+        borderColor: Colors.brandGreen,
+        backgroundColor: '#F0F9F0',
     },
-    inputMarginLTR: {
-        marginRight: 10,
-    },
+    inputMarginRTL: { marginLeft: 6 },
+    inputMarginLTR: { marginRight: 6 },
+    inputIcon: { marginRight: 10 },
     input: {
-        fontSize: 16,
-        fontFamily: Typography.poppins.medium,
+        fontSize: 16, fontFamily: Typography.poppins.medium,
     },
-    genderContainer: {
-        marginTop: 10,
-    },
+    genderContainer: { marginTop: 8 },
     label: {
-        fontSize: 16,
-        fontFamily: Typography.poppins.medium,
-        marginBottom: 10,
-        marginLeft: 10,
+        fontSize: 14, fontFamily: Typography.poppins.medium,
+        marginBottom: 10, marginLeft: 6, color: '#666',
     },
-    labelRTL: {
-        marginLeft: 0,
-        marginRight: 10,
-        textAlign: 'right',
-    },
-    genderOptions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    genderOptionsRTL: {
-        flexDirection: 'row-reverse',
-    },
+    labelRTL: { marginLeft: 0, marginRight: 6, textAlign: 'right' },
+    genderOptions: { flexDirection: 'row', justifyContent: 'space-between' },
+    genderOptionsRTL: { flexDirection: 'row-reverse' },
     genderButton: {
-        flex: 1,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#F3F3F3',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 5,
-        borderWidth: 1,
-        borderColor: 'transparent',
+        flex: 1, height: 52, borderRadius: 16,
+        backgroundColor: '#F5F5F5',
+        flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+        marginHorizontal: 6, gap: 8,
+        borderWidth: 2, borderColor: 'transparent',
     },
     genderButtonSelected: {
-        backgroundColor: 'rgba(52, 168, 83, 0.1)',
+        backgroundColor: '#F0F9F0',
         borderColor: Colors.brandGreen,
     },
     genderText: {
-        fontSize: 16,
-        fontFamily: Typography.poppins.medium,
+        fontSize: 15, fontFamily: Typography.poppins.medium,
     },
     genderTextSelected: {
         color: Colors.brandGreen,
         fontFamily: Typography.poppins.semiBold,
     },
-    footer: {
-        paddingBottom: 40,
-    },
+    footer: { paddingBottom: 40 },
     button: {
-        backgroundColor: Colors.brandGreen,
-        height: 64,
-        borderRadius: 32,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
+        backgroundColor: Colors.brandGreen, height: 62, borderRadius: 31,
+        justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+        opacity: 0.5,
     },
-    buttonDisabled: {
-        opacity: 0.6,
+    buttonEnabled: {
+        opacity: 1,
+        shadowColor: Colors.brandGreen,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
     },
     buttonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontFamily: Typography.poppins.medium,
+        color: '#FFFFFF', fontSize: 17, fontFamily: Typography.poppins.semiBold,
     },
     iosPickerContainer: {
-        backgroundColor: '#F3F3F3',
-        borderRadius: 20,
-        marginBottom: 15,
-        overflow: 'hidden',
+        backgroundColor: '#F5F5F5', borderRadius: 16,
+        marginBottom: 12, overflow: 'hidden',
     },
     pickerHeader: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 15,
-        paddingTop: 10,
-        backgroundColor: '#F3F3F3',
+        flexDirection: 'row', justifyContent: 'flex-end',
+        paddingHorizontal: 15, paddingTop: 10,
+        backgroundColor: '#F5F5F5',
     },
-    doneButtonStyle: {
-        padding: 5,
-    },
+    doneButtonStyle: { padding: 5 },
     doneButtonText: {
-        color: Colors.brandGreen,
-        fontFamily: Typography.poppins.semiBold,
-        fontSize: 16,
+        color: Colors.brandGreen, fontFamily: Typography.poppins.semiBold, fontSize: 16,
     },
 });

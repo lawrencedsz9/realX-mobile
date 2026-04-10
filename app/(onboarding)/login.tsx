@@ -113,17 +113,22 @@ export default function LoginScreen() {
         <View style={[styles.cardContainer, { backgroundColor: '#FFFFFF' }]}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.card}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="log-in-outline" size={36} color={Colors.brandGreen} />
+              </View>
+
               <View style={styles.textContainer}>
-                <PhonkText style={styles.titleLine}>
+                <PhonkText style={styles.titleLarge}>
                   <Text style={styles.greenText}>{t('onboarding_login_title')}</Text>
                 </PhonkText>
               </View>
 
               <View style={styles.inputWrapper}>
-                <View style={[styles.singleInputContainer, { backgroundColor: '#F3F3F3' }]}>
+                <View style={[styles.singleInputContainer, email ? styles.inputFocused : null]}>
+                  <Ionicons name="mail-outline" size={20} color={email ? Colors.brandGreen : '#999'} style={styles.inputIcon} />
                   <TextInput
                     ref={inputRef}
-                    style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                    style={[styles.input, { color: '#000000', textAlign: inputTextAlign, flex: 1 }]}
                     placeholder={t('onboarding_email_placeholder')}
                     placeholderTextColor="#999999"
                     keyboardType="email-address"
@@ -147,10 +152,7 @@ export default function LoginScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[
-            styles.button,
-            (isLoading || !email) && styles.buttonDisabled,
-          ]}
+          style={[styles.button, email && !isLoading && styles.buttonEnabled]}
           onPress={handleContinue}
           disabled={isLoading || !email}
           activeOpacity={0.8}
@@ -228,52 +230,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 44, height: 44, borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
   cardContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    marginTop: -80,
-    paddingHorizontal: 30,
-    paddingTop: 40,
+    flex: 1, backgroundColor: 'white',
+    borderTopLeftRadius: 50, borderTopRightRadius: 50,
+    marginTop: -80, paddingHorizontal: 28, paddingTop: 36,
   },
   card: {
-    flex: 1,
+    flex: 1, alignItems: 'center',
+  },
+  iconCircle: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: '#F0F9F0',
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 16, marginTop: 8,
   },
   textContainer: {
     marginBottom: 40,
     alignItems: 'center',
   },
-  titleLine: {
-    fontSize: 32,
-    textAlign: 'center',
-    lineHeight: 38,
+  titleLarge: {
+    fontSize: 32, textAlign: 'center', lineHeight: 38,
   },
   greenText: {
     color: Colors.brandGreen,
   },
   inputWrapper: {
-    marginBottom: 20,
+    marginBottom: 20, width: '100%',
   },
   singleInputContainer: {
-    backgroundColor: '#F3F3F3',
-    borderRadius: 30,
-    height: 60,
-    justifyContent: 'center',
-    paddingHorizontal: 25,
+    backgroundColor: '#F5F5F5', borderRadius: 16,
+    height: 58, flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 18, borderWidth: 2, borderColor: 'transparent',
   },
+  inputFocused: {
+    borderColor: Colors.brandGreen,
+    backgroundColor: '#F0F9F0',
+  },
+  inputIcon: { marginRight: 10 },
   input: {
     fontSize: 16,
     fontFamily: Typography.poppins.medium,
@@ -287,25 +286,23 @@ const styles = StyleSheet.create({
     fontFamily: Typography.poppins.medium,
   },
   footer: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 28,
     paddingBottom: 40,
     backgroundColor: 'white',
   },
   button: {
-    backgroundColor: Colors.brandGreen,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: Colors.brandGreen, height: 62, borderRadius: 31,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+    opacity: 0.5,
   },
-  buttonDisabled: {
-    opacity: 0.6,
+  buttonEnabled: {
+    opacity: 1,
+    shadowColor: Colors.brandGreen,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: Typography.poppins.medium,
+    color: '#FFFFFF', fontSize: 17, fontFamily: Typography.poppins.semiBold,
   },
   modalOverlay: {
     flex: 1,

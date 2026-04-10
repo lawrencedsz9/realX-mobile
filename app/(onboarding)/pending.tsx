@@ -47,15 +47,16 @@ export default function PendingVerificationScreen() {
         <View style={styles.card}>
           <View style={styles.centerContent}>
             <View style={styles.iconCircle}>
-              <Ionicons name="mail-outline" size={72} color={Colors.brandGreen} />
+              <Ionicons name="time-outline" size={48} color={Colors.brandGreen} />
             </View>
-            <PhonkText style={styles.titleLine}>
+            <PhonkText style={styles.titleLarge}>
               <Text style={styles.greenText}>{t('onboarding_pending_title')}</Text>
             </PhonkText>
             <Text style={styles.subtitle}>{t('onboarding_pending_email_notification')}</Text>
 
             {email && (
               <View style={styles.emailBadge}>
+                <Ionicons name="mail-outline" size={16} color="#666" />
                 <Text style={styles.emailText}>{email}</Text>
               </View>
             )}
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 1, backgroundColor: 'white',
     borderTopLeftRadius: 50, borderTopRightRadius: 50,
-    marginTop: -80, paddingHorizontal: 30, paddingTop: 40,
+    marginTop: -80, paddingHorizontal: 28, paddingTop: 36,
   },
   card: { flex: 1 },
   centerContent: {
@@ -90,25 +91,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   iconCircle: {
-    width: 120, height: 120, borderRadius: 60,
+    width: 100, height: 100, borderRadius: 50,
     backgroundColor: '#F0F9F0',
     justifyContent: 'center', alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
-  titleLine: { fontSize: 28, textAlign: 'center', lineHeight: 34, marginBottom: 16 },
+  titleLarge: { fontSize: 28, textAlign: 'center', lineHeight: 34, marginBottom: 16 },
   greenText: { color: Colors.brandGreen },
   subtitle: {
-    fontSize: 16, color: '#666', textAlign: 'center',
-    lineHeight: 24, fontFamily: Typography.poppins.medium,
+    fontSize: 15, color: '#666', textAlign: 'center',
+    lineHeight: 22, fontFamily: Typography.poppins.medium,
     marginBottom: 24, paddingHorizontal: 10,
   },
   emailBadge: {
-    backgroundColor: '#F3F3F3', borderRadius: 20,
-    paddingHorizontal: 20, paddingVertical: 12,
-    marginBottom: 32,
+    backgroundColor: '#F5F5F5', borderRadius: 16,
+    paddingHorizontal: 18, paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
   },
   emailText: {
-    fontSize: 16, fontFamily: Typography.poppins.medium,
+    fontSize: 15, fontFamily: Typography.poppins.medium,
     color: '#333',
   },
 });

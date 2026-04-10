@@ -108,12 +108,14 @@ export default function UploadIdScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.card}
         >
+          <View style={styles.iconCircle}>
+            <Ionicons name="card-outline" size={32} color={Colors.brandGreen} />
+          </View>
+
           <View style={styles.textContainer}>
-            <PhonkText style={styles.titleLine}>
-              <Text style={styles.greenText}>{t('onboarding_upload_id_title_prefix')}</Text>
-            </PhonkText>
-            <PhonkText style={styles.titleLine}>
-              <Text style={styles.blackText}>{t('onboarding_upload_id_title_suffix')}</Text>
+            <Text style={styles.titleSmall}>{t('onboarding_upload_id_title_prefix')}</Text>
+            <PhonkText style={styles.titleLarge}>
+              <Text style={styles.greenText}>{t('onboarding_upload_id_title_suffix')}</Text>
             </PhonkText>
           </View>
 
@@ -135,7 +137,7 @@ export default function UploadIdScreen() {
                 </View>
               ) : (
                 <View style={styles.uploadPlaceholder}>
-                  <Ionicons name="camera-outline" size={36} color="#999" />
+                  <Ionicons name="camera-outline" size={32} color="#999" />
                   <Text style={styles.uploadLabel}>{t('onboarding_upload_front')}</Text>
                 </View>
               )}
@@ -156,7 +158,7 @@ export default function UploadIdScreen() {
                 </View>
               ) : (
                 <View style={styles.uploadPlaceholder}>
-                  <Ionicons name="camera-outline" size={36} color="#999" />
+                  <Ionicons name="camera-outline" size={32} color="#999" />
                   <Text style={styles.uploadLabel}>{t('onboarding_upload_back')}</Text>
                 </View>
               )}
@@ -168,7 +170,7 @@ export default function UploadIdScreen() {
 
         <View style={styles.footer}>
           <TouchableOpacity
-            style={[styles.button, (!bothUploaded || isLoading) && styles.buttonDisabled]}
+            style={[styles.button, bothUploaded && !isLoading && styles.buttonEnabled]}
             onPress={handleContinue}
             disabled={!bothUploaded || isLoading}
             activeOpacity={0.8}
@@ -201,23 +203,33 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 1, backgroundColor: 'white',
     borderTopLeftRadius: 50, borderTopRightRadius: 50,
-    marginTop: -80, paddingHorizontal: 30, paddingTop: 40,
+    marginTop: -80, paddingHorizontal: 28, paddingTop: 36,
   },
-  card: { flex: 1 },
-  textContainer: { marginBottom: 16, alignItems: 'center' },
-  titleLine: { fontSize: 32, textAlign: 'center', lineHeight: 38 },
+  card: { flex: 1, alignItems: 'center' },
+  iconCircle: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: '#F0F9F0',
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 12, marginTop: 4,
+  },
+  textContainer: { marginBottom: 12, alignItems: 'center' },
+  titleSmall: {
+    fontSize: 14, fontFamily: Typography.poppins.medium,
+    color: '#666', textTransform: 'uppercase', letterSpacing: 2,
+    marginBottom: 4, textAlign: 'center',
+  },
+  titleLarge: { fontSize: 32, textAlign: 'center', lineHeight: 38 },
   greenText: { color: Colors.brandGreen },
-  blackText: { color: '#000000' },
   subtitle: {
     fontSize: 14, color: '#666', textAlign: 'center',
     lineHeight: 20, fontFamily: Typography.poppins.medium,
     marginBottom: 24, paddingHorizontal: 10,
   },
   uploadContainer: {
-    flexDirection: 'row', gap: 16, marginBottom: 20,
+    flexDirection: 'row', gap: 14, marginBottom: 20, width: '100%',
   },
   uploadZone: {
-    flex: 1, height: 180, borderRadius: 20,
+    flex: 1, height: 170, borderRadius: 20,
     borderWidth: 2, borderColor: '#E0E0E0', borderStyle: 'dashed',
     justifyContent: 'center', alignItems: 'center',
     backgroundColor: '#FAFAFA', overflow: 'hidden',
@@ -254,9 +266,15 @@ const styles = StyleSheet.create({
   },
   footer: { paddingBottom: 40, marginTop: 'auto' },
   button: {
-    backgroundColor: Colors.brandGreen, height: 64, borderRadius: 32,
+    backgroundColor: Colors.brandGreen, height: 62, borderRadius: 31,
     justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+    opacity: 0.5,
   },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#FFFFFF', fontSize: 18, fontFamily: Typography.poppins.medium },
+  buttonEnabled: {
+    opacity: 1,
+    shadowColor: Colors.brandGreen,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+  },
+  buttonText: { color: '#FFFFFF', fontSize: 17, fontFamily: Typography.poppins.semiBold },
 });
