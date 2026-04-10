@@ -393,7 +393,12 @@ const processTransaction = async (options) => {
  * Public Functions
  * =============================
  */
-export const redeemGiftCard = onCall(async (request: CallableRequest) => {
+export const redeemGiftCard = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -414,9 +419,15 @@ export const redeemGiftCard = onCall(async (request: CallableRequest) => {
   }
 
   return result;
-});
+  }
+);
 
-export const redeemOffer = onCall(async (request: CallableRequest) => {
+export const redeemOffer = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -437,14 +448,20 @@ export const redeemOffer = onCall(async (request: CallableRequest) => {
   }
 
   return result;
-});
+  }
+);
 
 /**
  * =============================
  * Creator Code Assignment
  * =============================
  */
-export const assignCreatorCode = onCall(async (request: CallableRequest) => {
+export const assignCreatorCode = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Must be logged in');
   }
@@ -491,14 +508,20 @@ export const assignCreatorCode = onCall(async (request: CallableRequest) => {
 
     return { creatorCode: code };
   });
-});
+  }
+);
 
 /**
  * =============================
  * Student Check
  * =============================
  */
-export const checkStudentExists = onCall(async (request: CallableRequest) => {
+export const checkStudentExists = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const email = request.data?.email?.toLowerCase()?.trim();
 
   if (!email) {
@@ -522,9 +545,15 @@ export const checkStudentExists = onCall(async (request: CallableRequest) => {
     .get();
 
   return { exists: !snapshot.empty };
-});
+  }
+);
 
-export const checkStudentExistsLogin = onCall(async (request: CallableRequest) => {
+export const checkStudentExistsLogin = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const email = request.data?.email?.toLowerCase()?.trim();
 
   if (!email) {
@@ -538,7 +567,8 @@ export const checkStudentExistsLogin = onCall(async (request: CallableRequest) =
     .get();
 
   return { exists: !snapshot.empty };
-});
+  }
+);
 
 /**
  * =============================
@@ -556,7 +586,12 @@ const MAX_VERIFY_ATTEMPTS = 3;
  * Send OTP
  * =============================
  */
-export const sendOtp = onCall(async (request: CallableRequest) => {
+export const sendOtp = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const email = request.data?.email?.toLowerCase()?.trim();
   const purpose = request.data?.purpose; // "signup" | "login" | "verification"
 
@@ -708,14 +743,20 @@ export const sendOtp = onCall(async (request: CallableRequest) => {
   }
 
   return { success: true };
-});
+  }
+);
 
 /**
  * =============================
  * Verify OTP
  * =============================
  */
-export const verifyOtp = onCall(async (request: CallableRequest) => {
+export const verifyOtp = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const email = request.data?.email?.toLowerCase()?.trim();
   const code = request.data?.code?.trim();
   const purpose = request.data?.purpose;
@@ -809,14 +850,19 @@ export const verifyOtp = onCall(async (request: CallableRequest) => {
   const customToken = await admin.auth().createCustomToken(uid);
 
   return { success: true, customToken };
-});
-
+  }
+);
 /**
  * =============================
  * Topic Subscription (Callable)
  * =============================
  */
-export const subscribeToTopic = onCall(async (request: CallableRequest) => {
+export const subscribeToTopic = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -835,9 +881,15 @@ export const subscribeToTopic = onCall(async (request: CallableRequest) => {
     console.error('Error subscribing to topic:', error);
     throw new HttpsError('internal', 'Failed to subscribe to topic');
   }
-});
+  }
+);
 
-export const unsubscribeFromTopic = onCall(async (request: CallableRequest) => {
+export const unsubscribeFromTopic = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -855,14 +907,20 @@ export const unsubscribeFromTopic = onCall(async (request: CallableRequest) => {
     console.error('Error unsubscribing from topic:', error);
     throw new HttpsError('internal', 'Failed to unsubscribe from topic');
   }
-});
+  }
+);
 
 /**
  * =============================
  * Admin Send Notification via Topic (Callable)
  * =============================
  */
-export const sendNotification = onCall(async (request: CallableRequest) => {
+export const sendNotification = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -925,7 +983,8 @@ export const sendNotification = onCall(async (request: CallableRequest) => {
     console.error('Error sending topic notification:', error);
     throw new HttpsError('internal', 'Failed to send notification');
   }
-});
+  }
+);
 
 /**
  * =============================
@@ -998,7 +1057,12 @@ const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB per image
 const VERIFICATION_MAX_SUBMISSIONS = 3;
 const VERIFICATION_RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
 
-export const submitVerificationRequest = onCall(async (request: CallableRequest) => {
+export const submitVerificationRequest = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const { email, idFrontBase64, idBackBase64 } = request.data || {};
 
   const normalizedEmail = email?.toLowerCase()?.trim();
@@ -1089,9 +1153,15 @@ export const submitVerificationRequest = onCall(async (request: CallableRequest)
   });
 
   return { success: true, requestId };
-});
+  }
+);
 
-export const checkVerificationStatus = onCall(async (request: CallableRequest) => {
+export const checkVerificationStatus = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   const email = request.data?.email?.toLowerCase()?.trim();
 
   if (!email) {
@@ -1115,9 +1185,15 @@ export const checkVerificationStatus = onCall(async (request: CallableRequest) =
     requestId: snapshot.docs[0].id,
     rejectionReason: data.rejectionReason || null,
   };
-});
+  }
+);
 
-export const listPendingVerificationRequests = onCall(async (request: CallableRequest) => {
+export const listPendingVerificationRequests = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -1159,9 +1235,15 @@ export const listPendingVerificationRequests = onCall(async (request: CallableRe
   }
 
   return { requests };
-});
+  }
+);
 
-export const reviewVerificationRequest = onCall(async (request: CallableRequest) => {
+export const reviewVerificationRequest = onCall(
+  { enforceAppCheck: true },
+  async (request: CallableRequest) => {
+  if (!request.app) {
+    throw new HttpsError('permission-denied', 'App Check verification failed');
+  }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login required');
   }
@@ -1219,4 +1301,5 @@ export const reviewVerificationRequest = onCall(async (request: CallableRequest)
   }
 
   return { success: true };
-});
+  }
+);
