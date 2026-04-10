@@ -1,5 +1,4 @@
 import '@react-native-firebase/app';
-import '@react-native-firebase/app-check';
 import {
   getAuth,
   onAuthStateChanged,
@@ -21,8 +20,6 @@ import {
   setupNotificationChannels,
   registerBackgroundHandler,
 } from '../utils/notifications';
-import { initializeAppCheckProtection } from '../utils/appCheck';
-
 import CustomSplash from './splash'; // adjust path if needed
 
 // Register background message handler at module level (required by Firebase)
@@ -43,7 +40,6 @@ export default function RootLayout() {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [appReady, setAppReady] = useState(false);
-  const [appCheckReady, setAppCheckReady] = useState(false);
   const router = useRouter();
   const segments = useSegments();
 
@@ -60,15 +56,6 @@ export default function RootLayout() {
     };
 
     void setupLocalization();
-  }, []);
-
-  useEffect(() => {
-    initializeAppCheckProtection()
-      .then(() => setAppCheckReady(true))
-      .catch((err) => {
-        console.error('[AppCheck] Failed to initialize:', err);
-        setAppCheckReady(true); // Don't block the app
-      });
   }, []);
 
   useEffect(() => {
@@ -128,11 +115,10 @@ useEffect(() => {
     (loaded || error) &&
     !initializing &&
     (user === null || hasProfile !== null) &&
-    appCheckReady
   ) {
     setAppReady(true);
   }
-}, [i18nReady, loaded, error, initializing, user, hasProfile, appCheckReady]);
+}, [i18nReady, loaded, error, initializing, user, hasProfile]);
 
   useEffect(() => {
     if (initializing || !loaded || !i18nReady) return;

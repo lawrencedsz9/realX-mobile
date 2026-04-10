@@ -394,60 +394,52 @@ const processTransaction = async (options) => {
  * =============================
  */
 export const redeemGiftCard = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  const result = await processTransaction({
-    uid: request.auth.uid,
-    type: 'giftcard',
-    ...request.data,
-  });
+    const result = await processTransaction({
+      uid: request.auth.uid,
+      type: 'giftcard',
+      ...request.data,
+    });
 
-  // Send creator notification outside the transaction
-  if (result.creatorUid && result.creatorCashback > 0) {
-    sendCreatorNotification(
-      result.creatorUid,
-      result.creatorCashback,
-      result.vendorName
-    ).catch((err) => console.error('Creator notification failed:', err));
-  }
+    // Send creator notification outside the transaction
+    if (result.creatorUid && result.creatorCashback > 0) {
+      sendCreatorNotification(
+        result.creatorUid,
+        result.creatorCashback,
+        result.vendorName
+      ).catch((err) => console.error('Creator notification failed:', err));
+    }
 
-  return result;
+    return result;
   }
 );
 
 export const redeemOffer = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  const result = await processTransaction({
-    uid: request.auth.uid,
-    type: 'offer',
-    ...request.data,
-  });
+    const result = await processTransaction({
+      uid: request.auth.uid,
+      type: 'offer',
+      ...request.data,
+    });
 
-  // Send creator notification outside the transaction
-  if (result.creatorUid && result.creatorCashback > 0) {
-    sendCreatorNotification(
-      result.creatorUid,
-      result.creatorCashback,
-      result.vendorName
-    ).catch((err) => console.error('Creator notification failed:', err));
-  }
+    // Send creator notification outside the transaction
+    if (result.creatorUid && result.creatorCashback > 0) {
+      sendCreatorNotification(
+        result.creatorUid,
+        result.creatorCashback,
+        result.vendorName
+      ).catch((err) => console.error('Creator notification failed:', err));
+    }
 
-  return result;
+    return result;
   }
 );
 
@@ -457,57 +449,53 @@ export const redeemOffer = onCall(
  * =============================
  */
 export const assignCreatorCode = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Must be logged in');
-  }
-
-  const uid = request.auth.uid;
-  const userRef = db.collection('students').doc(uid);
-
-  return db.runTransaction(async (tx) => {
-    const userDoc = await tx.get(userRef);
-
-    if (!userDoc.exists) {
-      throw new HttpsError('not-found', 'User not found');
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Must be logged in');
     }
 
-    const existingCode = userDoc.data()?.creatorCode;
-    if (existingCode) {
-      return { creatorCode: existingCode };
-    }
+    const uid = request.auth.uid;
+    const userRef = db.collection('students').doc(uid);
 
-    let code = null;
-    let attempts = 0;
+    return db.runTransaction(async (tx) => {
+      const userDoc = await tx.get(userRef);
 
-    while (!code && attempts < 5) {
-      const candidate = generateCode();
-      const codeRef = db.collection('creator_codes').doc(candidate);
-      const codeDoc = await tx.get(codeRef);
-
-      if (!codeDoc.exists) {
-        tx.set(codeRef, {
-          uid,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        tx.update(userRef, { creatorCode: candidate });
-        code = candidate;
+      if (!userDoc.exists) {
+        throw new HttpsError('not-found', 'User not found');
       }
 
-      attempts++;
-    }
+      const existingCode = userDoc.data()?.creatorCode;
+      if (existingCode) {
+        return { creatorCode: existingCode };
+      }
 
-    if (!code) {
-      throw new HttpsError('internal', 'Failed to generate code');
-    }
+      let code = null;
+      let attempts = 0;
 
-    return { creatorCode: code };
-  });
+      while (!code && attempts < 5) {
+        const candidate = generateCode();
+        const codeRef = db.collection('creator_codes').doc(candidate);
+        const codeDoc = await tx.get(codeRef);
+
+        if (!codeDoc.exists) {
+          tx.set(codeRef, {
+            uid,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          tx.update(userRef, { creatorCode: candidate });
+          code = candidate;
+        }
+
+        attempts++;
+      }
+
+      if (!code) {
+        throw new HttpsError('internal', 'Failed to generate code');
+      }
+
+      return { creatorCode: code };
+    });
   }
 );
 
@@ -517,56 +505,48 @@ export const assignCreatorCode = onCall(
  * =============================
  */
 export const checkStudentExists = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const email = request.data?.email?.toLowerCase()?.trim();
+    const email = request.data?.email?.toLowerCase()?.trim();
 
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'Email required');
-  }
+    if (!email) {
+      throw new HttpsError('invalid-argument', 'Email required');
+    }
 
-  // ✅ Restrict ONLY self-signup emails
-  const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
+    // ✅ Restrict ONLY self-signup emails
+    const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
 
-  if (!isEduQa) {
-    throw new HttpsError(
-      'permission-denied',
-      'Only .edu.qa emails can sign up'
-    );
-  }
+    if (!isEduQa) {
+      throw new HttpsError(
+        'permission-denied',
+        'Only .edu.qa emails can sign up'
+      );
+    }
 
-  const snapshot = await db
-    .collection('students')
-    .where('email', '==', email)
-    .limit(1)
-    .get();
+    const snapshot = await db
+      .collection('students')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
 
-  return { exists: !snapshot.empty };
+    return { exists: !snapshot.empty };
   }
 );
 
 export const checkStudentExistsLogin = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const email = request.data?.email?.toLowerCase()?.trim();
+    const email = request.data?.email?.toLowerCase()?.trim();
 
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'Email required');
-  }
+    if (!email) {
+      throw new HttpsError('invalid-argument', 'Email required');
+    }
 
-  const snapshot = await db
-    .collection('students')
-    .where('email', '==', email)
-    .limit(1)
-    .get();
+    const snapshot = await db
+      .collection('students')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
 
-  return { exists: !snapshot.empty };
+    return { exists: !snapshot.empty };
   }
 );
 
@@ -587,138 +567,136 @@ const MAX_VERIFY_ATTEMPTS = 3;
  * =============================
  */
 export const sendOtp = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const email = request.data?.email?.toLowerCase()?.trim();
-  const purpose = request.data?.purpose; // "signup" | "login" | "verification"
+    const email = request.data?.email?.toLowerCase()?.trim();
+    const purpose = request.data?.purpose; // "signup" | "login" | "verification"
 
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'Email is required');
-  }
-
-  if (!purpose || !['signup', 'login', 'verification'].includes(purpose)) {
-    throw new HttpsError('invalid-argument', 'Purpose must be "signup", "login", or "verification"');
-  }
-
-  // Signup: restrict to .edu.qa
-  if (purpose === 'signup') {
-    const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
-    if (!isEduQa) {
-      throw new HttpsError('permission-denied', 'Only .edu.qa emails can sign up');
+    if (!email) {
+      throw new HttpsError('invalid-argument', 'Email is required');
     }
 
-    // Check if account already exists
-    const snapshot = await db
-      .collection('students')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
-
-    if (!snapshot.empty) {
-      throw new HttpsError('already-exists', 'An account with this email already exists');
+    if (!purpose || !['signup', 'login', 'verification'].includes(purpose)) {
+      throw new HttpsError('invalid-argument', 'Purpose must be "signup", "login", or "verification"');
     }
-  }
 
-  // Verification: no .edu.qa restriction, just check no existing account
-  if (purpose === 'verification') {
-    const snapshot = await db
-      .collection('students')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
+    // Signup: restrict to .edu.qa
+    if (purpose === 'signup') {
+      const isEduQa = /^[^@]+@[^@]+\.edu\.qa$/.test(email);
+      if (!isEduQa) {
+        throw new HttpsError('permission-denied', 'Only .edu.qa emails can sign up');
+      }
 
-    if (!snapshot.empty) {
-      throw new HttpsError('already-exists', 'An account with this email already exists');
+      // Check if account already exists
+      const snapshot = await db
+        .collection('students')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+
+      if (!snapshot.empty) {
+        throw new HttpsError('already-exists', 'An account with this email already exists');
+      }
     }
-  }
 
-  // Login: verify account exists
-  if (purpose === 'login') {
-    const snapshot = await db
-      .collection('students')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
+    // Verification: no .edu.qa restriction, just check no existing account
+    if (purpose === 'verification') {
+      const snapshot = await db
+        .collection('students')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
 
-    if (snapshot.empty) {
-      throw new HttpsError('not-found', 'No account found with this email');
+      if (!snapshot.empty) {
+        throw new HttpsError('already-exists', 'An account with this email already exists');
+      }
     }
-  }
 
-  // Rate limiting
-  const now = admin.firestore.Timestamp.now();
-  const otpRef = db.collection('otps').doc(email);
-  const otpDoc = await otpRef.get();
+    // Login: verify account exists
+    if (purpose === 'login') {
+      const snapshot = await db
+        .collection('students')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
 
-  if (otpDoc.exists) {
-    const data = otpDoc.data()!;
-    const windowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
-    const windowAge = now.toMillis() - windowStart;
+      if (snapshot.empty) {
+        throw new HttpsError('not-found', 'No account found with this email');
+      }
+    }
 
-    // Check 15-minute window limit
-    if (windowAge < RATE_LIMIT_WINDOW_MS) {
-      const sendCount = data.rateLimit?.sendCount ?? 0;
-      if (sendCount >= MAX_OTP_SENDS_PER_WINDOW) {
-        const retryAfterMinutes = Math.ceil((RATE_LIMIT_WINDOW_MS - windowAge) / 60000);
+    // Rate limiting
+    const now = admin.firestore.Timestamp.now();
+    const otpRef = db.collection('otps').doc(email);
+    const otpDoc = await otpRef.get();
+
+    if (otpDoc.exists) {
+      const data = otpDoc.data();
+      if (!data) throw new HttpsError('internal', 'Failed to read OTP data.');
+      const windowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
+      const windowAge = now.toMillis() - windowStart;
+
+      // Check 15-minute window limit
+      if (windowAge < RATE_LIMIT_WINDOW_MS) {
+        const sendCount = data.rateLimit?.sendCount ?? 0;
+        if (sendCount >= MAX_OTP_SENDS_PER_WINDOW) {
+          const retryAfterMinutes = Math.ceil((RATE_LIMIT_WINDOW_MS - windowAge) / 60000);
+          throw new HttpsError(
+            'resource-exhausted',
+            `Too many OTP requests. Try again in ${retryAfterMinutes} minutes.`
+          );
+        }
+      }
+
+      // Check 60-second cooldown
+      const lastSent = data.createdAt?.toMillis() ?? 0;
+      const elapsed = now.toMillis() - lastSent;
+      if (elapsed < COOLDOWN_MS) {
+        const retryAfter = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
         throw new HttpsError(
           'resource-exhausted',
-          `Too many OTP requests. Try again in ${retryAfterMinutes} minutes.`
+          `Please wait ${retryAfter} seconds before requesting a new code.`,
+          { retryAfter }
         );
       }
     }
 
-    // Check 60-second cooldown
-    const lastSent = data.createdAt?.toMillis() ?? 0;
-    const elapsed = now.toMillis() - lastSent;
-    if (elapsed < COOLDOWN_MS) {
-      const retryAfter = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
-      throw new HttpsError(
-        'resource-exhausted',
-        `Please wait ${retryAfter} seconds before requesting a new code.`,
-        { retryAfter }
-      );
+    // Generate 6-digit OTP
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+
+    // Calculate new rate limit values
+    let sendCount = 1;
+    let windowStart = now;
+
+    if (otpDoc.exists) {
+      const data = otpDoc.data();
+      if (!data) throw new HttpsError('internal', 'Failed to read OTP data.');
+      const existingWindowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
+      const windowAge = now.toMillis() - existingWindowStart;
+
+      if (windowAge < RATE_LIMIT_WINDOW_MS) {
+        sendCount = (data.rateLimit?.sendCount ?? 0) + 1;
+        windowStart = data.rateLimit?.windowStart ?? now;
+      }
     }
-  }
 
-  // Generate 6-digit OTP
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+    // Store OTP in Firestore
+    await otpRef.set({
+      code,
+      attempts: 0,
+      createdAt: now,
+      expiresAt: admin.firestore.Timestamp.fromMillis(now.toMillis() + OTP_EXPIRY_MINUTES * 60 * 1000),
+      purpose,
+      verified: false,
+      rateLimit: { sendCount, windowStart },
+    });
 
-  // Calculate new rate limit values
-  let sendCount = 1;
-  let windowStart = now;
-
-  if (otpDoc.exists) {
-    const data = otpDoc.data()!;
-    const existingWindowStart = data.rateLimit?.windowStart?.toMillis() ?? 0;
-    const windowAge = now.toMillis() - existingWindowStart;
-
-    if (windowAge < RATE_LIMIT_WINDOW_MS) {
-      sendCount = (data.rateLimit?.sendCount ?? 0) + 1;
-      windowStart = data.rateLimit?.windowStart ?? now;
-    }
-  }
-
-  // Store OTP in Firestore
-  await otpRef.set({
-    code,
-    attempts: 0,
-    createdAt: now,
-    expiresAt: admin.firestore.Timestamp.fromMillis(now.toMillis() + OTP_EXPIRY_MINUTES * 60 * 1000),
-    purpose,
-    verified: false,
-    rateLimit: { sendCount, windowStart },
-  });
-
-  // Send email via Resend
-  try {
-    await getResend().emails.send({
-      from: 'realX <welcome@realx.qa>',
-      to: email,
-      subject: 'Your realX Verification Code',
-      html: `
+    // Send email via Resend
+    try {
+      await getResend().emails.send({
+        from: 'realX <welcome@realx.qa>',
+        to: email,
+        subject: 'Your realX Verification Code',
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 480px;
           margin: 0 auto; padding: 32px;">
           <h1 style="color: #18B852; font-size: 24px;
@@ -736,13 +714,13 @@ export const sendOtp = onCall(
             this code, you can safely ignore this email.</p>
         </div>
       `,
-    });
-  } catch (error) {
-    console.error('Failed to send OTP email:', error);
-    throw new HttpsError('internal', 'Failed to send verification email. Please try again.');
-  }
+      });
+    } catch (error) {
+      console.error('Failed to send OTP email:', error);
+      throw new HttpsError('internal', 'Failed to send verification email. Please try again.');
+    }
 
-  return { success: true };
+    return { success: true };
   }
 );
 
@@ -752,104 +730,101 @@ export const sendOtp = onCall(
  * =============================
  */
 export const verifyOtp = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const email = request.data?.email?.toLowerCase()?.trim();
-  const code = request.data?.code?.trim();
-  const purpose = request.data?.purpose;
+    const email = request.data?.email?.toLowerCase()?.trim();
+    const code = request.data?.code?.trim();
+    const purpose = request.data?.purpose;
 
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'Email is required');
-  }
+    if (!email) {
+      throw new HttpsError('invalid-argument', 'Email is required');
+    }
 
-  if (!code || !/^\d{6}$/.test(code)) {
-    throw new HttpsError('invalid-argument', 'A valid 6-digit code is required');
-  }
+    if (!code || !/^\d{6}$/.test(code)) {
+      throw new HttpsError('invalid-argument', 'A valid 6-digit code is required');
+    }
 
-  if (!purpose || !['signup', 'login', 'verification'].includes(purpose)) {
-    throw new HttpsError('invalid-argument', 'Purpose must be "signup", "login", or "verification"');
-  }
+    if (!purpose || !['signup', 'login', 'verification'].includes(purpose)) {
+      throw new HttpsError('invalid-argument', 'Purpose must be "signup", "login", or "verification"');
+    }
 
-  const now = admin.firestore.Timestamp.now();
-  const otpRef = db.collection('otps').doc(email);
-  const otpDoc = await otpRef.get();
+    const now = admin.firestore.Timestamp.now();
+    const otpRef = db.collection('otps').doc(email);
+    const otpDoc = await otpRef.get();
 
-  if (!otpDoc.exists) {
-    throw new HttpsError('not-found', 'No verification code found. Please request a new one.');
-  }
+    if (!otpDoc.exists) {
+      throw new HttpsError('not-found', 'No verification code found. Please request a new one.');
+    }
 
-  const data = otpDoc.data()!;
+    const data = otpDoc.data();
+    if (!data) throw new HttpsError('internal', 'Failed to read OTP data.');
 
-  if (data.verified) {
-    throw new HttpsError('permission-denied', 'This code has already been used. Please request a new one.');
-  }
+    if (data.verified) {
+      throw new HttpsError('permission-denied', 'This code has already been used. Please request a new one.');
+    }
 
-  if (data.expiresAt.toMillis() < now.toMillis()) {
-    throw new HttpsError('deadline-exceeded', 'Code has expired. Please request a new one.');
-  }
+    if (data.expiresAt.toMillis() < now.toMillis()) {
+      throw new HttpsError('deadline-exceeded', 'Code has expired. Please request a new one.');
+    }
 
-  if (data.attempts >= MAX_VERIFY_ATTEMPTS) {
-    throw new HttpsError('resource-exhausted', 'Too many attempts. Please request a new code.');
-  }
+    if (data.attempts >= MAX_VERIFY_ATTEMPTS) {
+      throw new HttpsError('resource-exhausted', 'Too many attempts. Please request a new code.');
+    }
 
-  // Increment attempts
-  await otpRef.update({
-    attempts: admin.firestore.FieldValue.increment(1),
-  });
+    // Increment attempts
+    await otpRef.update({
+      attempts: admin.firestore.FieldValue.increment(1),
+    });
 
-  // Check code match
-  if (data.code !== code) {
-    const remaining = MAX_VERIFY_ATTEMPTS - (data.attempts + 1);
-    throw new HttpsError(
-      'invalid-argument',
-      `Incorrect code. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
-    );
-  }
+    // Check code match
+    if (data.code !== code) {
+      const remaining = MAX_VERIFY_ATTEMPTS - (data.attempts + 1);
+      throw new HttpsError(
+        'invalid-argument',
+        `Incorrect code. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+      );
+    }
 
-  // Mark as verified
-  await otpRef.update({ verified: true });
+    // Mark as verified
+    await otpRef.update({ verified: true });
 
-  // Verification: just confirm email is verified, no auth user creation
-  if (purpose === 'verification') {
-    return { success: true, emailVerified: true };
-  }
+    // Verification: just confirm email is verified, no auth user creation
+    if (purpose === 'verification') {
+      return { success: true, emailVerified: true };
+    }
 
-  let uid: string;
+    let uid: string;
 
-  if (purpose === 'signup') {
+    if (purpose === 'signup') {
     // Create Firebase Auth user (or get existing)
-    try {
-      const userRecord = await admin.auth().getUserByEmail(email);
-      uid = userRecord.uid;
-    } catch {
-      const userRecord = await admin.auth().createUser({
-        email,
-        emailVerified: true,
-      });
-      uid = userRecord.uid;
-    }
-  } else {
+      try {
+        const userRecord = await admin.auth().getUserByEmail(email);
+        uid = userRecord.uid;
+      } catch {
+        const userRecord = await admin.auth().createUser({
+          email,
+          emailVerified: true,
+        });
+        uid = userRecord.uid;
+      }
+    } else {
     // Login: look up UID from students collection
-    const snapshot = await db
-      .collection('students')
-      .where('email', '==', email)
-      .limit(1)
-      .get();
+      const snapshot = await db
+        .collection('students')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
 
-    if (snapshot.empty) {
-      throw new HttpsError('not-found', 'No account found with this email');
+      if (snapshot.empty) {
+        throw new HttpsError('not-found', 'No account found with this email');
+      }
+
+      uid = snapshot.docs[0].id;
     }
 
-    uid = snapshot.docs[0].id;
-  }
+    // Generate custom token
+    const customToken = await admin.auth().createCustomToken(uid);
 
-  // Generate custom token
-  const customToken = await admin.auth().createCustomToken(uid);
-
-  return { success: true, customToken };
+    return { success: true, customToken };
   }
 );
 /**
@@ -858,55 +833,47 @@ export const verifyOtp = onCall(
  * =============================
  */
 export const subscribeToTopic = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  const { token, topic } = request.data;
+    const { token, topic } = request.data;
 
-  if (!token || !topic) {
-    throw new HttpsError('invalid-argument', 'Token and topic are required');
-  }
+    if (!token || !topic) {
+      throw new HttpsError('invalid-argument', 'Token and topic are required');
+    }
 
-  try {
-    const result = await admin.messaging().subscribeToTopic(token, topic);
-    console.log('Subscribe result:', JSON.stringify(result));
-    return { success: true };
-  } catch (error) {
-    console.error('Error subscribing to topic:', error);
-    throw new HttpsError('internal', 'Failed to subscribe to topic');
-  }
+    try {
+      const result = await admin.messaging().subscribeToTopic(token, topic);
+      console.log('Subscribe result:', JSON.stringify(result));
+      return { success: true };
+    } catch (error) {
+      console.error('Error subscribing to topic:', error);
+      throw new HttpsError('internal', 'Failed to subscribe to topic');
+    }
   }
 );
 
 export const unsubscribeFromTopic = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  const { token, topic } = request.data;
+    const { token, topic } = request.data;
 
-  if (!token || !topic) {
-    throw new HttpsError('invalid-argument', 'Token and topic are required');
-  }
+    if (!token || !topic) {
+      throw new HttpsError('invalid-argument', 'Token and topic are required');
+    }
 
-  try {
-    await admin.messaging().unsubscribeFromTopic(token, topic);
-    return { success: true };
-  } catch (error) {
-    console.error('Error unsubscribing from topic:', error);
-    throw new HttpsError('internal', 'Failed to unsubscribe from topic');
-  }
+    try {
+      await admin.messaging().unsubscribeFromTopic(token, topic);
+      return { success: true };
+    } catch (error) {
+      console.error('Error unsubscribing from topic:', error);
+      throw new HttpsError('internal', 'Failed to unsubscribe from topic');
+    }
   }
 );
 
@@ -916,73 +883,69 @@ export const unsubscribeFromTopic = onCall(
  * =============================
  */
 export const sendNotification = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  // Verify admin role via custom claim or Firestore admin field
-  const isCustomAdmin = request.auth.token.admin === true;
-  let isFirestoreAdmin = false;
-  if (!isCustomAdmin) {
-    const adminDoc = await db.collection('students').doc(request.auth.uid).get();
-    isFirestoreAdmin = adminDoc.exists && adminDoc.data()?.admin === true;
-  }
-  if (!isCustomAdmin && !isFirestoreAdmin) {
-    throw new HttpsError('permission-denied', 'Admin access required');
-  }
+    // Verify admin role via custom claim or Firestore admin field
+    const isCustomAdmin = request.auth.token.admin === true;
+    let isFirestoreAdmin = false;
+    if (!isCustomAdmin) {
+      const adminDoc = await db.collection('students').doc(request.auth.uid).get();
+      isFirestoreAdmin = adminDoc.exists && adminDoc.data()?.admin === true;
+    }
+    if (!isCustomAdmin && !isFirestoreAdmin) {
+      throw new HttpsError('permission-denied', 'Admin access required');
+    }
 
-  const { title, body, imageUrl, topic } = request.data;
+    const { title, body, imageUrl, topic } = request.data;
 
-  if (!title || !body) {
-    throw new HttpsError('invalid-argument', 'Title and body are required');
-  }
+    if (!title || !body) {
+      throw new HttpsError('invalid-argument', 'Title and body are required');
+    }
 
-  const targetTopic = topic || 'all-users';
+    const targetTopic = topic || 'all-users';
 
-  try {
-    const messageId = await admin.messaging().send({
-      topic: targetTopic,
-      notification: {
-        title,
-        body,
-      },
-      data: {
-        type: 'admin_broadcast',
-      },
-      android: {
+    try {
+      const messageId = await admin.messaging().send({
+        topic: targetTopic,
         notification: {
-          channelId: 'reelx_general',
+          title,
+          body,
         },
-      },
-      apns: {
-        payload: {
-          aps: {
-            sound: 'default',
+        data: {
+          type: 'admin_broadcast',
+        },
+        android: {
+          notification: {
+            channelId: 'reelx_general',
           },
         },
-      },
-    });
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+            },
+          },
+        },
+      });
 
-    await db.collection('notifications').add({
-      title,
-      body,
-      imageUrl: imageUrl || null,
-      topic: targetTopic,
-      sentBy: request.auth.uid,
-      sentAt: admin.firestore.FieldValue.serverTimestamp(),
-      messageId,
-    });
+      await db.collection('notifications').add({
+        title,
+        body,
+        imageUrl: imageUrl || null,
+        topic: targetTopic,
+        sentBy: request.auth.uid,
+        sentAt: admin.firestore.FieldValue.serverTimestamp(),
+        messageId,
+      });
 
-    return { success: true, messageId };
-  } catch (error) {
-    console.error('Error sending topic notification:', error);
-    throw new HttpsError('internal', 'Failed to send notification');
-  }
+      return { success: true, messageId };
+    } catch (error) {
+      console.error('Error sending topic notification:', error);
+      throw new HttpsError('internal', 'Failed to send notification');
+    }
   }
 );
 
@@ -1037,11 +1000,12 @@ export const sendAdminNotification = onDocumentCreated(
         messageId,
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending broadcast notification:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       await snap.ref.update({
         status: 'failed',
-        error: error.message || 'Unknown error',
+        error: message,
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
@@ -1058,248 +1022,232 @@ const VERIFICATION_MAX_SUBMISSIONS = 3;
 const VERIFICATION_RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
 
 export const submitVerificationRequest = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const { email, idFrontBase64, idBackBase64 } = request.data || {};
+    const { email, idFrontBase64, idBackBase64 } = request.data || {};
 
-  const normalizedEmail = email?.toLowerCase()?.trim();
-  if (!normalizedEmail || !/^[^@]+@[^@]+\.[^@]+$/.test(normalizedEmail)) {
-    throw new HttpsError('invalid-argument', 'Valid email required');
-  }
+    const normalizedEmail = email?.toLowerCase()?.trim();
+    if (!normalizedEmail || !/^[^@]+@[^@]+\.[^@]+$/.test(normalizedEmail)) {
+      throw new HttpsError('invalid-argument', 'Valid email required');
+    }
 
-  // Reject .edu.qa emails — they should use normal signup
-  if (/^[^@]+@[^@]+\.edu\.qa$/.test(normalizedEmail)) {
-    throw new HttpsError('invalid-argument', 'Please use the regular signup with your .edu.qa email');
-  }
+    // Reject .edu.qa emails — they should use normal signup
+    if (/^[^@]+@[^@]+\.edu\.qa$/.test(normalizedEmail)) {
+      throw new HttpsError('invalid-argument', 'Please use the regular signup with your .edu.qa email');
+    }
 
-  if (!idFrontBase64 || !idBackBase64) {
-    throw new HttpsError('invalid-argument', 'Both front and back of student ID are required');
-  }
+    if (!idFrontBase64 || !idBackBase64) {
+      throw new HttpsError('invalid-argument', 'Both front and back of student ID are required');
+    }
 
-  // Validate image sizes
-  const frontBuffer = Buffer.from(idFrontBase64, 'base64');
-  const backBuffer = Buffer.from(idBackBase64, 'base64');
+    // Validate image sizes
+    const frontBuffer = Buffer.from(idFrontBase64, 'base64');
+    const backBuffer = Buffer.from(idBackBase64, 'base64');
 
-  if (frontBuffer.length > MAX_IMAGE_SIZE || backBuffer.length > MAX_IMAGE_SIZE) {
-    throw new HttpsError('invalid-argument', 'Each image must be under 3MB');
-  }
+    if (frontBuffer.length > MAX_IMAGE_SIZE || backBuffer.length > MAX_IMAGE_SIZE) {
+      throw new HttpsError('invalid-argument', 'Each image must be under 3MB');
+    }
 
-  // Rate limit: max submissions per time window
-  const cutoff = new Date(Date.now() - VERIFICATION_RATE_LIMIT_MS);
-  const recentSubmissions = await db
-    .collection('verification_requests')
-    .where('email', '==', normalizedEmail)
-    .where('submittedAt', '>=', cutoff)
-    .get();
+    // Rate limit: max submissions per time window
+    const cutoff = new Date(Date.now() - VERIFICATION_RATE_LIMIT_MS);
+    const recentSubmissions = await db
+      .collection('verification_requests')
+      .where('email', '==', normalizedEmail)
+      .where('submittedAt', '>=', cutoff)
+      .get();
 
-  if (recentSubmissions.size >= VERIFICATION_MAX_SUBMISSIONS) {
-    throw new HttpsError(
-      'resource-exhausted',
-      'Too many verification requests. Please try again later.'
-    );
-  }
+    if (recentSubmissions.size >= VERIFICATION_MAX_SUBMISSIONS) {
+      throw new HttpsError(
+        'resource-exhausted',
+        'Too many verification requests. Please try again later.'
+      );
+    }
 
-  // Check for existing pending request
-  const existingPending = await db
-    .collection('verification_requests')
-    .where('email', '==', normalizedEmail)
-    .where('status', '==', 'pending')
-    .limit(1)
-    .get();
+    // Check for existing pending request
+    const existingPending = await db
+      .collection('verification_requests')
+      .where('email', '==', normalizedEmail)
+      .where('status', '==', 'pending')
+      .limit(1)
+      .get();
 
-  if (!existingPending.empty) {
-    throw new HttpsError('already-exists', 'You already have a pending verification request');
-  }
+    if (!existingPending.empty) {
+      throw new HttpsError('already-exists', 'You already have a pending verification request');
+    }
 
-  // Check no existing student account
-  const existingStudent = await db
-    .collection('students')
-    .where('email', '==', normalizedEmail)
-    .limit(1)
-    .get();
+    // Check no existing student account
+    const existingStudent = await db
+      .collection('students')
+      .where('email', '==', normalizedEmail)
+      .limit(1)
+      .get();
 
-  if (!existingStudent.empty) {
-    throw new HttpsError('already-exists', 'An account with this email already exists');
-  }
+    if (!existingStudent.empty) {
+      throw new HttpsError('already-exists', 'An account with this email already exists');
+    }
 
-  // Create Firestore doc first to get requestId
-  const requestRef = db.collection('verification_requests').doc();
-  const requestId = requestRef.id;
+    // Create Firestore doc first to get requestId
+    const requestRef = db.collection('verification_requests').doc();
+    const requestId = requestRef.id;
 
-  // Upload images to Firebase Storage
-  const bucket = admin.storage().bucket();
-  const frontPath = `verification_requests/${requestId}/front.jpg`;
-  const backPath = `verification_requests/${requestId}/back.jpg`;
+    // Upload images to Firebase Storage
+    const bucket = admin.storage().bucket();
+    const frontPath = `verification_requests/${requestId}/front.jpg`;
+    const backPath = `verification_requests/${requestId}/back.jpg`;
 
-  await Promise.all([
-    bucket.file(frontPath).save(frontBuffer, { metadata: { contentType: 'image/jpeg' } }),
-    bucket.file(backPath).save(backBuffer, { metadata: { contentType: 'image/jpeg' } }),
-  ]);
+    await Promise.all([
+      bucket.file(frontPath).save(frontBuffer, { metadata: { contentType: 'image/jpeg' } }),
+      bucket.file(backPath).save(backBuffer, { metadata: { contentType: 'image/jpeg' } }),
+    ]);
 
-  // Create Firestore document
-  await requestRef.set({
-    email: normalizedEmail,
-    status: 'pending',
-    idFrontPath: frontPath,
-    idBackPath: backPath,
-    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-    reviewedAt: null,
-    reviewedBy: null,
-    rejectionReason: null,
-    authUid: null,
-  });
+    // Create Firestore document
+    await requestRef.set({
+      email: normalizedEmail,
+      status: 'pending',
+      idFrontPath: frontPath,
+      idBackPath: backPath,
+      submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+      reviewedAt: null,
+      reviewedBy: null,
+      rejectionReason: null,
+      authUid: null,
+    });
 
-  return { success: true, requestId };
+    return { success: true, requestId };
   }
 );
 
 export const checkVerificationStatus = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  const email = request.data?.email?.toLowerCase()?.trim();
+    const email = request.data?.email?.toLowerCase()?.trim();
 
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'Email required');
-  }
+    if (!email) {
+      throw new HttpsError('invalid-argument', 'Email required');
+    }
 
-  const snapshot = await db
-    .collection('verification_requests')
-    .where('email', '==', email)
-    .orderBy('submittedAt', 'desc')
-    .limit(1)
-    .get();
+    const snapshot = await db
+      .collection('verification_requests')
+      .where('email', '==', email)
+      .orderBy('submittedAt', 'desc')
+      .limit(1)
+      .get();
 
-  if (snapshot.empty) {
-    return { status: 'none' };
-  }
+    if (snapshot.empty) {
+      return { status: 'none' };
+    }
 
-  const data = snapshot.docs[0].data();
-  return {
-    status: data.status,
-    requestId: snapshot.docs[0].id,
-    rejectionReason: data.rejectionReason || null,
-  };
+    const data = snapshot.docs[0].data();
+    return {
+      status: data.status,
+      requestId: snapshot.docs[0].id,
+      rejectionReason: data.rejectionReason || null,
+    };
   }
 );
 
 export const listPendingVerificationRequests = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
+    }
 
-  const adminDoc = await db.collection('students').doc(request.auth.uid).get();
-  if (!adminDoc.exists || adminDoc.data()?.admin !== true) {
-    throw new HttpsError('permission-denied', 'Admin access required');
-  }
+    const adminDoc = await db.collection('students').doc(request.auth.uid).get();
+    if (!adminDoc.exists || adminDoc.data()?.admin !== true) {
+      throw new HttpsError('permission-denied', 'Admin access required');
+    }
 
-  const snapshot = await db
-    .collection('verification_requests')
-    .where('status', '==', 'pending')
-    .orderBy('submittedAt', 'asc')
-    .get();
+    const snapshot = await db
+      .collection('verification_requests')
+      .where('status', '==', 'pending')
+      .orderBy('submittedAt', 'asc')
+      .get();
 
-  const bucket = admin.storage().bucket();
-  const requests = [];
+    const bucket = admin.storage().bucket();
+    const requests = [];
 
-  for (const doc of snapshot.docs) {
-    const data = doc.data();
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
 
-    // Generate signed download URLs (valid for 1 hour)
-    const [frontUrl] = await bucket.file(data.idFrontPath).getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60 * 60 * 1000,
-    });
-    const [backUrl] = await bucket.file(data.idBackPath).getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60 * 60 * 1000,
-    });
+      // Generate signed download URLs (valid for 1 hour)
+      const [frontUrl] = await bucket.file(data.idFrontPath).getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 60 * 60 * 1000,
+      });
+      const [backUrl] = await bucket.file(data.idBackPath).getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 60 * 60 * 1000,
+      });
 
-    requests.push({
-      requestId: doc.id,
-      email: data.email,
-      submittedAt: data.submittedAt,
-      frontImageUrl: frontUrl,
-      backImageUrl: backUrl,
-    });
-  }
+      requests.push({
+        requestId: doc.id,
+        email: data.email,
+        submittedAt: data.submittedAt,
+        frontImageUrl: frontUrl,
+        backImageUrl: backUrl,
+      });
+    }
 
-  return { requests };
+    return { requests };
   }
 );
 
 export const reviewVerificationRequest = onCall(
-  { enforceAppCheck: true },
   async (request: CallableRequest) => {
-  if (!request.app) {
-    throw new HttpsError('permission-denied', 'App Check verification failed');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login required');
-  }
-
-  const adminDoc = await db.collection('students').doc(request.auth.uid).get();
-  if (!adminDoc.exists || adminDoc.data()?.admin !== true) {
-    throw new HttpsError('permission-denied', 'Admin access required');
-  }
-
-  const { requestId, action, rejectionReason } = request.data || {};
-
-  if (!requestId || !['approve', 'reject'].includes(action)) {
-    throw new HttpsError('invalid-argument', 'requestId and action (approve/reject) required');
-  }
-
-  const requestRef = db.collection('verification_requests').doc(requestId);
-  const requestDoc = await requestRef.get();
-
-  if (!requestDoc.exists) {
-    throw new HttpsError('not-found', 'Verification request not found');
-  }
-
-  const requestData = requestDoc.data();
-  if (requestData.status !== 'pending') {
-    throw new HttpsError('failed-precondition', 'Request already reviewed');
-  }
-
-  if (action === 'approve') {
-    // Create Firebase Auth user
-    let uid: string;
-    try {
-      const existingUser = await admin.auth().getUserByEmail(requestData.email);
-      uid = existingUser.uid;
-    } catch {
-      const newUser = await admin.auth().createUser({
-        email: requestData.email,
-        emailVerified: true,
-      });
-      uid = newUser.uid;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login required');
     }
 
-    await requestRef.update({
-      status: 'approved',
-      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
-      reviewedBy: request.auth.uid,
-      authUid: uid,
-    });
-  } else {
-    await requestRef.update({
-      status: 'rejected',
-      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
-      reviewedBy: request.auth.uid,
-      rejectionReason: rejectionReason || null,
-    });
-  }
+    const adminDoc = await db.collection('students').doc(request.auth.uid).get();
+    if (!adminDoc.exists || adminDoc.data()?.admin !== true) {
+      throw new HttpsError('permission-denied', 'Admin access required');
+    }
 
-  return { success: true };
+    const { requestId, action, rejectionReason } = request.data || {};
+
+    if (!requestId || !['approve', 'reject'].includes(action)) {
+      throw new HttpsError('invalid-argument', 'requestId and action (approve/reject) required');
+    }
+
+    const requestRef = db.collection('verification_requests').doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      throw new HttpsError('not-found', 'Verification request not found');
+    }
+
+    const requestData = requestDoc.data();
+    if (requestData.status !== 'pending') {
+      throw new HttpsError('failed-precondition', 'Request already reviewed');
+    }
+
+    if (action === 'approve') {
+    // Create Firebase Auth user
+      let uid: string;
+      try {
+        const existingUser = await admin.auth().getUserByEmail(requestData.email);
+        uid = existingUser.uid;
+      } catch {
+        const newUser = await admin.auth().createUser({
+          email: requestData.email,
+          emailVerified: true,
+        });
+        uid = newUser.uid;
+      }
+
+      await requestRef.update({
+        status: 'approved',
+        reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+        reviewedBy: request.auth.uid,
+        authUid: uid,
+      });
+    } else {
+      await requestRef.update({
+        status: 'rejected',
+        reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+        reviewedBy: request.auth.uid,
+        rejectionReason: rejectionReason || null,
+      });
+    }
+
+    return { success: true };
   }
 );

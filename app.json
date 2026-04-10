@@ -80,7 +80,6 @@
             "forceStaticLinking": [
               "RNFBAnalytics",
               "RNFBApp",
-              "RNFBAppCheck",
               "RNFBCrashlytics",
               "RNFBInAppMessaging",
               "RNFBInstallations",
@@ -92,7 +91,6 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/app-check",
       "@react-native-firebase/auth",
       "@react-native-community/datetimepicker",
       "expo-asset",
