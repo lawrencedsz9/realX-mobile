@@ -95,6 +95,7 @@
   "insufficient_balance_warning": "Insufficient balance. You need {{currency}} {{selectedAmount}} but only have {{currency}} {{maxLimit}}.",
   "redeem_button_text": "REDEEM",
   "view_tc": "View T&C",
+  "location": "Location",
   "enter_vendor_pin": "Enter Vendor PIN:",
   "total_bill": "Total Bill",
   "gift_card_redeemed_label": "Gift Card Redeemed",
