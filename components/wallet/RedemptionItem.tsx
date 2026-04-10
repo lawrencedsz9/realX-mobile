@@ -35,7 +35,7 @@ export default function RedemptionItem({ item }: Props) {
                 isRTL ? { marginLeft: 14 } : { marginRight: 14 },
             ]}>
                 {item.logoUrl ? (
-                    <Image source={{ uri: item.logoUrl }} style={styles.logoImage} />
+                    <Image source={{ uri: item.logoUrl }} style={styles.logoImage} contentFit="cover" />
                 ) : (
                     <Text style={styles.logoText}>
                         {item.logoPlaceholder || item.merchantName.substring(0, 2).toUpperCase()}
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
     },
     logoText: {
         fontSize: 12,
