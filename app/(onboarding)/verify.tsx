@@ -259,7 +259,7 @@ export default function VerifyOtpScreen() {
                 ]}>
                   <TextInput
                     ref={(ref) => { inputRefs.current[index] = ref; }}
-                    style={[styles.otpInput, { textAlign: inputTextAlign }]}
+                    style={styles.otpInput}
                     keyboardType="number-pad"
                     maxLength={OTP_LENGTH}
                     value={otp[index]}
@@ -298,11 +298,7 @@ export default function VerifyOtpScreen() {
           </View>
         </TouchableWithoutFeedback>
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={20}
-          style={styles.footer}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={[styles.button, isOtpComplete && !isLoading && styles.buttonEnabled]}
             onPress={handleVerify}
@@ -315,7 +311,7 @@ export default function VerifyOtpScreen() {
               <Text style={styles.buttonText}>{t('onboarding_otp_verify_button')}</Text>
             )}
           </TouchableOpacity>
-        </KeyboardAvoidingView>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
