@@ -5,7 +5,7 @@ import { GlassView } from 'expo-glass-effect';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
@@ -161,6 +161,14 @@ export default function VendorScreen() {
                     </View>
 
                     <View style={styles.metaRow}>
+                        <TouchableOpacity style={styles.locationButton} onPress={() => {
+                            const vendorName = isArabic ? (vendor.nameAr || vendor.name) : vendor.name;
+                            const query = encodeURIComponent(vendorName + " Qatar");
+                            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+                        }} activeOpacity={0.7}>
+                            <Ionicons name="location-outline" size={18} color={Colors.brandGreen} />
+                            <Text style={[styles.locationText, { fontFamily: Typography.poppins.medium }]}>{t('location')}</Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Offers List */}
@@ -392,6 +400,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
         marginTop: 8,
+    },
+    locationButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: '#F5F5F5',
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    locationText: {
+        fontSize: 14,
+        color: '#000',
     },
     ratingContainer: {
         flexDirection: 'row',

@@ -95,6 +95,7 @@
   "insufficient_balance_warning": "الرصيد غير كافي؟ تحتاج إلى {{currency}} {{selectedAmount}} لكن لديك فقط {{currency}} {{maxLimit}}.",
   "redeem_button_text": "استرداد",
   "view_tc": "عرض الشروط والأحكام",
+  "location": "الموقع",
   "enter_vendor_pin": "أدخل رمز التاجر:",
   "total_bill": "إجمالي الفاتورة",
   "gift_card_redeemed_label": "قيمة بطاقة الهدايا",
