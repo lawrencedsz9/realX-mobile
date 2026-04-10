@@ -99,86 +99,89 @@ export default function EmailOnboarding() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
+    <View style={styles.container}>
       <StatusBar style="light" />
 
-      <View style={styles.headerBackground}>
-        <SafeAreaView edges={['top']} style={styles.headerContent}>
-          <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
-            <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-              <Ionicons name={arrowIconName} size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
-              <Ionicons name="close" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      <View style={[styles.cardContainer, { flex: 1 }]}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.card}>
-            <View style={styles.textContainer}>
-              <PhonkText style={styles.titleLine}>
-                <Text style={styles.greenText}>{t('onboarding_email_title_prefix')}</Text>
-              </PhonkText>
-              <PhonkText style={styles.titleLine}>
-                <Text style={styles.blackText}>
-                  {`${roleTitle} ${t('onboarding_email_title_suffix')}`}
-                </Text>
-              </PhonkText>
+      <KeyboardAvoidingView
+        style={styles.contentArea}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      >
+        <View style={styles.headerBackground}>
+          <SafeAreaView edges={['top']} style={styles.headerContent}>
+            <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
+              <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
+                <Ionicons name={arrowIconName} size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
+                <Ionicons name="close" size={24} color="black" />
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.inputWrapper}>
-              <View style={[styles.singleInputContainer, { marginBottom: 15 }]}>
-                <TextInput
-                  ref={inputRef}
-                  style={[styles.input, { textAlign: inputTextAlign }]}
-                  placeholder={t('onboarding_email_placeholder')}
-                  placeholderTextColor="#999"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={!isLoading}
-                  autoFocus
-                />
-              </View>
-            </View>
-
-            <Text style={styles.infoText}>{t('onboarding_email_description')}</Text>
-            <TouchableOpacity onPress={() => router.push('/(onboarding)/upload-id' as any)}>
-              <Text style={styles.linkText}>{t('onboarding_no_edu_email_link')}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
-            onPress={handleContinue}
-            disabled={isLoading || !email}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.buttonText}>{t('onboarding_continue')}</Text>
-            )}
-          </TouchableOpacity>
+          </SafeAreaView>
         </View>
+
+        <View style={[styles.cardContainer, { flex: 1 }]}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.card}>
+              <View style={styles.textContainer}>
+                <PhonkText style={styles.titleLine}>
+                  <Text style={styles.greenText}>{t('onboarding_email_title_prefix')}</Text>
+                </PhonkText>
+                <PhonkText style={styles.titleLine}>
+                  <Text style={styles.blackText}>
+                    {`${roleTitle} ${t('onboarding_email_title_suffix')}`}
+                  </Text>
+                </PhonkText>
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <View style={[styles.singleInputContainer, { marginBottom: 15 }]}>
+                  <TextInput
+                    ref={inputRef}
+                    style={[styles.input, { textAlign: inputTextAlign }]}
+                    placeholder={t('onboarding_email_placeholder')}
+                    placeholderTextColor="#999"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={email}
+                    onChangeText={setEmail}
+                    editable={!isLoading}
+                    autoFocus
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.infoText}>{t('onboarding_email_description')}</Text>
+              <TouchableOpacity onPress={() => router.push('/(onboarding)/upload-id' as any)}>
+                <Text style={styles.linkText}>{t('onboarding_no_edu_email_link')}</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </KeyboardAvoidingView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.button, (isLoading || !email) && styles.buttonDisabled]}
+          onPress={handleContinue}
+          disabled={isLoading || !email}
+          activeOpacity={0.8}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>{t('onboarding_continue')}</Text>
+          )}
+        </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.brandGreen },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  contentArea: { flex: 1 },
   headerBackground: { height: 250, backgroundColor: Colors.brandGreen },
   headerContent: { paddingHorizontal: 20, paddingTop: 10 },
   topButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10 },
@@ -207,7 +210,7 @@ const styles = StyleSheet.create({
   input: { fontSize: 16, fontFamily: Typography.poppins.medium, color: '#000' },
   infoText: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 20, paddingHorizontal: 10, fontFamily: Typography.poppins.medium, margin: 8 },
   linkText: { fontSize: 14, color: Colors.brandGreen, textAlign: 'center', lineHeight: 20, paddingHorizontal: 10, fontFamily: Typography.poppins.semiBold, margin: 8 },
-  footer: { paddingBottom: 40, marginTop: 'auto' },
+  footer: { paddingHorizontal: 30, paddingBottom: 40, backgroundColor: 'white' },
   button: { backgroundColor: Colors.brandGreen, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontSize: 18, fontFamily: Typography.poppins.medium },

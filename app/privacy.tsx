@@ -36,7 +36,7 @@ export default function PrivacyScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>2. How We Use Your Data</Text>
                     <Text style={styles.paragraph}>
-                        We use the information we collect to provide, maintain, and improve our services, to process your transactions, and to communicate with you about ReelX updates and promotions.
+                        We use the information we collect to provide, maintain, and improve our services, to process your transactions, and to communicate with you about realX updates and promotions.
                     </Text>
                 </View>
 
@@ -64,7 +64,7 @@ export default function PrivacyScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>6. Contact Us</Text>
                     <Text style={styles.paragraph}>
-                        If you have any questions about this Privacy Policy, please contact us at support@reelx.com.
+                        If you have any questions about this Privacy Policy, please contact us at support@realx.qa.
                     </Text>
                 </View>
             </ScrollView>

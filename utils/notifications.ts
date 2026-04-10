@@ -191,7 +191,7 @@ export const setupForegroundMessageHandler = () => {
 
       if (title || body) {
         await presentNotificationAsync({
-          title: title ?? 'Reelx',
+          title: title ?? 'realX',
           body: body ?? '',
           data: remoteMessage.data ?? {},
         });

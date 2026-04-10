@@ -89,78 +89,80 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: Colors.brandGreen }]}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
+    <View style={styles.container}>
       <StatusBar style="light" />
 
-      <View style={styles.headerBackground}>
-        <SafeAreaView edges={['top']} style={styles.headerContent}>
-          <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
-            <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-              <Ionicons name={arrowIconName} size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
-              <Ionicons name="close" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      <View style={[styles.cardContainer, { backgroundColor: '#FFFFFF' }]}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.card}>
-            <View style={styles.textContainer}>
-              <PhonkText style={styles.titleLine}>
-                <Text style={styles.greenText}>{t('onboarding_login_title')}</Text>
-              </PhonkText>
+      <KeyboardAvoidingView
+        style={styles.contentArea}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      >
+        <View style={styles.headerBackground}>
+          <SafeAreaView edges={['top']} style={styles.headerContent}>
+            <View style={[styles.topButtons, isRTL && styles.topButtonsRTL]}>
+              <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
+                <Ionicons name={arrowIconName} size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/')} style={styles.iconButton}>
+                <Ionicons name="close" size={24} color="black" />
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.inputWrapper}>
-              <View style={[styles.singleInputContainer, { backgroundColor: '#F3F3F3' }]}>
-                <TextInput
-                  ref={inputRef}
-                  style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
-                  placeholder={t('onboarding_email_placeholder')}
-                  placeholderTextColor="#999999"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={!isLoading}
-                  autoFocus={true}
-                />
-              </View>
-            </View>
-
-            <Text style={styles.infoText}>
-              {t('onboarding_login_info')}
-            </Text>
-          </View>
-        </TouchableWithoutFeedback>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              (isLoading || !email) && styles.buttonDisabled,
-            ]}
-            onPress={handleContinue}
-            disabled={isLoading || !email}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {t('onboarding_login_title')}
-              </Text>
-            )}
-          </TouchableOpacity>
+          </SafeAreaView>
         </View>
+
+        <View style={[styles.cardContainer, { backgroundColor: '#FFFFFF' }]}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.card}>
+              <View style={styles.textContainer}>
+                <PhonkText style={styles.titleLine}>
+                  <Text style={styles.greenText}>{t('onboarding_login_title')}</Text>
+                </PhonkText>
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <View style={[styles.singleInputContainer, { backgroundColor: '#F3F3F3' }]}>
+                  <TextInput
+                    ref={inputRef}
+                    style={[styles.input, { color: '#000000', textAlign: inputTextAlign }]}
+                    placeholder={t('onboarding_email_placeholder')}
+                    placeholderTextColor="#999999"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={email}
+                    onChangeText={setEmail}
+                    editable={!isLoading}
+                    autoFocus={true}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.infoText}>
+                {t('onboarding_login_info')}
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </KeyboardAvoidingView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            (isLoading || !email) && styles.buttonDisabled,
+          ]}
+          onPress={handleContinue}
+          disabled={isLoading || !email}
+          activeOpacity={0.8}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {t('onboarding_login_title')}
+            </Text>
+          )}
+        </TouchableOpacity>
       </View>
 
       <Modal
@@ -196,14 +198,17 @@ export default function LoginScreen() {
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.brandGreen,
+    backgroundColor: '#FFFFFF',
+  },
+  contentArea: {
+    flex: 1,
   },
   headerBackground: {
     height: 250,
@@ -282,8 +287,9 @@ const styles = StyleSheet.create({
     fontFamily: Typography.poppins.medium,
   },
   footer: {
+    paddingHorizontal: 30,
     paddingBottom: 40,
-    marginTop: 'auto',
+    backgroundColor: 'white',
   },
   button: {
     backgroundColor: Colors.brandGreen,

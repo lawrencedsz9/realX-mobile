@@ -680,14 +680,14 @@ export const sendOtp = onCall(async (request: CallableRequest) => {
   // Send email via Resend
   try {
     await getResend().emails.send({
-      from: 'ReelX <welcome@realx.qa>',
+      from: 'realX <welcome@realx.qa>',
       to: email,
-      subject: 'Your ReelX Verification Code',
+      subject: 'Your realX Verification Code',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 480px;
           margin: 0 auto; padding: 32px;">
           <h1 style="color: #18B852; font-size: 24px;
-            margin-bottom: 24px;">ReelX</h1>
+            margin-bottom: 24px;">realX</h1>
           <p style="font-size: 16px; color: #333;
             margin-bottom: 16px;">Your verification code is:</p>
           <div style="background: #f5f5f5; border-radius: 12px;

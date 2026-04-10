@@ -29,14 +29,14 @@ export default function TermsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>1. Introduction</Text>
                     <Text style={styles.paragraph}>
-                        Welcome to ReelX. These Terms and Conditions govern your use of our application and services. By accessing or using ReelX, you agree to be bound by these terms.
+                        Welcome to realX. These Terms and Conditions govern your use of our application and services. By accessing or using realX, you agree to be bound by these terms.
                     </Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>2. Use of Services</Text>
                     <Text style={styles.paragraph}>
-                        You must be at least 18 years old to use this service. You agree to use ReelX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else&apos;s use and enjoyment of ReelX.
+                        You must be at least 18 years old to use this service. You agree to use realX only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else&apos;s use and enjoyment of realX.
                     </Text>
                 </View>
 
@@ -50,21 +50,21 @@ export default function TermsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>4. Intellectual Property</Text>
                     <Text style={styles.paragraph}>
-                        The content, organization, graphics, design, and other matters related to ReelX are protected under applicable copyrights and other proprietary laws.
+                        The content, organization, graphics, design, and other matters related to realX are protected under applicable copyrights and other proprietary laws.
                     </Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>5. Limitation of Liability</Text>
                     <Text style={styles.paragraph}>
-                        ReelX shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of profits or revenues.
+                        realX shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of profits or revenues.
                     </Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>6. Changes to Terms</Text>
                     <Text style={styles.paragraph}>
-                        We reserve the right to modify these terms at any time. Your continued use of ReelX after any such changes constitutes your acceptance of the new Terms and Conditions.
+                        We reserve the right to modify these terms at any time. Your continued use of realX after any such changes constitutes your acceptance of the new Terms and Conditions.
                     </Text>
                 </View>
             </ScrollView>
