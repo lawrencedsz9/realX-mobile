@@ -161,9 +161,9 @@ export default function RedemptionHistoryScreen() {
                 )}
               </View>
               <View style={styles.vendorTextContainer}>
-                <PhonkText style={styles.vendorName} numberOfLines={1}>
+                <Text style={styles.vendorName} numberOfLines={1}>
                   {isArabic ? (item.vendorNameAr || item.vendorName || 'VENDOR') : (item.vendorName || 'VENDOR')}
-                </PhonkText>
+                </Text>
                 <Text style={[styles.savingsText, { writingDirection: isArabic ? 'rtl' : 'ltr' }]}>
                   {t('estimated_savings', {
                     amount: t('amount_with_currency', { amount: savings.toFixed(0), currency }),
@@ -313,6 +313,7 @@ const styles = StyleSheet.create({
   },
   vendorName: {
     fontSize: 18,
+    fontFamily: Typography.poppins.semiBold,
     color: '#000',
     marginBottom: 4,
   },

@@ -35,8 +35,15 @@ export default function TrendingOffers() {
                             id: `${docSnap.id}_offer_${index}`,
                             vendorId: docSnap.id,
                             ...offer,
+                            nameEn: vendorData.nameEn || vendorData.name,
+                            nameAr: vendorData.nameAr || vendorData.nameAr,
                             vendorName: vendorData.name,
                             vendorNameAr: vendorData.nameAr,
+                            shortDescription: vendorData.shortDescription,
+                            shortDescriptionAr: vendorData.shortDescriptionAr || vendorData.shortDescriptionAR,
+                            brandDescription: vendorData.brandDescription,
+                            descriptionEn: vendorData.descriptionEn,
+                            descriptionAr: vendorData.descriptionAr,
                             vendorProfilePicture: vendorData.profilePicture,
                             coverImage: vendorData.coverImage,
                             xcard: vendorData.xcard || false,
@@ -121,11 +128,11 @@ export default function TrendingOffers() {
             >
                 {displayedOffers.map((offer) => {
                     const name = isRTL
-                        ? offer.titleAr || offer.titleEn || 'Untitled Offer'
-                        : offer.titleEn || offer.titleAr || 'Untitled Offer';
+                        ? (offer.nameAr || offer.vendorNameAr || offer.nameEn || offer.vendorName || 'Vendor')
+                        : (offer.nameEn || offer.vendorName || offer.nameAr || offer.vendorNameAr || 'Vendor');
                     const cashbackText = isRTL
-                        ? offer.descriptionAr || offer.descriptionEn || 'Special Offer'
-                        : offer.descriptionEn || offer.descriptionAr || 'Special Offer';
+                        ? (offer.shortDescriptionAr || offer.shortDescriptionAR || offer.descriptionAr || offer.brandDescription || '')
+                        : (offer.shortDescription || offer.brandDescription || offer.descriptionEn || '');
                     const discountText = `${offer.discountValue || ''}${offer.discountType === 'percentage' ? '%' : ''} OFF`;
 
                     return (
