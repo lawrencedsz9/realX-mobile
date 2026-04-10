@@ -138,6 +138,86 @@ const calculateCashback = ({
   return { userCashback, creatorCashback };
 };
 
+const sendCreatorCodeUsedPush = async ({
+  creatorUid,
+  vendorName,
+  cashbackAmount,
+  transactionId,
+}: {
+  creatorUid: string;
+  vendorName: string;
+  cashbackAmount: number;
+  transactionId: string;
+}) => {
+  const creatorRef = db.collection('students').doc(creatorUid);
+  const creatorDoc = await creatorRef.get();
+
+  if (!creatorDoc.exists) {
+    return;
+  }
+
+  const creatorData = creatorDoc.data() || {};
+  const tokenCandidates = [
+    ...(Array.isArray(creatorData.expoPushTokens) ? creatorData.expoPushTokens : []),
+    ...(Array.isArray(creatorData.pushTokens) ? creatorData.pushTokens : []),
+    creatorData.expoPushToken,
+    creatorData.pushToken,
+  ].filter(Boolean);
+
+  const tokens = [...new Set(tokenCandidates)];
+  if (tokens.length === 0) return;
+
+  const messages = tokens.map((to) => ({
+    to,
+    sound: 'default',
+    title: 'Your code was used!',
+    body: `Someone used your code at ${vendorName}. You earned QAR ${cashbackAmount.toFixed(2)} cashback!`,
+    data: {
+      type: 'creator_code_used',
+      transactionId,
+      vendorName,
+      cashbackAmount,
+    },
+  }));
+
+  const response = await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-Encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(messages),
+  });
+
+  const payload = await response.json();
+  const ticketErrors = Array.isArray(payload?.data)
+    ? payload.data
+        .map((ticket, index) => ({ ticket, index }))
+        .filter(({ ticket }) => ticket?.status === 'error')
+    : [];
+
+  if (ticketErrors.length === 0) return;
+
+  const invalidTokens = ticketErrors
+    .filter(({ ticket }) =>
+      ['DeviceNotRegistered', 'InvalidCredentials', 'MessageTooBig'].includes(ticket?.details?.error)
+    )
+    .map(({ index }) => tokens[index])
+    .filter(Boolean);
+
+  if (invalidTokens.length === 0) return;
+
+  const remainingTokens = tokens.filter((token) => !invalidTokens.includes(token));
+  await creatorRef.set(
+    {
+      expoPushTokens: remainingTokens,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+};
+
 /**
  * =============================
  * Core Transaction
@@ -375,6 +455,15 @@ export const redeemOffer = onCall(
       type: 'offer',
       ...request.data,
     });
+
+    if (result?.creatorUid && result?.creatorCashback > 0) {
+      await sendCreatorCodeUsedPush({
+        creatorUid: result.creatorUid,
+        vendorName: result.vendorName || request.data?.vendorName || 'a vendor',
+        cashbackAmount: result.creatorCashback,
+        transactionId: result.transactionId,
+      });
+    }
 
     return result;
   }

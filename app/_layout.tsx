@@ -4,7 +4,7 @@ import {
   onAuthStateChanged,
   type FirebaseAuthTypes
 } from '@react-native-firebase/auth';
-import { doc, getFirestore, onSnapshot } from '@react-native-firebase/firestore';
+import { doc, getDoc, getFirestore, onSnapshot, setDoc } from '@react-native-firebase/firestore';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -16,6 +16,7 @@ import { applyRTL } from '../src/localization/rtl';
 import {
   setupNotificationChannels,
 } from '../utils/notifications';
+import { registerForExpoPushNotificationsAsync } from '../utils/pushNotifications';
 import CustomSplash from './splash'; // adjust path if needed
 
 
@@ -91,6 +92,44 @@ export default function RootLayout() {
     if (user && hasProfile === true) {
       setupNotificationChannels();
     }
+  }, [user, hasProfile]);
+
+  useEffect(() => {
+    if (!user || hasProfile !== true) return;
+
+    let cancelled = false;
+
+    const registerToken = async () => {
+      try {
+        const token = await registerForExpoPushNotificationsAsync();
+        if (!token || cancelled) return;
+
+        const db = getFirestore();
+        const studentDocRef = doc(db, 'students', user.uid);
+        const currentDoc = await getDoc(studentDocRef);
+
+        // Prefer array storage so a single creator can receive notifications on multiple devices.
+        const existingTokens = ((currentDoc.data()?.expoPushTokens || currentDoc.data()?.pushTokens || []) as string[]);
+        if (existingTokens.includes(token)) return;
+
+        await setDoc(
+          studentDocRef,
+          {
+            expoPushTokens: [...existingTokens, token],
+            updatedAt: new Date(),
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error('Error registering push token:', error);
+      }
+    };
+
+    void registerToken();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, hasProfile]);
 
 useEffect(() => {
