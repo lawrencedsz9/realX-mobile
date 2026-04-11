@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "reelx",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -61,7 +61,8 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#18B852"
+          "backgroundColor": "#18B852",
+          "image": "./assets/images/icon.png"
         }
       ],
       [
