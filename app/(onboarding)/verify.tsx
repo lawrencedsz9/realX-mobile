@@ -9,8 +9,6 @@ import {
   Alert,
   I18nManager,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -211,11 +209,7 @@ export default function VerifyOtpScreen() {
   const titleSuffix = titleWords[titleWords.length - 1];
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
+    <View style={styles.container}>
       <StatusBar style="light" />
 
       <View style={styles.headerBackground}>
@@ -297,23 +291,23 @@ export default function VerifyOtpScreen() {
             </View>
           </View>
         </TouchableWithoutFeedback>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.button, isOtpComplete && !isLoading && styles.buttonEnabled]}
-            onPress={handleVerify}
-            disabled={!isOtpComplete || isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.buttonText}>{t('onboarding_otp_verify_button')}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
       </View>
-    </KeyboardAvoidingView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.button, isOtpComplete && !isLoading && styles.buttonEnabled]}
+          onPress={handleVerify}
+          disabled={!isOtpComplete || isLoading}
+          activeOpacity={0.8}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>{t('onboarding_otp_verify_button')}</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -455,7 +449,15 @@ const styles = StyleSheet.create({
     color: Colors.brandGreen,
     fontFamily: Typography.poppins.semiBold,
   },
-  footer: { paddingBottom: 40, marginTop: 'auto' },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 28,
+    paddingBottom: 40,
+    backgroundColor: 'white',
+  },
   button: {
     backgroundColor: Colors.brandGreen,
     height: 62,
